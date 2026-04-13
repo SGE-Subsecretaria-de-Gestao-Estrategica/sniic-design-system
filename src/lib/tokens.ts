@@ -61,3 +61,14 @@ export const typography = {
 export const spacing = { xs: 4, sm: 8, md: 16, lg: 24, xl: 32 } as const;
 
 export const defaultMargin: Margin = { top: 20, right: 20, bottom: 40, left: 48 };
+
+// Visualization palette (used by data-vis components)
+export const blue      = '#365da6';
+export const orange    = '#d86826';
+export const darkGreen = '#345c1a';
+export const red       = '#d2301d';
+export const amber     = '#ecb42d';
+export const green     = '#4f8c4e';
+export const white     = '#fffffe';
+export const black     = '#000000';
+export const yellow    = '#eac128';
