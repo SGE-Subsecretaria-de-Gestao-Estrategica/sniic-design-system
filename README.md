@@ -113,6 +113,227 @@ interface Series {
 }
 ```
 
+---
+
+### AgeGroupChart
+
+Renders a stacked bar chart of age groups (youth / adult / senior) by state, normalised to percentages.
+
+```svelte
+<script>
+  import { AgeGroupChart } from 'sniic';
+
+  const data = [
+    { uf: 'SP', youth: 1200, adult: 3500, senior: 800 },
+    { uf: 'RJ', youth: 900,  adult: 2800, senior: 650 },
+  ];
+</script>
+
+<AgeGroupChart {data} />
+```
+
+**Props**
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `data` | `StateAgeRow[]` | `[]` | Array of per-state age counts |
+
+**StateAgeRow type**
+
+```ts
+interface StateAgeRow {
+  uf: string;
+  youth: number;   // 15–29 years old
+  adult: number;   // 30–59 years old
+  senior: number;  // 60+ years old
+}
+```
+
+---
+
+### BubbleScatter
+
+Renders a log-scale scatter plot where each bubble represents a Brazilian state. Bubble size encodes number of funded projects; colour encodes region. Includes interactive tooltips.
+
+```svelte
+<script>
+  import { BubbleScatter } from 'sniic';
+
+  const states = {
+    'São Paulo': { uf: 'São Paulo', popTotal: 45919049, valorRecebido: 500000000, qtdFomentos: 120, valorPerCapita: 10.88 },
+    'Pará':      { uf: 'Pará',      popTotal: 8690745,  valorRecebido:  80000000, qtdFomentos:  30, valorPerCapita:  9.20 },
+  };
+</script>
+
+<BubbleScatter {states} />
+```
+
+**Props**
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `states` | `Record<string, BubbleScatterRow>` | `{}` | Map of state name → data row |
+
+**BubbleScatterRow type**
+
+```ts
+interface BubbleScatterRow {
+  uf: string;
+  popTotal: number;
+  valorRecebido: number;
+  qtdFomentos: number;
+  valorPerCapita: number;
+}
+```
+
+---
+
+### GenderDivergingBar
+
+Renders a horizontal diverging bar chart showing female vs. male participation per state, with an optional national average reference line.
+
+```svelte
+<script>
+  import { GenderDivergingBar } from 'sniic';
+
+  const data = [
+    { uf: 'SP', pctFeminino: 42.3, qtdFeminino: 508, qtdMasculino: 692 },
+    { uf: 'BA', pctFeminino: 38.1, qtdFeminino: 210, qtdMasculino: 341 },
+  ];
+</script>
+
+<GenderDivergingBar {data} nationalAvg={40.5} />
+```
+
+**Props**
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `data` | `GenderRow[]` | `[]` | Per-state gender breakdown |
+| `nationalAvg` | `number` | `0` | National average % (shown as dashed reference line) |
+
+**GenderRow type**
+
+```ts
+interface GenderRow {
+  uf: string;
+  pctFeminino: number;
+  qtdFeminino: number;
+  qtdMasculino: number;
+}
+```
+
+---
+
+### StackedBarChart
+
+Renders a horizontal stacked bar chart split into two categories (`audiovisual` and `demais`), sorted by total value descending. Values are formatted as BRL currency.
+
+```svelte
+<script>
+  import { StackedBarChart } from 'sniic';
+
+  const data = [
+    { uf: 'SP', audiovisual: 12000000, demais: 8000000 },
+    { uf: 'RJ', audiovisual:  7500000, demais: 4200000 },
+  ];
+</script>
+
+<StackedBarChart {data} />
+```
+
+**Props**
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `data` | `StackedBarRow[]` | `[]` | Per-state values split by category |
+
+**StackedBarRow type**
+
+```ts
+interface StackedBarRow {
+  uf: string;
+  audiovisual: number;
+  demais: number;
+}
+```
+
+---
+
+### ChoroplethMap
+
+Renders a choropleth map of Brazil coloured by a numeric metric. Supports an optional capital-city bubble overlay and emits the hovered state via a bindable prop.
+
+```svelte
+<script>
+  import { ChoroplethMap } from 'sniic';
+
+  const states = {
+    'São Paulo': { execucaoFinanceira: 95.2, valorRecebido: 500000000 },
+    'Pará':      { execucaoFinanceira: 78.4, valorRecebido:  80000000 },
+  };
+
+  let activeState = $state(null);
+</script>
+
+<ChoroplethMap
+  {states}
+  metric="execucaoFinanceira"
+  label="Execução financeira (%)"
+  format={(v) => `${v.toFixed(1)}%`}
+  bind:activeState
+/>
+```
+
+**Props**
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `states` | `Record<string, object>` | `{}` | Map of state name → data object |
+| `metric` | `string` | `'execucaoFinanceira'` | Key to read from each state object |
+| `label` | `string` | `''` | Tooltip label prefix |
+| `format` | `(v: number) => string` | `v.toLocaleString('pt-BR')` | Value formatter |
+| `colorRange` | `string[]` | `[black, blue]` | Two-colour gradient range |
+| `activeState` | `object \| null` | `null` | Bindable — set to hovered state object |
+| `capitals` | `ChoroplethCapital[]` | `[]` | Capital city data for bubble overlay |
+| `showCapitals` | `boolean` | `false` | Enable capital bubble overlay |
+
+---
+
+### TierSmallMultiples
+
+Renders five small choropleth maps of Brazil, one per city-size tier (Capitais, Grande Porte, Médio Porte, Pequeno Porte II, Pequeno Porte I), sharing a common colour scale.
+
+```svelte
+<script>
+  import { TierSmallMultiples } from 'sniic';
+
+  const tiers = {
+    Capitais:          { 'São Paulo': { execucaoFinanceira: 95.2 } },
+    'Grande Porte':    { 'Campinas':  { execucaoFinanceira: 88.0 } },
+    'Médio Porte':     {},
+    'Pequeno Porte II':{},
+    'Pequeno Porte I': {},
+  };
+</script>
+
+<TierSmallMultiples
+  {tiers}
+  metric="execucaoFinanceira"
+  format={(v) => `${v.toFixed(1)}%`}
+/>
+```
+
+**Props**
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `tiers` | `Record<string, Record<string, object>>` | `{}` | Map of tier name → (state name → data) |
+| `metric` | `string` | `'execucaoFinanceira'` | Key to read from each city object |
+| `format` | `(v: number) => string` | `` `${v.toFixed(1)}%` `` | Value formatter for legend |
+
+---
+
 ## Design tokens
 
 Tokens are exported from the package root and can be imported directly.
