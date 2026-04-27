@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 import { blue, orange, black } from '../tokens.js';
-import { removeDomain, gridLines } from '../utils/axisHelpers.js';
+import { gridLines } from '../utils/axisHelpers.js';
 import { BRL } from '../utils/formatters.js';
 
 export interface StackedBarRow {
