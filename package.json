@@ -1,6 +1,6 @@
 {
   "name": "sniic-design-system",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "module",
   "main": "./dist/sniic.umd.cjs",
   "module": "./dist/sniic.js",
