@@ -1,122 +1,284 @@
-<script>
-	import { onMount } from 'svelte';
-	import { loadBrazilGeoJSON } from '../utils/geoLoader.js';
-	import {
-		TIER_ORDER,
-		TIER_SUBTITLES,
-		buildSharedColorScale,
-		drawTierPanel,
-	} from '../charts/tierSmallMultiples.js';
+<script lang="ts">
+  import { onMount } from 'svelte';
+  import { geoMercator, geoPath } from 'd3';
+  import { loadBrazilGeoJSON, loadStateGeoJSON } from '../utils/geoLoader.js';
+  import { buildSharedColorScale, flattenTierData } from '../charts/tierSmallMultiples.js';
+  import type { TierData } from '../charts/tierSmallMultiples.js';
 
-	/**
-	 * @type {{
-	 *   tiers?: Record<string, Record<string, object>>,
-	 *   metric?: string,
-	 *   format?: (v: number) => string
-	 * }}
-	 */
-	let {
-		tiers = {},
-		metric = 'execucaoFinanceira',
-		format = (v) => `${v.toFixed(1)}%`,
-	} = $props();
+  interface Props {
+    tiers?: Record<string, TierData>;
+    metric?: string;
+    format?: (v: number) => string;
+  }
 
-	/** @type {HTMLElement[]} */
-	let panelEls = $state([]);
-	let containerEl;
-	let geojson = $state(null);
+  let {
+    tiers = {},
+    metric = 'execucaoFinanceira',
+    format = (v: number) => `${v.toFixed(1)}%`,
+  }: Props = $props();
 
-	function drawAll() {
-		if (!geojson || !panelEls.length) return;
-		const { colorScale, sharedMax } = buildSharedColorScale(tiers, metric);
-		TIER_ORDER.forEach((tier, i) => {
-			if (panelEls[i]) {
-				drawTierPanel(panelEls[i], tiers[tier] ?? {}, colorScale, sharedMax, geojson, metric, format);
-			}
-		});
-	}
+  // ── DOM refs & dimensions ─────────────────────────────────────────────────
 
-	onMount(async () => {
-		geojson = await loadBrazilGeoJSON();
-		drawAll();
-		const ro = new ResizeObserver(() => drawAll());
-		ro.observe(containerEl);
-		return () => ro.disconnect();
-	});
+  let brazilContainerEl: HTMLDivElement | undefined = $state();
+  let detailContainerEl: HTMLDivElement | undefined = $state();
+  let brazilWidth = $state(0);
+  let detailWidth = $state(0);
 
-	$effect(() => {
-		metric; tiers;
-		drawAll();
-	});
+  // ── Async data ────────────────────────────────────────────────────────────
+
+  let brazilGeo: any     = $state(null);
+  let selectedFeature: any = $state(null);
+  let stateGeo: any      = $state(null);
+  let loadingState         = $state(false);
+
+  // ── Data computations (reactive to tiers / metric) ────────────────────────
+
+  const colorResult = $derived(buildSharedColorScale(tiers, metric));
+  const flat        = $derived(flattenTierData(tiers, metric));
+
+  // ── Brazil overview map ───────────────────────────────────────────────────
+
+  const brazilHeight = $derived(brazilWidth * 0.88);
+
+  const brazilProj = $derived(
+    brazilGeo && brazilWidth > 0
+      ? geoMercator().fitSize([brazilWidth, brazilHeight], brazilGeo)
+      : null
+  );
+  const brazilPathGen = $derived(brazilProj ? geoPath().projection(brazilProj) : null);
+
+  const brazilLabelSize = $derived(Math.max(6, brazilWidth * 0.013));
+
+  // ── State detail map ──────────────────────────────────────────────────────
+
+  const DETAIL_PADDING = 12;
+  const detailHeight   = $derived(detailWidth * 1.1);
+
+  const detailProj = $derived(
+    stateGeo && detailWidth > 0 && detailHeight > 0
+      ? geoMercator().fitSize(
+          [detailWidth - DETAIL_PADDING * 2, detailHeight - DETAIL_PADDING * 2],
+          stateGeo,
+        )
+      : null
+  );
+  const detailPathGen = $derived(detailProj ? geoPath().projection(detailProj) : null);
+
+  const selectedVal  = $derived(selectedFeature ? (flat[selectedFeature.properties.name] ?? 0) : 0);
+  const detailFill   = $derived(selectedVal > 0 ? colorResult.colorScale(selectedVal) : '#1e3882');
+
+  const selectedSigla = $derived(selectedFeature?.properties?.sigla as string | undefined);
+
+  // ── Interaction ───────────────────────────────────────────────────────────
+
+  async function handleStateClick(feature: any) {
+    if (selectedFeature?.properties?.sigla === feature.properties.sigla) {
+      selectedFeature = null;
+      stateGeo = null;
+      return;
+    }
+    selectedFeature = feature;
+    loadingState = true;
+    stateGeo = await loadStateGeoJSON(feature.properties.sigla);
+    loadingState = false;
+  }
+
+  // ── Lifecycle ─────────────────────────────────────────────────────────────
+
+  onMount(() => {
+    loadBrazilGeoJSON().then((geo) => { brazilGeo = geo; });
+
+    const observers: ResizeObserver[] = [];
+
+    if (brazilContainerEl) {
+      brazilWidth = brazilContainerEl.clientWidth;
+      const ro = new ResizeObserver(([e]) => { brazilWidth = e.contentRect.width; });
+      ro.observe(brazilContainerEl);
+      observers.push(ro);
+    }
+    if (detailContainerEl) {
+      detailWidth = detailContainerEl.clientWidth;
+      const ro = new ResizeObserver(([e]) => {
+        detailWidth = e.contentRect.width;
+      });
+      ro.observe(detailContainerEl);
+      observers.push(ro);
+    }
+
+    return () => observers.forEach(ro => ro.disconnect());
+  });
 </script>
 
-<div bind:this={containerEl} class="multiples-container">
-	{#each TIER_ORDER as tier, i}
-		<div class="panel">
-			<div class="panel-header">
-				<span class="panel-title">{tier}</span>
-				<span class="panel-sub">{TIER_SUBTITLES[tier]}</span>
-			</div>
-			<div bind:this={panelEls[i]} class="panel-map"></div>
-		</div>
-	{/each}
+<div class="layout">
+
+  <!-- ── Left: Brazil overview ──────────────────────────────────────────── -->
+  <div class="panel brazil-panel">
+    <div class="panel-header">
+      <span class="panel-title">Brasil</span>
+      <span class="panel-sub">Clique em um estado para explorar</span>
+    </div>
+
+    <div bind:this={brazilContainerEl} class="map-el">
+      {#if brazilGeo && brazilPathGen && brazilWidth > 0}
+        <svg width={brazilWidth} height={brazilHeight} viewBox="0 0 {brazilWidth} {brazilHeight}">
+          <!-- State polygons -->
+          {#each brazilGeo.features as feature (feature.properties.sigla)}
+            <path
+              d={brazilPathGen(feature) ?? ''}
+              fill={flat[feature.properties.name] > 0
+                ? colorResult.colorScale(flat[feature.properties.name])
+                : '#1a1a1a'}
+              stroke={feature.properties.sigla === selectedSigla ? '#ffffff' : '#333333'}
+              stroke-width={feature.properties.sigla === selectedSigla ? 2 : 0.5}
+              style="cursor: pointer"
+              role="button"
+              tabindex="0"
+              aria-label={feature.properties.name}
+              onclick={() => handleStateClick(feature)}
+              onkeydown={(e) => e.key === 'Enter' && handleStateClick(feature)}
+            />
+          {/each}
+
+          <!-- State abbreviation labels -->
+          {#each brazilGeo.features as feature (feature.properties.sigla + '-label')}
+            {@const [cx, cy] = brazilPathGen.centroid(feature)}
+            <text
+              x={cx} y={cy}
+              text-anchor="middle"
+              dominant-baseline="middle"
+              font-size={brazilLabelSize}
+              font-weight="600"
+              fill="#ffffff"
+              pointer-events="none"
+            >{feature.properties.sigla}</text>
+          {/each}
+        </svg>
+      {/if}
+    </div>
+  </div>
+
+  <!-- ── Right: State detail ────────────────────────────────────────────── -->
+  <div class="panel detail-panel">
+    <div class="panel-header">
+      {#if selectedFeature}
+        <span class="panel-title">
+          {selectedFeature.properties.name}
+          <span class="sigla">({selectedFeature.properties.sigla})</span>
+        </span>
+        <span class="panel-sub">{format(selectedVal)}</span>
+      {:else}
+        <span class="panel-title">—</span>
+        <span class="panel-sub">&nbsp;</span>
+      {/if}
+    </div>
+
+    <div class="map-wrapper" bind:this={detailContainerEl}>
+      {#if stateGeo && detailPathGen && !loadingState && detailWidth > 0 && detailHeight > 0}
+        <svg width={detailWidth} height={detailHeight} viewBox="0 0 {detailWidth} {detailHeight}">
+          <g transform="translate({DETAIL_PADDING},{DETAIL_PADDING})">
+            {#each stateGeo.features as feature (feature.properties?.id ?? feature.properties?.name ?? feature)}
+              <path
+                d={detailPathGen(feature) ?? ''}
+                fill={detailFill}
+                stroke="#000000"
+                stroke-width={0.35}
+              />
+            {/each}
+          </g>
+        </svg>
+      {/if}
+
+      {#if !selectedFeature}
+        <div class="overlay">← Selecione um estado no mapa</div>
+      {:else if loadingState}
+        <div class="overlay">Carregando...</div>
+      {/if}
+    </div>
+  </div>
+
 </div>
 
 <style>
-	.multiples-container {
-		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		gap: 20px;
-	}
+  .layout {
+    display: flex;
+    gap: 16px;
+    width: 100%;
+  }
 
-	/* Last row: centre the 2 remaining panels */
-	.panel:nth-child(4) {
-		grid-column: 1;
-	}
-	.panel:nth-child(5) {
-		grid-column: 2;
-	}
+  .panel {
+    background: var(--color-black);
+    border: 1px solid #1e1e1e;
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
 
-	@media (max-width: 700px) {
-		.multiples-container {
-			grid-template-columns: repeat(2, 1fr);
-		}
-		.panel:nth-child(4),
-		.panel:nth-child(5) {
-			grid-column: auto;
-		}
-	}
+  .brazil-panel {
+    flex: 0 0 44%;
+  }
 
-	.panel {
-		background: var(--color-black);
-		border: 1px solid #1e1e1e;
-		border-radius: 10px;
-		overflow: hidden;
-	}
+  .detail-panel {
+    flex: 1;
+  }
 
-	.panel-header {
-		padding: 10px 12px 6px;
-		border-bottom: 1px solid #1e1e1e;
-	}
+  .panel-header {
+    padding: 10px 12px 6px;
+    border-bottom: 1px solid #1e1e1e;
+    flex-shrink: 0;
+  }
 
-	.panel-title {
-		display: block;
-		font-size: 0.82rem;
-		font-weight: 700;
-		color: var(--color-white);
-	}
+  .panel-title {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--color-white);
+  }
 
-	.panel-sub {
-		font-size: 0.72rem;
-		color: #555555;
-	}
+  .sigla {
+    font-weight: 400;
+    color: #555555;
+  }
 
-	.panel-map {
-		width: 100%;
-	}
+  .panel-sub {
+    font-size: 0.72rem;
+    color: #555555;
+  }
 
-	:global(.panel-map svg) {
-		display: block;
-		width: 100%;
-	}
+  .map-wrapper {
+    position: relative;
+    flex: 1;
+    aspect-ratio: 10 / 11;
+    min-height: 160px;
+  }
+
+  .map-el {
+    width: 100%;
+  }
+
+  :global(.map-el svg),
+  :global(.map-wrapper svg) {
+    display: block;
+    width: 100%;
+  }
+
+  .overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-black);
+    font-size: 0.78rem;
+    color: #555555;
+  }
+
+  @media (max-width: 640px) {
+    .layout {
+      flex-direction: column;
+    }
+    .brazil-panel {
+      flex: unset;
+    }
+  }
 </style>

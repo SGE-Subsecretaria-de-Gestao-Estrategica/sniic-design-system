@@ -1,6 +1,9 @@
 <script lang="ts">
   import { scaleBand, scaleLinear, max } from 'd3';
-  import { colors, defaultMargin, typography, type Margin } from '../tokens.js';
+  import { colors, defaultMargin, type Margin } from '../tokens.js';
+  import XAxis from './atoms/XAxis.svelte';
+  import YAxis from './atoms/YAxis.svelte';
+  import GridLines from './atoms/GridLines.svelte';
 
   interface DataPoint {
     label: string;
@@ -27,8 +30,8 @@
     yLabel = '',
   }: Props = $props();
 
-  const innerWidth  = $derived(width - margin.left - margin.right);
-  const innerHeight = $derived(height - margin.top - margin.bottom);
+  const innerWidth  = $derived(width  - margin.left - margin.right);
+  const innerHeight = $derived(height - margin.top  - margin.bottom);
 
   const xScale = $derived(
     scaleBand()
@@ -44,21 +47,26 @@
       .range([innerHeight, 0])
   );
 
-  const yTicks = $derived(yScale.ticks(5));
+  const yTickValues = $derived(yScale.ticks(5));
+
+  const xTicks = $derived(
+    data.map(d => ({
+      value: d.label,
+      x: (xScale(d.label) ?? 0) + xScale.bandwidth() / 2,
+    }))
+  );
+
+  const yTicks = $derived(
+    yTickValues.map(v => ({ value: v, y: yScale(v) }))
+  );
+
+  const gridPositions = $derived(yTickValues.map(v => yScale(v)));
 </script>
 
 <svg {width} {height} role="img" aria-label="Bar chart">
   <g transform="translate({margin.left},{margin.top})">
-    <!-- Grid lines -->
-    {#each yTicks as tick}
-      <line
-        x1={0} x2={innerWidth}
-        y1={yScale(tick)} y2={yScale(tick)}
-        stroke="#e2e8f0" stroke-width="1"
-      />
-    {/each}
+    <GridLines positions={gridPositions} length={innerWidth} />
 
-    <!-- Bars -->
     {#each data as d}
       <rect
         x={xScale(d.label)}
@@ -73,56 +81,7 @@
       </rect>
     {/each}
 
-    <!-- X axis -->
-    <g transform="translate(0,{innerHeight})">
-      <line x1={0} x2={innerWidth} stroke="#94a3b8" />
-      {#each data as d}
-        <text
-          x={(xScale(d.label) ?? 0) + xScale.bandwidth() / 2}
-          y={20}
-          text-anchor="middle"
-          font-size={typography.sizes.sm}
-          fill="#64748b"
-          font-family={typography.fontFamily}
-        >{d.label}</text>
-      {/each}
-      {#if xLabel}
-        <text
-          x={innerWidth / 2}
-          y={36}
-          text-anchor="middle"
-          font-size={typography.sizes.sm}
-          fill="#334155"
-          font-family={typography.fontFamily}
-        >{xLabel}</text>
-      {/if}
-    </g>
-
-    <!-- Y axis -->
-    <g>
-      <line y1={0} y2={innerHeight} stroke="#94a3b8" />
-      {#each yTicks as tick}
-        <text
-          x={-8}
-          y={yScale(tick)}
-          text-anchor="end"
-          dominant-baseline="middle"
-          font-size={typography.sizes.sm}
-          fill="#64748b"
-          font-family={typography.fontFamily}
-        >{tick}</text>
-      {/each}
-      {#if yLabel}
-        <text
-          transform="rotate(-90)"
-          x={-innerHeight / 2}
-          y={-36}
-          text-anchor="middle"
-          font-size={typography.sizes.sm}
-          fill="#334155"
-          font-family={typography.fontFamily}
-        >{yLabel}</text>
-      {/if}
-    </g>
+    <XAxis ticks={xTicks} {innerHeight} {innerWidth} label={xLabel} />
+    <YAxis ticks={yTicks} {innerHeight} label={yLabel} />
   </g>
 </svg>
