@@ -12,6 +12,7 @@
     label?: string;
     color?: string;
     fontSize?: number;
+    fontFamily?: string;
     /** Distance from the axis line to the rotated label text. */
     labelOffset?: number;
     /** Horizontal offset for tick labels (negative = left of axis). */
@@ -25,6 +26,7 @@
     label = '',
     color = '#64748b',
     fontSize = typography.sizes.sm,
+    fontFamily = typography.fontFamily,
     labelOffset = 36,
     tickOffset = -8,
     showLine = true,
@@ -44,7 +46,7 @@
       dominant-baseline="middle"
       font-size={fontSize}
       fill={color}
-      font-family={typography.fontFamily}
+      font-family={fontFamily}
     >{tick.value}</text>
   {/each}
 
@@ -56,7 +58,7 @@
       text-anchor="middle"
       font-size={fontSize}
       fill={color}
-      font-family={typography.fontFamily}
+      font-family={fontFamily}
     >{label}</text>
   {/if}
 </g>

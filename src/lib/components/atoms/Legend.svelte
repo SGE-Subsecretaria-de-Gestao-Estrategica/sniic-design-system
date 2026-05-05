@@ -16,6 +16,7 @@
     spacing?: number;
     fontSize?: number;
     color?: string;
+    fontFamily?: string;
   }
 
   let {
@@ -25,6 +26,7 @@
     spacing = 100,
     fontSize = typography.sizes.sm,
     color = '#64748b',
+    fontFamily = typography.fontFamily,
   }: Props = $props();
 </script>
 
@@ -44,7 +46,7 @@
         y={9}
         font-size={fontSize}
         fill={color}
-        font-family={typography.fontFamily}
+        font-family={fontFamily}
       >{item.label}</text>
     </g>
   {/each}

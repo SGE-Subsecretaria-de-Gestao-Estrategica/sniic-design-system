@@ -13,6 +13,7 @@
     label?: string;
     color?: string;
     fontSize?: number;
+    fontFamily?: string;
     /** Label rotation angle in degrees (e.g. -45 for diagonal). */
     rotate?: number;
     showLine?: boolean;
@@ -25,6 +26,7 @@
     label = '',
     color = '#64748b',
     fontSize = typography.sizes.sm,
+    fontFamily = typography.fontFamily,
     rotate = 0,
     showLine = true,
   }: Props = $props();
@@ -46,7 +48,7 @@
       text-anchor={isRotated ? 'end' : 'middle'}
       font-size={fontSize}
       fill={color}
-      font-family={typography.fontFamily}
+      font-family={fontFamily}
       transform={isRotated ? `rotate(${rotate}, ${tick.x}, 0)` : undefined}
     >{tick.value}</text>
   {/each}
@@ -58,7 +60,7 @@
       text-anchor="middle"
       font-size={fontSize}
       fill={color}
-      font-family={typography.fontFamily}
+      font-family={fontFamily}
     >{label}</text>
   {/if}
 </g>
