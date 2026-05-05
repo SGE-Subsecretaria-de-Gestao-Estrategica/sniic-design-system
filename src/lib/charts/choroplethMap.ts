@@ -55,7 +55,7 @@ export function drawChoroplethMap(
   const colorScale = d3
     .scaleSequential()
     .domain([0, d3.max(values) ?? 1])
-    .interpolator(d3.interpolateRgb(colorRange[0], colorRange[1]));
+    .interpolator(d3.interpolateRgbBasis(colorRange));
 
   const projection = d3.geoMercator().fitSize([width, height], geojson);
   const path = d3.geoPath().projection(projection);
@@ -180,8 +180,10 @@ function drawGradientLegend(
   const defs = svg.append('defs');
   const gradId = `cgrad-${Math.random().toString(36).slice(2)}`;
   const grad = defs.append('linearGradient').attr('id', gradId).attr('x1', '0%').attr('x2', '100%');
-  grad.append('stop').attr('offset', '0%').attr('stop-color', colorRange[0]);
-  grad.append('stop').attr('offset', '100%').attr('stop-color', colorRange[1]);
+  colorRange.forEach((color, i) => {
+    const offset = `${(i / (colorRange.length - 1)) * 100}%`;
+    grad.append('stop').attr('offset', offset).attr('stop-color', color);
+  });
 
   const lg = svg.append('g').attr('transform', `translate(16,${height - 36})`);
   lg.append('rect').attr('width', legendW).attr('height', legendH).attr('rx', 2).attr('fill', `url(#${gradId})`);
