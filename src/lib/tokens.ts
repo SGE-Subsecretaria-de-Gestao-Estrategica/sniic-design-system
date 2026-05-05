@@ -50,6 +50,11 @@ export const colors = {
 
 export const typography = {
   fontFamily: "'Inter', system-ui, sans-serif",
+  /**
+   * Valores em gráficos (rótulos em barras, etc.) — neo-grotesca geométrica no espírito de
+   * Clash Grotesk (Fontshare), com licença aberta: Space Grotesk (OFL, Google Fonts).
+   */
+  chartValueFontFamily: "'Space Grotesk', system-ui, sans-serif",
   sizes: { xs: 10, sm: 12, md: 14, lg: 16 } as const,
 } as const;
 
