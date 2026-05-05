@@ -1,4 +1,16 @@
-// Components
+// Atoms — single-responsibility SVG <g> fragments
+export { default as XAxis } from './components/atoms/XAxis.svelte';
+export { default as YAxis } from './components/atoms/YAxis.svelte';
+export { default as GridLines } from './components/atoms/GridLines.svelte';
+export { default as Legend } from './components/atoms/Legend.svelte';
+export { default as ChartTitle } from './components/atoms/ChartTitle.svelte';
+export { default as GradientLegend } from './components/atoms/GradientLegend.svelte';
+
+// Molecules — composed SVG/HTML shells
+export { default as ChartFrame } from './components/molecules/ChartFrame.svelte';
+export { default as Tooltip } from './components/molecules/Tooltip.svelte';
+
+// Organisms — full chart components
 export { default as BarChart } from './components/BarChart.svelte';
 export { default as LineChart } from './components/LineChart.svelte';
 export { default as AgeGroupChart } from './components/AgeGroupChart.svelte';
@@ -17,6 +29,7 @@ export * from './utils/tooltip.js';
 export * from './utils/geoLoader.js';
 export * from './utils/axisHelpers.js';
 export * from './utils/resizeObserver.js';
+export * from './utils/exportSvg.js';
 
 // Chart draw functions (for headless / custom-shell usage)
 export * from './charts/ageGroupChart.js';
