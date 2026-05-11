@@ -50,6 +50,7 @@
     activeState?: object | null;
     capitals?: ChoroplethCapital[];
     showCapitals?: boolean;
+    isStatic?: boolean;
   }
 
   let {
@@ -61,6 +62,7 @@
     activeState = $bindable(null),
     capitals = [],
     showCapitals = false,
+    isStatic = false,
   }: Props = $props();
 
   // ── State ─────────────────────────────────────────────────────────────────
@@ -129,36 +131,54 @@
           fill={val > 0 ? colorScale(val) : black}
           stroke={hovered ? white : black}
           stroke-width={hovered ? 1.5 : 0.6}
-          style="cursor: pointer"
-          onmouseenter={(e) => {
+          role={isStatic ? 'img' : 'button'}
+          aria-label={name}
+          style={isStatic ? undefined : 'cursor: pointer'}
+          onmouseenter={isStatic ? undefined : (e) => {
             hoveredStateName = name;
             activeState = states[name] ?? null;
             if (val > 0) {
               tooltip = { visible: true, ...relativePos(e, containerEl!), html: stateTooltipHtml(name, val) };
             }
           }}
-          onmousemove={(e) => { tooltip = { ...tooltip, ...relativePos(e, containerEl!) }; }}
-          onmouseleave={() => {
+          onmousemove={isStatic ? undefined : (e) => { tooltip = { ...tooltip, ...relativePos(e, containerEl!) }; }}
+          onmouseleave={isStatic ? undefined : () => {
             hoveredStateName = null;
             activeState = null;
             tooltip = { ...tooltip, visible: false };
           }}
         />
+        {#if isStatic && val > 0}
+          {@const [cx, cy] = pathGen.centroid(feature)}
+          <text
+            x={cx} y={cy}
+            text-anchor="middle"
+            font-size={9}
+            font-family="'Space Grotesk', system-ui, sans-serif"
+            fill={white}
+            pointer-events="none"
+          >
+            <tspan x={cx} dy="-0.4em" font-weight={700}>{feature.properties.sigla ?? name}</tspan>
+            <tspan x={cx} dy="1.2em">{format(val)}</tspan>
+          </text>
+        {/if}
       {/each}
 
       <!-- ── Capital bubbles overlay ────────────────────────────────────── -->
       {#if showCapitals && capitals.length}
-        {#each capitals as cap}
+        {#each capitals as cap (cap.uf)}
           {@const pos = projection([cap.lng, cap.lat]) ?? [0, 0]}
           {@const r   = bubbleR(cap.valorRecebido)}
           <g
             transform="translate({pos[0]},{pos[1]})"
-            style="cursor: pointer"
-            onmouseenter={(e) => {
+            role={isStatic ? 'img' : 'button'}
+            aria-label={cap.city}
+            style={isStatic ? undefined : 'cursor: pointer'}
+            onmouseenter={isStatic ? undefined : (e) => {
               tooltip = { visible: true, ...relativePos(e, containerEl!), html: capitalTooltipHtml(cap) };
             }}
-            onmousemove={(e) => { tooltip = { ...tooltip, ...relativePos(e, containerEl!) }; }}
-            onmouseleave={() => { tooltip = { ...tooltip, visible: false }; }}
+            onmousemove={isStatic ? undefined : (e) => { tooltip = { ...tooltip, ...relativePos(e, containerEl!) }; }}
+            onmouseleave={isStatic ? undefined : () => { tooltip = { ...tooltip, visible: false }; }}
           >
             <circle r={r + 3} fill="none" stroke={execColor(cap.execucaoFinanceira)} stroke-width={1.5} opacity={0.5} />
             <circle {r} fill={execColor(cap.execucaoFinanceira)} opacity={0.85} />
@@ -173,7 +193,7 @@
         <!-- Bubble size + exec colour legend (bottom-right) -->
         <g transform="translate({width - 120},{height - 100})">
           <text x={0} y={-8} font-size={10} font-family="'Space Grotesk', system-ui, sans-serif" fill="#000000">Tamanho = valor recebido</text>
-          {#each [0.25, 1] as frac, i}
+          {#each [0.25, 1] as frac, i (frac)}
             {@const bval = maxBubbleVal * frac}
             {@const br   = bubbleR(bval)}
             {@const cx   = 20 + i * 56}
@@ -183,7 +203,7 @@
             </text>
           {/each}
           <text x={0} y={52} font-size={10} font-family="'Space Grotesk', system-ui, sans-serif" fill="#000000">Cor = execução (%)</text>
-          {#each [['< 90%', '#d2301d'], ['~95%', '#ecb42d'], ['≥ 100%', '#4f8c4e']] as [lbl, clr], i}
+          {#each [['< 90%', '#d2301d'], ['~95%', '#ecb42d'], ['≥ 100%', '#4f8c4e']] as [lbl, clr], i (lbl)}
             <g transform="translate(0,{60 + i * 16})">
               <circle r={4} cx={4} fill={clr} opacity={0.85} />
               <text x={12} y={4} font-size={10} font-family="'Space Grotesk', system-ui, sans-serif" fill="#000000">{lbl}</text>
@@ -200,7 +220,9 @@
     </svg>
   {/if}
 
-  <Tooltip {...tooltip} offsetX={12} offsetY={-28} />
+  {#if !isStatic}
+    <Tooltip {...tooltip} offsetX={12} offsetY={-28} />
+  {/if}
 </div>
 
 <style>
