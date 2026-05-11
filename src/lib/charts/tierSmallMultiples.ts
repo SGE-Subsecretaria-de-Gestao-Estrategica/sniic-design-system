@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import { black, colorScales } from '../tokens.js';
+import { cream, colorScales } from '../tokens.js';
 
 export const TIER_ORDER = [
   'Capitais',
@@ -17,13 +17,13 @@ export const TIER_SUBTITLES: Record<string, string> = {
   'Pequeno Porte I': 'Até 20k hab.',
 };
 
-// Blue → yellow sequential scale for choropleth (low → high)
+// Blue → purple sequential scale for choropleth (low → high)
 export const SCALE_STOPS: string[] = [
-  colorScales.blue[3],    // '#1e3882' dark blue (low)
-  colorScales.blue[2],    // '#4271b5'
+  colorScales.blue[0],    // '#d5e4f7' light blue (low)
   colorScales.blue[1],    // '#7ba6d9'
-  colorScales.yellow[1],  // '#fadb7b'
-  colorScales.yellow[2],  // '#f6c341' yellow (high)
+  colorScales.purple[1],  // '#cc8eb9' mid transition
+  colorScales.purple[2],  // '#a44c7f'
+  colorScales.purple[4],  // '#2f0f29' dark purple (high)
 ];
 
 export interface TierData {
@@ -37,18 +37,19 @@ export interface TierData {
 export function buildSharedColorScale(
   tiers: Record<string, TierData>,
   metric: string,
-): { colorScale: d3.ScaleSequential<string>; sharedMax: number } {
+): { colorScale: d3.ScaleSequential<string>; sharedMin: number; sharedMax: number } {
   const allValues = TIER_ORDER.flatMap((tier) =>
     Object.values(tiers[tier] ?? {}).map((d) => (d[metric] as number) ?? 0),
   ).filter((v) => v > 0);
 
+  const sharedMin = d3.min(allValues) ?? 0;
   const sharedMax = d3.max(allValues) ?? 1;
   const colorScale = d3
     .scaleSequential()
-    .domain([0, sharedMax])
+    .domain([sharedMin, sharedMax])
     .interpolator(d3.interpolateRgbBasis(SCALE_STOPS));
 
-  return { colorScale, sharedMax };
+  return { colorScale, sharedMin, sharedMax };
 }
 
 /**
@@ -102,10 +103,10 @@ export function drawBrazilOverview(
     .attr('d', path as any)
     .attr('fill', (d: any) => {
       const val = stateData[d.properties.name] ?? 0;
-      return val > 0 ? colorScale(val) : '#1a1a1a';
+      return val > 0 ? colorScale(val) : '#e8e0d8';
     })
     .attr('stroke', (d: any) =>
-      d.properties.sigla === selectedSigla ? '#ffffff' : '#333333',
+      d.properties.sigla === selectedSigla ? colorScales.purple[3] : '#c8c0b8',
     )
     .attr('stroke-width', (d: any) =>
       d.properties.sigla === selectedSigla ? 2 : 0.5,
@@ -126,7 +127,15 @@ export function drawBrazilOverview(
     .attr('dominant-baseline', 'middle')
     .attr('font-size', labelSize)
     .attr('font-weight', '600')
-    .attr('fill', '#ffffff')
+    .attr('fill', (d: any) => {
+      const val = stateData[d.properties.name] ?? 0;
+      const bg = val > 0 ? colorScale(val) : '#e8e0d8';
+      // Simple luminance check for contrast
+      const r = parseInt(bg.slice(1, 3), 16);
+      const g = parseInt(bg.slice(3, 5), 16);
+      const b = parseInt(bg.slice(5, 7), 16);
+      return (r * 0.299 + g * 0.587 + b * 0.114) > 150 ? '#2f0f29' : '#fffffe';
+    })
     .attr('pointer-events', 'none')
     .text((d: any) => d.properties.sigla);
 }
@@ -160,8 +169,9 @@ export function drawStateDetail(
     .join('path')
     .attr('d', path as any)
     .attr('fill', fillColor)
-    .attr('stroke', '#000000')
-    .attr('stroke-width', 0.35);
+    .attr('stroke', cream)
+    .attr('stroke-opacity', 0.3)
+    .attr('stroke-width', 0.5);
 }
 
 export function drawTierPanel(
@@ -190,9 +200,9 @@ export function drawTierPanel(
     .attr('d', path)
     .attr('fill', (d: any) => {
       const val = (data[d.properties.name]?.[metric] as number) ?? 0;
-      return val > 0 ? colorScale(val) : black;
+      return val > 0 ? colorScale(val) : '#e8e0d8';
     })
-    .attr('stroke', black)
+    .attr('stroke', '#c8c0b8')
     .attr('stroke-width', 0.5);
 
   // Gradient legend at the bottom of each panel
@@ -206,12 +216,12 @@ export function drawTierPanel(
   const grad = defs.append('linearGradient').attr('id', gradId).attr('x1', '0%').attr('x2', '100%');
   SCALE_STOPS.forEach((color, i) => {
     grad.append('stop')
-      .attr('offset', `${(i / (BLUE_STOPS.length - 1)) * 100}%`)
+      .attr('offset', `${(i / (SCALE_STOPS.length - 1)) * 100}%`)
       .attr('stop-color', color);
   });
 
   const lg = svg.append('g').attr('transform', `translate(${lx},${ly})`);
   lg.append('rect').attr('width', legendW).attr('height', legendH).attr('rx', 1).attr('fill', `url(#${gradId})`);
-  lg.append('text').attr('x', 0).attr('y', legendH + 10).attr('font-size', 7).attr('fill', '#555555').text(format(0));
-  lg.append('text').attr('x', legendW).attr('y', legendH + 10).attr('text-anchor', 'end').attr('font-size', 7).attr('fill', '#555555').text(format(sharedMax));
+  lg.append('text').attr('x', 0).attr('y', legendH + 10).attr('font-size', 7).attr('fill', '#8a6d84').text(format(0));
+  lg.append('text').attr('x', legendW).attr('y', legendH + 10).attr('text-anchor', 'end').attr('font-size', 7).attr('fill', '#8a6d84').text(format(sharedMax));
 }
