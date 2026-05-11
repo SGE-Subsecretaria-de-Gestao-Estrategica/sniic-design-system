@@ -16,10 +16,10 @@
     showDifferences?: boolean;
     gap?: number;
     valueFormat?: (v: number) => string;
+    colors?: readonly string[];
   }
 
-  // Yellow scale dark→light (top→bottom); lighter tiers get dark text
-  const defaultColors = [colorScales.yellow[4], colorScales.yellow[3], colorScales.yellow[2]];
+  const defaultPyramidColors = [colorScales.yellow[4], colorScales.yellow[3], colorScales.yellow[2]];
 
   let {
     tiers = [],
@@ -28,7 +28,10 @@
     showDifferences = true,
     gap = 3,
     valueFormat = (v: number) => v.toLocaleString('pt-BR'),
+    colors = defaultPyramidColors,
   }: Props = $props();
+
+  const defaultColors = $derived(colors);
 
   const chartFont = typography.chartValueFontFamily;
 

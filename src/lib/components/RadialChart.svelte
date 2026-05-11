@@ -1,6 +1,7 @@
 <script lang="ts">
   import { scaleLinear } from 'd3';
-  import { blue, orange, teal, yellow, purple, lime, red, lavender, black, typography } from '../tokens.js';
+  import { black, typography } from '../tokens.js';
+  import { categorical8 } from '../palettes.js';
 
   interface DataPoint {
     axis: string;
@@ -25,6 +26,7 @@
     showLevelLabels?: boolean;
     showLegend?: boolean;
     fillOpacity?: number;
+    colors?: readonly string[];
   }
 
   let {
@@ -39,9 +41,10 @@
     showLevelLabels = true,
     showLegend = true,
     fillOpacity = 0.15,
+    colors = categorical8,
   }: Props = $props();
 
-  const defaultColors = [blue, orange, teal, yellow, purple, lime, red, lavender];
+  const defaultColors = $derived(colors);
   const chartFont = typography.chartValueFontFamily;
 
   const margin = 72;

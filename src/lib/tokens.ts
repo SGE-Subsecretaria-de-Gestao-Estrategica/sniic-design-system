@@ -5,7 +5,7 @@ export interface Margin {
   left: number;
 }
 
-// Base colors — source of truth: src/lib/styles/tokens.css
+// Base colors
 export const blue     = '#4271b5';
 export const orange   = '#ea662f';
 export const teal     = '#265c4f';
@@ -16,7 +16,7 @@ export const red      = '#cb4034';
 export const lavender = '#c9b6c5';
 export const white    = '#fffffe';
 export const cream    = '#ffffdeff';
-export const black    = '#000000';
+export const black    = '#000000ff';
 
 // Backward-compat aliases used by existing chart imports
 export const amber     = yellow;

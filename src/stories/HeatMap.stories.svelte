@@ -57,7 +57,6 @@
 
 <Story
   name="Orange Scale"
-  parameters={{ backgrounds: { default: 'light' } }}
   args={{
     height: 400,
     cellRadius: 3,

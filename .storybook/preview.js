@@ -9,9 +9,18 @@ const preview = {
         date: /Date$/i,
       },
     },
+    backgrounds: {
+      options: {
+        light: { name: 'light', value: '#ffffdeff' },
+        dark: { name: 'dark', value: '#000000ff' },
+      },
+    },
     a11y: {
       test: 'todo',
     },
+  },
+  initialGlobals: {
+    backgrounds: { value: 'light' },
   },
   decorators: [
     // Wraps every story with an "Export SVG" button that serialises the

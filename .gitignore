@@ -8,3 +8,9 @@ dist
 .env.production.local
 
 debug-storybook.log
+storybook-static
+
+memory/
+
+CLAUDE.md
+.mcp.json
