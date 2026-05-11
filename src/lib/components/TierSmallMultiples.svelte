@@ -361,7 +361,6 @@
   }
 
   .panel {
-    background: #ffffdeff;
     border: 1px solid #e8e0d8;
     border-radius: 10px;
     overflow: hidden;
@@ -448,7 +447,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #ffffdeff;
     font-size: 0.78rem;
     color: #8a6d84;
   }

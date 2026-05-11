@@ -158,7 +158,6 @@
 <style>
   .chart-container {
     width: 100%;
-    background-color: #ffffdeff;
   }
   svg {
     display: block;

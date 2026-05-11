@@ -28,7 +28,7 @@
 
 <Story
   name="On Orange Background"
-  parameters={{ backgrounds: { default: 'orange', values: [{ name: 'orange', value: '#ea662f' }] } }}
+  parameters={{ backgrounds: { default: 'light' } }}
   args={{
     value: 93,
     suffix: '%',
