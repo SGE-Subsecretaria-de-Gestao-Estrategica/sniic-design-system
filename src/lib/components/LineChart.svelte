@@ -1,6 +1,7 @@
 <script lang="ts">
   import { scaleLinear, scalePoint, line, curveMonotoneX, curveLinear, extent, type ScalePoint, type ScaleLinear } from 'd3';
-  import { blue, orange, teal, yellow, purple, lime, red, lavender, defaultMargin, type Margin } from '../tokens.js';
+  import { defaultMargin, type Margin } from '../tokens.js';
+  import { categorical8 } from '../palettes.js';
   import XAxis from './atoms/XAxis.svelte';
   import YAxis from './atoms/YAxis.svelte';
   import GridLines from './atoms/GridLines.svelte';
@@ -35,6 +36,7 @@
     /** Snippet rendered inside the chart's inner <g>, after the lines.
      *  Receives { xScale, yScale } so annotations can be placed in data space. */
     annotations?: Snippet<[AnnotationContext]>;
+    colors?: readonly string[];
   }
 
   let {
@@ -47,9 +49,10 @@
     showDots = true,
     smooth = true,
     annotations,
+    colors = categorical8,
   }: Props = $props();
 
-  const defaultColors = [blue, orange, teal, yellow, purple, lime, red, lavender];
+  const defaultColors = $derived(colors);
 
   const allData     = $derived(series.flatMap(s => s.data));
   const innerWidth  = $derived(width  - margin.left - margin.right);

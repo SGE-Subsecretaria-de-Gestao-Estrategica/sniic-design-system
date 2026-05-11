@@ -1,7 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { scaleBand, scaleLinear, stack } from 'd3';
-  import { colorScales, typography, black } from '../tokens.js';
+  import { typography, black } from '../tokens.js';
+  import { categorical3 } from '../palettes.js';
   import type { StateAgeRow } from '../charts/ageGroupChart.js';
   import XAxis from './atoms/XAxis.svelte';
   import YAxis from './atoms/YAxis.svelte';
@@ -10,9 +11,10 @@
 
   interface Props {
     data?: StateAgeRow[];
+    colors?: readonly [string, string, string];
   }
 
-  let { data = [] }: Props = $props();
+  let { data = [], colors = categorical3 }: Props = $props();
 
   const MARGIN = { top: 16, right: 24, bottom: 60, left: 60 };
   const HEIGHT = 260;
@@ -21,7 +23,7 @@
 
   const chartFont = typography.chartValueFontFamily;
 
-  const COLORS  = { youth: colorScales.yellow[2], adult: colorScales.blue[2], senior: colorScales.lime[2] } as const;
+  const COLORS = $derived({ youth: colors[0], adult: colors[1], senior: colors[2] });
   const LABELS  = { youth: '15–29 anos', adult: '30–59 anos', senior: '60+ anos' } as const;
 
   // D3 stack generator is stateless after keys() — safe to define once.
@@ -74,10 +76,10 @@
   const yTicks         = $derived(yTickValues.map(v => ({ value: `${v}%`, y: yScale(v) })));
   const gridPositions  = $derived(yTickValues.map(v => yScale(v)));
 
-  const legendItems = Object.entries(COLORS).map(([key, color]) => ({
+  const legendItems = $derived(Object.entries(COLORS).map(([key, color]) => ({
     label: LABELS[key as keyof typeof LABELS],
     color,
-  }));
+  })));
 
   const legendCenterX = $derived(innerW / 2 - ((legendItems.length - 1) * LEGEND_SPACING) / 2);
 

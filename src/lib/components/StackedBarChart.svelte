@@ -1,8 +1,9 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { scaleLinear, scaleBand, stack, max } from 'd3';
-  import { black, colorScales, typography, white } from '../tokens.js';
+  import { black, typography } from '../tokens.js';
   import { getContrastColor } from '../utils/colorContrast.js';
+  import { colorPairs, type ColorPair } from '../palettes.js';
   import type { StackedBarRow } from '../charts/stackedBarChart.js';
   import { BRL } from '../utils/formatters.js';
   import XAxis from './atoms/XAxis.svelte';
@@ -11,9 +12,10 @@
   interface Props {
     data?: StackedBarRow[];
     flag?: boolean;
+    colors?: ColorPair;
   }
 
-  let { data = [], flag = true }: Props = $props();
+  let { data = [], flag = true, colors = colorPairs.purpleYellow }: Props = $props();
 
   const chartFont = typography.chartValueFontFamily;
 
@@ -26,7 +28,7 @@
   const ROW_HEIGHT = 52;
   const FLAG_W  = 32;
   const FLAG_H  = 20;
-  const COLORS  = { audiovisual: colorScales.yellow[2], demais: colorScales.blue[2] } as const;
+  const COLORS = $derived({ audiovisual: colors[0], demais: colors[1] });
   const STROKE_W = 0.5;
   const SEGMENT_LABEL_PAD = 6;
   const SEGMENT_LABEL_RIGHT_MARGIN = 4;
@@ -78,10 +80,10 @@
   // D3 stack generator — stateless, safe to define once.
   const stackGen = stack<StackedBarRow>().keys(['audiovisual', 'demais']);
 
-  const legendItems = Object.entries(COLORS).map(([key, color]) => ({
+  const legendItems = $derived(Object.entries(COLORS).map(([key, color]) => ({
     label: key === 'audiovisual' ? 'Audiovisual' : 'Demais Áreas',
     color,
-  }));
+  })));
 
   let containerEl: HTMLDivElement | undefined = $state();
   let width = $state(0);

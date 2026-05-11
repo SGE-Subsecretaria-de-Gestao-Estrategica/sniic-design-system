@@ -1,6 +1,7 @@
 <script lang="ts">
   import { scaleLinear, extent } from 'd3';
-  import { blue, orange, teal, yellow, purple, lime, red, lavender, typography, type Margin } from '../tokens.js';
+  import { typography, type Margin } from '../tokens.js';
+  import { categorical8 } from '../palettes.js';
 
   interface Item {
     name: string;
@@ -20,6 +21,7 @@
     showValues?: boolean;
     strokeWidth?: number;
     dotRadius?: number;
+    colors?: readonly string[];
   }
 
   let {
@@ -33,9 +35,10 @@
     showValues = true,
     strokeWidth = 2,
     dotRadius = 5,
+    colors = categorical8,
   }: Props = $props();
 
-  const defaultColors = [blue, orange, teal, yellow, purple, lime, red, lavender];
+  const defaultColors = $derived(colors);
 
   const innerWidth  = $derived(width  - margin.left - margin.right);
   const innerHeight = $derived(height - margin.top  - margin.bottom);

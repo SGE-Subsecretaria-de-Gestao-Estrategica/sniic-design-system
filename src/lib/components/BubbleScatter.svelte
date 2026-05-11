@@ -1,8 +1,9 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { scaleLog, scaleSqrt, extent, max } from 'd3';
-  import { green, amber, orange, blue, red, black } from '../tokens.js';
+  import { black } from '../tokens.js';
   import { getContrastColor } from '../utils/colorContrast.js';
+  import { categorical5 } from '../palettes.js';
   import type { BubbleScatterRow } from '../charts/bubbleScatter.js';
   import { BRL, NUM } from '../utils/formatters.js';
   import XAxis from './atoms/XAxis.svelte';
@@ -13,17 +14,18 @@
 
   interface Props {
     states?: Record<string, BubbleScatterRow>;
+    regionColors?: readonly [string, string, string, string, string];
   }
 
-  let { states = {} }: Props = $props();
+  let { states = {}, regionColors = categorical5 }: Props = $props();
 
   const MARGIN = { top: 24, right: 24, bottom: 52, left: 72 };
 
   // ── Static lookup tables ──────────────────────────────────────────────────
 
-  const REGION_COLOR: Record<string, string> = {
-    Norte: green, Nordeste: amber, 'Centro-Oeste': orange, Sudeste: blue, Sul: red,
-  };
+  const REGION_COLOR = $derived<Record<string, string>>({
+    Norte: regionColors[0], Nordeste: regionColors[1], 'Centro-Oeste': regionColors[2], Sudeste: regionColors[3], Sul: regionColors[4],
+  });
 
   const UF_REGION: Record<string, string> = {
     Acre: 'Norte',        Amapá: 'Norte',         Amazonas: 'Norte',
@@ -107,10 +109,10 @@
 
   // ── Legend items ──────────────────────────────────────────────────────────
 
-  const regionLegendItems = Object.entries(REGION_COLOR).map(([label, color]) => ({
+  const regionLegendItems = $derived(Object.entries(REGION_COLOR).map(([label, color]) => ({
     label,
     color,
-  }));
+  })));
 
   // ── Resize observer ───────────────────────────────────────────────────────
 

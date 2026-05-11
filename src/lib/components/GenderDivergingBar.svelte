@@ -1,7 +1,9 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { scaleLinear, scaleBand } from 'd3';
-  import { amber, black, colorScales, typography, white } from '../tokens.js';
+  import { amber, black, typography } from '../tokens.js';
+  import { getContrastColor } from '../utils/colorContrast.js';
+  import { colorPairs, type ColorPair } from '../palettes.js';
   import type { GenderRow } from '../charts/genderDivergingBar.js';
   import XAxis from './atoms/XAxis.svelte';
   import YAxis from './atoms/YAxis.svelte';
@@ -10,9 +12,10 @@
   interface Props {
     data?: GenderRow[];
     nationalAvg?: number;
+    colors?: ColorPair;
   }
 
-  let { data = [], nationalAvg = 0 }: Props = $props();
+  let { data = [], nationalAvg = 0, colors = colorPairs.orangeTeal }: Props = $props();
 
   const chartFont = typography.chartValueFontFamily;
 
@@ -26,12 +29,12 @@
   const SEGMENT_LABEL_RIGHT_MARGIN = 4;
   const LABEL_FONT_WEIGHT = 700;
 
-  const COLORS = { feminino: colorScales.red[3], masculino: colorScales.blue[2] } as const;
+  const COLORS = $derived({ feminino: colors[0], masculino: colors[1] });
 
-  const legendItems = Object.entries(COLORS).map(([key, color]) => ({
+  const legendItems = $derived(Object.entries(COLORS).map(([key, color]) => ({
     label: key === 'feminino' ? 'Feminino' : 'Masculino',
     color,
-  }));
+  })));
 
   let _labelMeasureCtx: CanvasRenderingContext2D | null = null;
 
@@ -60,9 +63,8 @@
     return segW >= needed;
   }
 
-  /** Contraste sobre fundos do stack (vermelho escuro / azul claro). */
   function divergingBarLabelFill(side: 'feminino' | 'masculino'): string {
-    return side === 'feminino' ? white : black;
+    return getContrastColor(COLORS[side]);
   }
 
   let containerEl: HTMLDivElement | undefined = $state();
@@ -283,7 +285,7 @@
           font-size={typography.sizes.sm}
           font-weight="600"
           font-family={chartFont}
-          fill={divergingBarLabelFill('feminino')}
+          fill={black}
         >{legendItems[0].label}</text>
         <text
           x={legendHalfW + LEGEND_TEXT_PAD}
@@ -292,7 +294,7 @@
           font-size={typography.sizes.sm}
           font-weight="600"
           font-family={chartFont}
-          fill={divergingBarLabelFill('masculino')}
+          fill={black}
         >{legendItems[1].label}</text>
       </g>
     </svg>
