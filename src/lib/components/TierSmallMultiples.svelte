@@ -212,7 +212,7 @@
   }
 
   .panel {
-    background: var(--color-black);
+    background: #000000;
     border: 1px solid #1e1e1e;
     border-radius: 10px;
     overflow: hidden;
@@ -238,7 +238,7 @@
     display: block;
     font-size: 0.82rem;
     font-weight: 700;
-    color: var(--color-white);
+    color: #fffffe;
   }
 
   .sigla {
@@ -274,7 +274,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--color-black);
+    background: #000000;
     font-size: 0.78rem;
     color: #555555;
   }

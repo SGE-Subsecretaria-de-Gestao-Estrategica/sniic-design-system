@@ -5,7 +5,7 @@ export interface Margin {
   left: number;
 }
 
-// Base colors — source of truth: src/lib/styles/tokens.css
+// Base colors
 export const blue     = '#4271b5';
 export const orange   = '#ea662f';
 export const teal     = '#265c4f';

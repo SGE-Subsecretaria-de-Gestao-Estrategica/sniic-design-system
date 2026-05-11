@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import { black, blue } from '../tokens.js';
+import { black, colorScales } from '../tokens.js';
 
 export const TIER_ORDER = [
   'Capitais',
@@ -17,7 +17,14 @@ export const TIER_SUBTITLES: Record<string, string> = {
   'Pequeno Porte I': 'Até 20k hab.',
 };
 
-const COLOR_RANGE = [black, blue] as const;
+// Blue → yellow sequential scale for choropleth (low → high)
+export const SCALE_STOPS: string[] = [
+  colorScales.blue[3],    // '#1e3882' dark blue (low)
+  colorScales.blue[2],    // '#4271b5'
+  colorScales.blue[1],    // '#7ba6d9'
+  colorScales.yellow[1],  // '#fadb7b'
+  colorScales.yellow[2],  // '#f6c341' yellow (high)
+];
 
 export interface TierData {
   [uf: string]: Record<string, any>;
@@ -39,9 +46,122 @@ export function buildSharedColorScale(
   const colorScale = d3
     .scaleSequential()
     .domain([0, sharedMax])
-    .interpolator(d3.interpolateRgb(COLOR_RANGE[0], COLOR_RANGE[1]));
+    .interpolator(d3.interpolateRgbBasis(SCALE_STOPS));
 
   return { colorScale, sharedMax };
+}
+
+/**
+ * Flattens all tiers into a single state → metric-value map by averaging
+ * values across tiers when a state appears in more than one.
+ */
+export function flattenTierData(
+  tiers: Record<string, TierData>,
+  metric: string,
+): Record<string, number> {
+  const sums: Record<string, number> = {};
+  const counts: Record<string, number> = {};
+  for (const tier of TIER_ORDER) {
+    for (const [state, vals] of Object.entries(tiers[tier] ?? {})) {
+      const val = (vals[metric] as number) ?? 0;
+      sums[state] = (sums[state] ?? 0) + val;
+      counts[state] = (counts[state] ?? 0) + 1;
+    }
+  }
+  return Object.fromEntries(Object.entries(sums).map(([k, v]) => [k, v / counts[k]]));
+}
+
+/**
+ * Draws the Brazil overview map with states colored by metric.
+ * Clicking a state calls onStateClick with the GeoJSON feature.
+ */
+export function drawBrazilOverview(
+  container: HTMLElement,
+  stateData: Record<string, number>,
+  colorScale: d3.ScaleSequential<string>,
+  geojson: any,
+  _format: (v: number) => string,
+  onStateClick: (feature: any) => void,
+  selectedSigla?: string,
+): void {
+  const width = container.clientWidth || 300;
+  const height = width * 0.88;
+
+  let svg = d3.select(container).select<SVGSVGElement>('svg');
+  if (svg.empty()) svg = d3.select(container).append('svg');
+  svg.attr('width', width).attr('height', height).attr('viewBox', `0 0 ${width} ${height}`).selectAll('*').remove();
+
+  const projection = d3.geoMercator().fitSize([width, height], geojson);
+  const path = d3.geoPath().projection(projection);
+
+  svg
+    .append('g')
+    .selectAll<SVGPathElement, any>('path')
+    .data(geojson.features)
+    .join('path')
+    .attr('d', path as any)
+    .attr('fill', (d: any) => {
+      const val = stateData[d.properties.name] ?? 0;
+      return val > 0 ? colorScale(val) : '#1a1a1a';
+    })
+    .attr('stroke', (d: any) =>
+      d.properties.sigla === selectedSigla ? '#ffffff' : '#333333',
+    )
+    .attr('stroke-width', (d: any) =>
+      d.properties.sigla === selectedSigla ? 2 : 0.5,
+    )
+    .style('cursor', 'pointer')
+    .on('click', (_event: MouseEvent, d: any) => onStateClick(d));
+
+  // State abbreviation labels
+  const labelSize = Math.max(6, width * 0.013);
+  svg
+    .append('g')
+    .selectAll<SVGTextElement, any>('text')
+    .data(geojson.features)
+    .join('text')
+    .attr('x', (d: any) => path.centroid(d as any)[0])
+    .attr('y', (d: any) => path.centroid(d as any)[1])
+    .attr('text-anchor', 'middle')
+    .attr('dominant-baseline', 'middle')
+    .attr('font-size', labelSize)
+    .attr('font-weight', '600')
+    .attr('fill', '#ffffff')
+    .attr('pointer-events', 'none')
+    .text((d: any) => d.properties.sigla);
+}
+
+/**
+ * Draws a state's municipality boundaries in a single fill color.
+ */
+export function drawStateDetail(
+  container: HTMLElement,
+  stateGeo: any,
+  fillColor: string,
+): void {
+  const width = container.clientWidth || 300;
+  const padding = 12;
+  const height = width * 1.1;
+
+  let svg = d3.select(container).select<SVGSVGElement>('svg');
+  if (svg.empty()) svg = d3.select(container).append('svg');
+  svg.attr('width', width).attr('height', height).attr('viewBox', `0 0 ${width} ${height}`).selectAll('*').remove();
+
+  const projection = d3
+    .geoMercator()
+    .fitSize([width - padding * 2, height - padding * 2], stateGeo);
+  const path = d3.geoPath().projection(projection);
+
+  svg
+    .append('g')
+    .attr('transform', `translate(${padding},${padding})`)
+    .selectAll<SVGPathElement, any>('path')
+    .data(stateGeo.features)
+    .join('path')
+    .attr('d', path as any)
+    .attr('fill', fillColor)
+    .attr('stroke', '#000000')
+    .attr('stroke-width', 0.35);
 }
 
 export function drawTierPanel(
@@ -84,8 +204,11 @@ export function drawTierPanel(
   const defs = svg.append('defs');
   const gradId = `tg-${Math.random().toString(36).slice(2)}`;
   const grad = defs.append('linearGradient').attr('id', gradId).attr('x1', '0%').attr('x2', '100%');
-  grad.append('stop').attr('offset', '0%').attr('stop-color', COLOR_RANGE[0]);
-  grad.append('stop').attr('offset', '100%').attr('stop-color', COLOR_RANGE[1]);
+  SCALE_STOPS.forEach((color, i) => {
+    grad.append('stop')
+      .attr('offset', `${(i / (BLUE_STOPS.length - 1)) * 100}%`)
+      .attr('stop-color', color);
+  });
 
   const lg = svg.append('g').attr('transform', `translate(${lx},${ly})`);
   lg.append('rect').attr('width', legendW).attr('height', legendH).attr('rx', 1).attr('fill', `url(#${gradId})`);
