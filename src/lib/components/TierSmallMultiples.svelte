@@ -3,7 +3,7 @@
   import { geoMercator, geoPath } from 'd3';
   import { loadBrazilGeoJSON, loadStateGeoJSON } from '../utils/geoLoader.js';
   import { buildSharedColorScale, flattenTierData, SCALE_STOPS } from '../charts/tierSmallMultiples.js';
-  import type { TierData } from '../charts/tierSmallMultiples.js';
+  import type { TierData, CityMarker, MunicipalityData } from '../charts/tierSmallMultiples.js';
   import { getContrastColor } from '../utils/colorContrast.js';
   import { colorScales } from '../tokens.js';
 
@@ -11,12 +11,16 @@
     tiers?: Record<string, TierData>;
     metric?: string;
     format?: (v: number) => string;
+    cities?: CityMarker[];
+    municipalities?: MunicipalityData;
   }
 
   let {
     tiers = {},
     metric = 'execucaoFinanceira',
     format = (v: number) => `${v.toFixed(1)}%`,
+    cities = [],
+    municipalities = {},
   }: Props = $props();
 
   // ── DOM dimensions (bind:clientWidth handles ResizeObserver internally) ───
@@ -56,15 +60,17 @@
 
   // ── State detail map ──────────────────────────────────────────────────────
 
-  const DETAIL_PADDING = 12;
-  const detailHeight   = $derived(detailWidth * 1.1);
+  const LABEL_MARGIN = 70;   // horizontal space reserved for labels on each side
+  const DETAIL_PAD_Y = 12;
+  const detailHeight = $derived(detailWidth * 1.3);
+  const mapTop       = $derived(detailHeight * 0.1);  // space above map for labels
+  const mapLeft      = $derived(LABEL_MARGIN);
+  const mapWidth     = $derived(Math.max(0, detailWidth - LABEL_MARGIN * 2));
+  const mapHeight    = $derived(Math.max(0, detailHeight * 0.8));  // 80% for map, 20% for labels above/below
 
   const detailProj = $derived(
-    stateGeo && detailWidth > 0 && detailHeight > 0
-      ? geoMercator().fitSize(
-          [detailWidth - DETAIL_PADDING * 2, detailHeight - DETAIL_PADDING * 2],
-          stateGeo,
-        )
+    stateGeo && mapWidth > 0 && mapHeight > 0
+      ? geoMercator().fitSize([mapWidth, mapHeight], stateGeo)
       : null
   );
   const detailPathGen = $derived(detailProj ? geoPath().projection(detailProj) : null);
@@ -73,6 +79,95 @@
   const detailFill   = $derived(selectedVal > 0 ? colorResult.colorScale(selectedVal) : '#e8e0d8');
 
   const selectedSigla = $derived(selectedFeature?.properties?.sigla as string | undefined);
+  const selectedName  = $derived(selectedFeature?.properties?.name as string | undefined);
+
+  // ── Municipality-level coloring ─────────────────────────────────────────
+
+  const stateMuniData = $derived(selectedName ? (municipalities[selectedName] ?? {}) : {});
+  const hasMuniData   = $derived(Object.keys(stateMuniData).length > 0);
+
+  // ── City markers for the selected state ─────────────────────────────────
+
+  const stateCities = $derived(
+    selectedSigla
+      ? cities.filter((c) => c.uf === selectedSigla)
+      : [],
+  );
+
+  interface CityLayout {
+    city: typeof cities[0];
+    cx: number; cy: number;
+    labelX: number; labelY: number;
+    elbowX: number;
+    anchor: string;
+    isCapital: boolean;
+  }
+
+  const LINE_HEIGHT = 11;
+
+  const cityLayouts = $derived.by((): CityLayout[] => {
+    if (!detailProj || stateCities.length === 0 || mapWidth <= 0) return [];
+
+    // Project all cities and split into left/right groups
+    const projected = stateCities.map((city) => {
+      const [cx, cy] = detailProj([city.lng, city.lat]) ?? [0, 0];
+      const onRight = cx > mapWidth / 2;
+      return { city, cx, cy, onRight, isCapital: city.tier === 'Capitais' };
+    });
+
+    const leftGroup = projected.filter((p) => !p.onRight).sort((a, b) => a.cy - b.cy);
+    const rightGroup = projected.filter((p) => p.onRight).sort((a, b) => a.cy - b.cy);
+
+    // Distribute labels vertically within each group, avoiding overlaps
+    function distribute(group: typeof projected): CityLayout[] {
+      if (group.length === 0) return [];
+      const onRight = group[0].onRight;
+
+      // Start with desired Y = marker Y, then push apart
+      const slots = group.map((p) => ({ ...p, labelY: p.cy }));
+
+      // Push overlapping labels apart (greedy top-down)
+      for (let i = 1; i < slots.length; i++) {
+        const minY = slots[i - 1].labelY + LINE_HEIGHT;
+        if (slots[i].labelY < minY) {
+          slots[i].labelY = minY;
+        }
+      }
+
+      // If labels overflow below the available height, shift everything up
+      const maxLabelY = detailHeight - mapTop - 4;
+      const minLabelY = -mapTop + 6;
+      if (slots.length > 0) {
+        const overflow = slots[slots.length - 1].labelY - maxLabelY;
+        if (overflow > 0) {
+          for (const s of slots) s.labelY -= overflow;
+        }
+        // Clamp top
+        if (slots[0].labelY < minLabelY) {
+          const shift = minLabelY - slots[0].labelY;
+          for (const s of slots) s.labelY += shift;
+          // Re-distribute downward
+          for (let i = 1; i < slots.length; i++) {
+            const minY = slots[i - 1].labelY + LINE_HEIGHT;
+            if (slots[i].labelY < minY) slots[i].labelY = minY;
+          }
+        }
+      }
+
+      return slots.map((s) => ({
+        city: s.city,
+        cx: s.cx,
+        cy: s.cy,
+        labelY: s.labelY,
+        labelX: onRight ? mapWidth + 10 : -10,
+        elbowX: onRight ? mapWidth + 2 : -2,
+        anchor: onRight ? 'start' : 'end',
+        isCapital: s.isCapital,
+      }));
+    }
+
+    return [...distribute(leftGroup), ...distribute(rightGroup)];
+  });
 
   // ── Interaction ───────────────────────────────────────────────────────────
 
@@ -115,9 +210,9 @@
                 fill={flat[feature.properties.name] > 0
                   ? colorResult.colorScale(flat[feature.properties.name])
                   : '#e8e0d8'}
-                stroke={feature.properties.sigla === selectedSigla ? colorScales.purple[3] : '#c8c0b8'}
-                stroke-width={feature.properties.sigla === selectedSigla ? 2 : 0.5}
-                style="cursor: pointer"
+                stroke="#c8c0b8"
+                stroke-width={0.5}
+                style="cursor: pointer; outline: none;"
                 role="button"
                 tabindex="0"
                 aria-label={feature.properties.name}
@@ -125,6 +220,19 @@
                 onkeydown={(e) => e.key === 'Enter' && handleStateClick(feature)}
               />
             {/each}
+
+            <!-- Selected state highlight (rendered on top) -->
+            {#if selectedSigla}
+              {#each brazilGeo.features.filter((f) => f.properties.sigla === selectedSigla) as feature (feature.properties.sigla + '-sel')}
+                <path
+                  d={brazilPathGen(feature) ?? ''}
+                  fill="none"
+                  stroke={colorScales.purple[3]}
+                  stroke-width={1.2}
+                  pointer-events="none"
+                />
+              {/each}
+            {/if}
 
             <!-- State abbreviation labels -->
             {#each brazilGeo.features as feature (feature.properties.sigla + '-label')}
@@ -180,17 +288,55 @@
     </div>
 
     <div class="map-wrapper" bind:clientWidth={detailWidth}>
-      {#if stateGeo && detailPathGen && !loadingState && detailWidth > 0 && detailHeight > 0}
+      {#if stateGeo && detailPathGen && detailProj && !loadingState && detailWidth > 0 && detailHeight > 0}
         <svg width={detailWidth} height={detailHeight} viewBox="0 0 {detailWidth} {detailHeight}">
-          <g transform="translate({DETAIL_PADDING},{DETAIL_PADDING})">
+          <g transform="translate({mapLeft},{mapTop})">
+            <!-- Municipality polygons -->
             {#each stateGeo.features as feature (feature.properties?.codarea ?? feature.properties?.id ?? feature.properties?.name)}
+              {@const code = feature.properties?.codarea ?? ''}
+              {@const muniVal = stateMuniData[code]}
               <path
                 d={detailPathGen(feature) ?? ''}
-                fill={detailFill}
+                fill={hasMuniData && muniVal != null
+                  ? colorResult.colorScale(muniVal)
+                  : detailFill}
                 stroke="#ffffdeff"
                 stroke-opacity="0.3"
                 stroke-width={0.5}
               />
+            {/each}
+
+            <!-- City markers + elbow leader lines -->
+            {#each cityLayouts as cl (cl.city.name)}
+              {@const sq = cl.isCapital ? 5 : 3.5}
+
+              <!-- Leader line: marker → horizontal to edge → vertical to label Y → label -->
+              <polyline
+                points="{cl.cx},{cl.cy} {cl.elbowX},{cl.cy} {cl.elbowX},{cl.labelY} {cl.labelX},{cl.labelY}"
+                fill="none"
+                stroke="#8a6d84"
+                stroke-width={0.7}
+              />
+
+              <!-- Square marker -->
+              <rect
+                x={cl.cx - sq} y={cl.cy - sq}
+                width={sq * 2} height={sq * 2}
+                fill="#fffffe"
+                stroke={colorScales.purple[3]}
+                stroke-width={1.2}
+              />
+
+              <!-- Label -->
+              <text
+                x={cl.labelX} y={cl.labelY}
+                text-anchor={cl.anchor}
+                dominant-baseline="middle"
+                font-size={cl.isCapital ? 7.5 : 6.5}
+                font-weight={cl.isCapital ? '700' : '400'}
+                fill="#2f0f29"
+                pointer-events="none"
+              >{cl.city.name}</text>
             {/each}
           </g>
         </svg>
@@ -211,6 +357,7 @@
     display: flex;
     gap: 16px;
     width: 100%;
+    font-family: 'Space Grotesk', system-ui, sans-serif;
   }
 
   .panel {
@@ -256,8 +403,8 @@
   .map-wrapper {
     position: relative;
     flex: 1;
-    aspect-ratio: 10 / 11;
-    min-height: 160px;
+    aspect-ratio: 10 / 13;
+    min-height: 200px;
   }
 
   .map-el {
@@ -287,6 +434,12 @@
   :global(.map-wrapper svg) {
     display: block;
     width: 100%;
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+  }
+
+  :global(.map-el svg path[role='button']:focus),
+  :global(.map-el svg path[role='button']:focus-visible) {
+    outline: none;
   }
 
   .overlay {

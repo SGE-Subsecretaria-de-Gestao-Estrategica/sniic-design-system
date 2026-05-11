@@ -30,6 +30,24 @@ export interface TierData {
   [uf: string]: Record<string, any>;
 }
 
+export interface CityMarker {
+  name: string;
+  uf: string;
+  lat: number;
+  lng: number;
+  tier?: string;
+}
+
+/** Per-state municipality metric values: { stateName: { codarea: value } } */
+export type MunicipalityData = Record<string, Record<string, number>>;
+
+/** Resultado de {@link buildSharedColorScale} — domínio comum a todos os painéis. */
+export interface SharedColorScaleResult {
+  colorScale: d3.ScaleSequential<string>;
+  sharedMin: number;
+  sharedMax: number;
+}
+
 /**
  * Computes the shared color scale domain across all tiers.
  * Using a shared scale makes panels visually comparable.
@@ -37,7 +55,7 @@ export interface TierData {
 export function buildSharedColorScale(
   tiers: Record<string, TierData>,
   metric: string,
-): { colorScale: d3.ScaleSequential<string>; sharedMin: number; sharedMax: number } {
+): SharedColorScaleResult {
   const allValues = TIER_ORDER.flatMap((tier) =>
     Object.values(tiers[tier] ?? {}).map((d) => (d[metric] as number) ?? 0),
   ).filter((v) => v > 0);
