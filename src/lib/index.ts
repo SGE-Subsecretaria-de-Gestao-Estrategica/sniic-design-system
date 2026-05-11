@@ -9,6 +9,7 @@ export { default as GradientLegend } from './components/atoms/GradientLegend.sve
 // Molecules — composed SVG/HTML shells
 export { default as ChartFrame } from './components/molecules/ChartFrame.svelte';
 export { default as Tooltip } from './components/molecules/Tooltip.svelte';
+export { default as AnnotationBox } from './components/molecules/AnnotationBox.svelte';
 
 // Organisms — full chart components
 export { default as BarChart } from './components/BarChart.svelte';
@@ -19,6 +20,13 @@ export { default as ChoroplethMap } from './components/ChoroplethMap.svelte';
 export { default as GenderDivergingBar } from './components/GenderDivergingBar.svelte';
 export { default as StackedBarChart } from './components/StackedBarChart.svelte';
 export { default as TierSmallMultiples } from './components/TierSmallMultiples.svelte';
+export { default as SlopeGraph } from './components/SlopeGraph.svelte';
+export { default as RadialChart } from './components/RadialChart.svelte';
+export { default as PyramidChart } from './components/PyramidChart.svelte';
+export type { PyramidTier } from './components/PyramidChart.svelte';
+export { default as BigNumber } from './components/BigNumber.svelte';
+export { default as HeatMap } from './components/HeatMap.svelte';
+export type { HeatMapCell } from './components/HeatMap.svelte';
 
 // Tokens
 export * from './tokens.js';
