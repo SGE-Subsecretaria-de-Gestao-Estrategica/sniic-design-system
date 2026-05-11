@@ -15,6 +15,7 @@ export const lime     = '#81a72f';
 export const red      = '#cb4034';
 export const lavender = '#c9b6c5';
 export const white    = '#fffffe';
+export const cream    = '#ffffdeff';
 export const black    = '#000000';
 
 // Backward-compat aliases used by existing chart imports
