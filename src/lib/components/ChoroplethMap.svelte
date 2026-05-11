@@ -6,6 +6,7 @@
     max, interpolateRgbBasis,
   } from 'd3';
   import { black, white, red, amber, green, colorScales } from '../tokens.js';
+  import { getContrastColor } from '../utils/colorContrast.js';
   import { loadBrazilGeoJSON } from '../utils/geoLoader.js';
   import { BRLFull } from '../utils/formatters.js';
   import type { ChoroplethCapital } from '../charts/choroplethMap.js';
@@ -150,12 +151,13 @@
         />
         {#if isStatic && val > 0}
           {@const [cx, cy] = pathGen.centroid(feature)}
+          {@const stateFill = colorScale(val)}
           <text
             x={cx} y={cy}
             text-anchor="middle"
             font-size={9}
             font-family="'Space Grotesk', system-ui, sans-serif"
-            fill={white}
+            fill={getContrastColor(stateFill)}
             pointer-events="none"
           >
             <tspan x={cx} dy="-0.4em" font-weight={700}>{feature.properties.sigla ?? name}</tspan>
@@ -183,7 +185,8 @@
             <circle r={r + 3} fill="none" stroke={execColor(cap.execucaoFinanceira)} stroke-width={1.5} opacity={0.5} />
             <circle {r} fill={execColor(cap.execucaoFinanceira)} opacity={0.85} />
             {#if r >= 10}
-              <text text-anchor="middle" dy="0.35em" font-size={8} font-weight={700} fill={black} pointer-events="none">
+              {@const bubbleFill = execColor(cap.execucaoFinanceira)}
+              <text text-anchor="middle" dy="0.35em" font-size={8} font-weight={700} fill={getContrastColor(bubbleFill)} pointer-events="none">
                 {cap.uf.substring(0, 2).toUpperCase()}
               </text>
             {/if}

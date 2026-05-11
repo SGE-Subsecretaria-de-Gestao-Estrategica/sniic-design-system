@@ -1,6 +1,7 @@
 <script lang="ts">
   import { scaleBand, scaleLinear, extent } from 'd3';
   import { black, colorScales, defaultMargin, typography, type Margin } from '../tokens.js';
+  import { getContrastColor } from '../utils/colorContrast.js';
   import XAxis from './atoms/XAxis.svelte';
   import YAxis from './atoms/YAxis.svelte';
   import GradientLegend from './atoms/GradientLegend.svelte';
@@ -84,16 +85,6 @@
     showValues && yScale.bandwidth() >= minCellForLabel && xScale.bandwidth() >= minCellForLabel
   );
 
-  // Contrast helper: white text on dark cells, black on light
-  function textColor(cellColor: string): string {
-    const hex = cellColor.replace('#', '');
-    const r = parseInt(hex.slice(0, 2), 16);
-    const g = parseInt(hex.slice(2, 4), 16);
-    const b = parseInt(hex.slice(4, 6), 16);
-    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-    return luminance > 0.55 ? black : '#ffffff';
-  }
-
   const totalHeight = $derived(height + (showLegend ? legendHeight + 12 : 0));
 
   function observeWidth(node: HTMLDivElement) {
@@ -149,7 +140,7 @@
               text-anchor="middle"
               dominant-baseline="middle"
               font-size={typography.sizes.xs}
-              fill={textColor(fill)}
+              fill={getContrastColor(fill)}
             >{format(cell.value)}</text>
           {/if}
         {/each}

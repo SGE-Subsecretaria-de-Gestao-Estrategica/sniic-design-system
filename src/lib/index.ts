@@ -32,6 +32,7 @@ export type { HeatMapCell } from './components/HeatMap.svelte';
 export * from './tokens.js';
 
 // Shared utilities
+export * from './utils/colorContrast.js';
 export * from './utils/formatters.js';
 export * from './utils/tooltip.js';
 export * from './utils/geoLoader.js';

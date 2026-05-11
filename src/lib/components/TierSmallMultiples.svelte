@@ -4,6 +4,7 @@
   import { loadBrazilGeoJSON, loadStateGeoJSON } from '../utils/geoLoader.js';
   import { buildSharedColorScale, flattenTierData, SCALE_STOPS } from '../charts/tierSmallMultiples.js';
   import type { TierData } from '../charts/tierSmallMultiples.js';
+  import { getContrastColor } from '../utils/colorContrast.js';
 
   interface Props {
     tiers?: Record<string, TierData>;
@@ -136,13 +137,16 @@
           <!-- State abbreviation labels -->
           {#each brazilGeo.features as feature (feature.properties.sigla + '-label')}
             {@const [cx, cy] = brazilPathGen.centroid(feature)}
+            {@const stateFill = flat[feature.properties.name] > 0
+              ? colorResult.colorScale(flat[feature.properties.name])
+              : '#1a1a1a'}
             <text
               x={cx} y={cy}
               text-anchor="middle"
               dominant-baseline="middle"
               font-size={brazilLabelSize}
               font-weight="600"
-              fill="#ffffff"
+              fill={getContrastColor(stateFill)}
               pointer-events="none"
             >{feature.properties.sigla}</text>
           {/each}

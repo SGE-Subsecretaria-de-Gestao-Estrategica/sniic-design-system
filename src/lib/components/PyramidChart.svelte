@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { colorScales, black, typography, type Margin } from '../tokens.js';
+  import { colorScales, black, white, typography, type Margin } from '../tokens.js';
+  import { getContrastColor } from '../utils/colorContrast.js';
 
   export interface PyramidTier {
     label: string;
@@ -19,13 +20,6 @@
 
   // Yellow scale dark→light (top→bottom); lighter tiers get dark text
   const defaultColors = [colorScales.yellow[4], colorScales.yellow[3], colorScales.yellow[2]];
-
-  function isLight(hex: string): boolean {
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
-    return (r * 299 + g * 587 + b * 114) / 1000 > 140;
-  }
 
   let {
     tiers = [],
@@ -65,7 +59,7 @@
       const y2 = y1 + tierH;
       const midY = (y1 + y2) / 2;
       const color = tier.color ?? defaultColors[i % defaultColors.length];
-      const light = isLight(color);
+      const isLight = getContrastColor(color) === black;
       return {
         label: tier.label,
         value: valueFormat(tier.value),
@@ -73,8 +67,8 @@
         points: `${cx - hw1},${y1} ${cx + hw1},${y1} ${cx + hw2},${y2} ${cx - hw2},${y2}`,
         midY,
         rightX: cx + hw2,
-        textFill: light ? '#3d1a00' : 'white',
-        labelFill: light ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.82)',
+        textFill: isLight ? '#3d1a00' : white,
+        labelFill: isLight ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.82)',
       };
     })
   );

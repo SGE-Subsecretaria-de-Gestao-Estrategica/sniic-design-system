@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { scaleLinear, scaleBand, stack, max } from 'd3';
   import { black, colorScales, typography, white } from '../tokens.js';
+  import { getContrastColor } from '../utils/colorContrast.js';
   import type { StackedBarRow } from '../charts/stackedBarChart.js';
   import { BRL } from '../utils/formatters.js';
   import XAxis from './atoms/XAxis.svelte';
@@ -61,11 +62,6 @@
 
   function segmentValue(key: string, row: StackedBarRow): number {
     return key === 'audiovisual' ? row.audiovisual : row.demais;
-  }
-
-  /** Contraste: escuro no segmento mais claro, branco no mais escuro. */
-  function segmentLabelFill(key: string): string {
-    return key === 'demais' ? white : black;
   }
 
   const UF_MAP: Record<string, string> = {
@@ -210,7 +206,7 @@
                 x={segX + SEGMENT_LABEL_PAD}
                 y={segY + band / 2}
                 dy="0.35em"
-                fill={segmentLabelFill(layer.key)}
+                fill={getContrastColor(COLORS[stackKey])}
                 font-size={labelFs}
                 font-weight={LABEL_FONT_WEIGHT}
                 font-family={chartFont}
@@ -335,7 +331,7 @@
           font-size={typography.sizes.sm}
           font-weight="600"
           font-family={chartFont}
-          fill={segmentLabelFill('audiovisual')}
+          fill={getContrastColor(COLORS.audiovisual)}
         >{legendItems[0].label}</text>
         <text
           x={legendHalfW + LEGEND_TEXT_PAD}
@@ -344,7 +340,7 @@
           font-size={typography.sizes.sm}
           font-weight="600"
           font-family={chartFont}
-          fill={segmentLabelFill('demais')}
+          fill={getContrastColor(COLORS.demais)}
         >{legendItems[1].label}</text>
       </g>
     </svg>

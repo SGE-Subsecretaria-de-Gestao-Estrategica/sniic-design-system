@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { scaleLog, scaleSqrt, extent, max } from 'd3';
   import { green, amber, orange, blue, red, black } from '../tokens.js';
+  import { getContrastColor } from '../utils/colorContrast.js';
   import type { BubbleScatterRow } from '../charts/bubbleScatter.js';
   import { BRL, NUM } from '../utils/formatters.js';
   import XAxis from './atoms/XAxis.svelte';
@@ -171,7 +172,7 @@
                 dy="0.35em"
                 font-size={9}
                 font-weight={700}
-                fill={black}
+                fill={getContrastColor(color)}
                 pointer-events="none"
               >{d.uf.substring(0, 2).toUpperCase()}</text>
             {/if}
