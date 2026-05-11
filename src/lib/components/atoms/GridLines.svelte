@@ -9,6 +9,7 @@
     color?: string;
     dashed?: boolean;
     strokeWidth?: number;
+    opacity?: number;
   }
 
   let {
@@ -18,12 +19,13 @@
     color = '#e2e8f0',
     dashed = false,
     strokeWidth = 1,
+    opacity = 1,
   }: Props = $props();
 
   const dashArray = $derived(dashed ? '3,3' : undefined);
 </script>
 
-<g>
+<g {opacity}>
   {#each positions as pos}
     {#if type === 'horizontal'}
       <line

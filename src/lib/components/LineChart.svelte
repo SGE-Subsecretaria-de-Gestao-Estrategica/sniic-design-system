@@ -1,10 +1,11 @@
 <script lang="ts">
-  import { scaleLinear, scalePoint, line, curveMonotoneX, curveLinear, extent } from 'd3';
+  import { scaleLinear, scalePoint, line, curveMonotoneX, curveLinear, extent, type ScalePoint, type ScaleLinear } from 'd3';
   import { blue, orange, teal, yellow, purple, lime, red, lavender, defaultMargin, type Margin } from '../tokens.js';
   import XAxis from './atoms/XAxis.svelte';
   import YAxis from './atoms/YAxis.svelte';
   import GridLines from './atoms/GridLines.svelte';
   import Legend from './atoms/Legend.svelte';
+  import type { Snippet } from 'svelte';
 
   interface DataPoint {
     label: string;
@@ -17,6 +18,11 @@
     data: DataPoint[];
   }
 
+  interface AnnotationContext {
+    xScale: ScalePoint<string>;
+    yScale: ScaleLinear<number, number>;
+  }
+
   interface Props {
     series?: Series[];
     width?: number;
@@ -26,6 +32,9 @@
     yLabel?: string;
     showDots?: boolean;
     smooth?: boolean;
+    /** Snippet rendered inside the chart's inner <g>, after the lines.
+     *  Receives { xScale, yScale } so annotations can be placed in data space. */
+    annotations?: Snippet<[AnnotationContext]>;
   }
 
   let {
@@ -37,6 +46,7 @@
     yLabel = '',
     showDots = true,
     smooth = true,
+    annotations,
   }: Props = $props();
 
   const defaultColors = [blue, orange, teal, yellow, purple, lime, red, lavender];
@@ -89,7 +99,7 @@
   <g transform="translate({margin.left},{margin.top})">
     <GridLines positions={gridPositions} length={innerWidth} />
 
-    {#each series as s, i}
+    {#each series as s, i (s.name)}
       {@const seriesColor = s.color ?? defaultColors[i % defaultColors.length]}
       <path
         d={lineGen(s.data) ?? ''}
@@ -100,7 +110,7 @@
         stroke-linecap="round"
       />
       {#if showDots}
-        {#each s.data as d}
+        {#each s.data as d (d.label)}
           <circle
             cx={xScale(d.label) ?? 0}
             cy={yScale(d.value)}
@@ -114,6 +124,8 @@
         {/each}
       {/if}
     {/each}
+
+    {@render annotations?.({ xScale, yScale })}
 
     <XAxis ticks={xTicks} {innerHeight} {innerWidth} label={xLabel} />
     <YAxis ticks={yTicks} {innerHeight} label={yLabel} />

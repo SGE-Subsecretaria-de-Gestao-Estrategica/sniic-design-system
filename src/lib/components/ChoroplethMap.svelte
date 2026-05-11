@@ -172,21 +172,21 @@
 
         <!-- Bubble size + exec colour legend (bottom-right) -->
         <g transform="translate({width - 120},{height - 100})">
-          <text x={0} y={-8} font-size={9} fill="#a0a0a0">Tamanho = valor recebido</text>
+          <text x={0} y={-8} font-size={10} font-family="'Space Grotesk', system-ui, sans-serif" fill="#000000">Tamanho = valor recebido</text>
           {#each [0.25, 1] as frac, i}
             {@const bval = maxBubbleVal * frac}
             {@const br   = bubbleR(bval)}
             {@const cx   = 20 + i * 56}
             <circle {cx} cy={0} r={br} fill="none" stroke="#555555" stroke-width={1} />
-            <text x={cx} y={br + 12} text-anchor="middle" font-size={8} fill="#555555">
+            <text x={cx} y={br + 12} text-anchor="middle" font-size={10} font-family="'Space Grotesk', system-ui, sans-serif" fill="#000000">
               {BRLFull.format(bval)}
             </text>
           {/each}
-          <text x={0} y={52} font-size={9} fill="#a0a0a0">Cor = execução (%)</text>
+          <text x={0} y={52} font-size={10} font-family="'Space Grotesk', system-ui, sans-serif" fill="#000000">Cor = execução (%)</text>
           {#each [['< 90%', '#d2301d'], ['~95%', '#ecb42d'], ['≥ 100%', '#4f8c4e']] as [lbl, clr], i}
             <g transform="translate(0,{60 + i * 16})">
               <circle r={4} cx={4} fill={clr} opacity={0.85} />
-              <text x={12} y={4} font-size={9} fill="#a0a0a0">{lbl}</text>
+              <text x={12} y={4} font-size={10} font-family="'Space Grotesk', system-ui, sans-serif" fill="#000000">{lbl}</text>
             </g>
           {/each}
         </g>

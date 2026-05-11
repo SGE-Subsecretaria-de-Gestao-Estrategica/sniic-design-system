@@ -9,9 +9,10 @@
 
   interface Props {
     data?: StackedBarRow[];
+    flag?: boolean;
   }
 
-  let { data = [] }: Props = $props();
+  let { data = [], flag = true }: Props = $props();
 
   const chartFont = typography.chartValueFontFamily;
 
@@ -88,6 +89,7 @@
 
   let containerEl: HTMLDivElement | undefined = $state();
   let width = $state(0);
+  let flagDataURIs = $state<Record<string, string>>({});
 
   const sorted = $derived(
     [...data]
@@ -130,6 +132,29 @@
     width = containerEl!.clientWidth;
     const ro = new ResizeObserver(([e]) => { width = e.contentRect.width; });
     ro.observe(containerEl!);
+
+    if (flag) {
+      const ufs = [...new Set(sorted.map(d => UF_MAP[d.uf]).filter(Boolean))];
+      Promise.all(
+        ufs.map(async (uf) => {
+          try {
+            const res = await fetch(`/flags/states/${uf}.svg`);
+            const blob = await res.blob();
+            return new Promise<[string, string]>((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve([uf, reader.result as string]);
+              reader.onerror = reject;
+              reader.readAsDataURL(blob);
+            });
+          } catch {
+            return [uf, ''] as [string, string];
+          }
+        })
+      ).then(entries => {
+        flagDataURIs = Object.fromEntries(entries.filter(([, v]) => v));
+      });
+    }
+
     return () => ro.disconnect();
   });
 </script>
@@ -154,6 +179,7 @@
           positions={xGridPositions}
           length={innerH}
           color={black}
+          opacity={0.15}
           dashed
         />
 
@@ -203,7 +229,7 @@
             font-size={10}
             font-weight="500"
             font-family={chartFont}
-            fill="#a0a0a0"
+            fill={black}
           >{BRL.format(d.audiovisual + d.demais)}</text>
         {/each}
 
@@ -211,15 +237,37 @@
         {#each sorted as d (d.uf)}
           {@const uf = UF_MAP[d.uf]}
           {@const barCenter = (yScale(d.uf) ?? 0) + yScale.bandwidth() / 2}
-          {#if uf}
-            <image
-              href="/flags/states/{uf}.svg"
-              x={-(FLAG_W + 4)}
-              y={barCenter - FLAG_H / 2}
-              width={FLAG_W}
-              height={FLAG_H}
-              preserveAspectRatio="xMidYMid meet"
-            />
+          {#if uf && flag}
+            {#if flagDataURIs[uf]}
+              <image
+                href={flagDataURIs[uf]}
+                x={-(FLAG_W + 4)}
+                y={barCenter - FLAG_H / 2}
+                width={FLAG_W}
+                height={FLAG_H}
+                preserveAspectRatio="xMidYMid meet"
+              />
+            {/if}
+            <text
+              x={-(FLAG_W / 2 + 4)}
+              y={barCenter + FLAG_H / 2 + 10}
+              text-anchor="middle"
+              font-size={9}
+              font-weight="600"
+              font-family={chartFont}
+              fill={black}
+            >{uf}</text>
+          {:else if uf}
+            <text
+              x={-8}
+              y={barCenter}
+              text-anchor="end"
+              dominant-baseline="middle"
+              font-size={11}
+              font-weight="600"
+              font-family={chartFont}
+              fill={black}
+            >{uf}</text>
           {:else}
             <text
               x={-8}

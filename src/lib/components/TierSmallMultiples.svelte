@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { geoMercator, geoPath } from 'd3';
   import { loadBrazilGeoJSON, loadStateGeoJSON } from '../utils/geoLoader.js';
-  import { buildSharedColorScale, flattenTierData } from '../charts/tierSmallMultiples.js';
+  import { buildSharedColorScale, flattenTierData, SCALE_STOPS } from '../charts/tierSmallMultiples.js';
   import type { TierData } from '../charts/tierSmallMultiples.js';
 
   interface Props {
@@ -17,19 +17,17 @@
     format = (v: number) => `${v.toFixed(1)}%`,
   }: Props = $props();
 
-  // ── DOM refs & dimensions ─────────────────────────────────────────────────
+  // ── DOM dimensions (bind:clientWidth handles ResizeObserver internally) ───
 
-  let brazilContainerEl: HTMLDivElement | undefined = $state();
-  let detailContainerEl: HTMLDivElement | undefined = $state();
   let brazilWidth = $state(0);
   let detailWidth = $state(0);
 
   // ── Async data ────────────────────────────────────────────────────────────
 
-  let brazilGeo: any     = $state(null);
+  let brazilGeo: any       = $state(null);
   let selectedFeature: any = $state(null);
-  let stateGeo: any      = $state(null);
-  let loadingState         = $state(false);
+  let stateGeo: any        = $state(null);
+  let loadingState           = $state(false);
 
   // ── Data computations (reactive to tiers / metric) ────────────────────────
 
@@ -49,6 +47,13 @@
 
   const brazilLabelSize = $derived(Math.max(6, brazilWidth * 0.013));
 
+  // ── Legend ────────────────────────────────────────────────────────────────
+
+  const legendW = $derived(Math.min(130, brazilWidth * 0.5));
+  const legendX = $derived(brazilWidth / 2 - legendW / 2);
+  const legendY = $derived(brazilHeight - 26);
+  const legendGradId = 'tsm-legend-grad';
+
   // ── State detail map ──────────────────────────────────────────────────────
 
   const DETAIL_PADDING = 12;
@@ -65,7 +70,7 @@
   const detailPathGen = $derived(detailProj ? geoPath().projection(detailProj) : null);
 
   const selectedVal  = $derived(selectedFeature ? (flat[selectedFeature.properties.name] ?? 0) : 0);
-  const detailFill   = $derived(selectedVal > 0 ? colorResult.colorScale(selectedVal) : '#1e3882');
+  const detailFill   = $derived(selectedVal > 0 ? colorResult.colorScale(selectedVal) : '#4271b5');
 
   const selectedSigla = $derived(selectedFeature?.properties?.sigla as string | undefined);
 
@@ -87,25 +92,6 @@
 
   onMount(() => {
     loadBrazilGeoJSON().then((geo) => { brazilGeo = geo; });
-
-    const observers: ResizeObserver[] = [];
-
-    if (brazilContainerEl) {
-      brazilWidth = brazilContainerEl.clientWidth;
-      const ro = new ResizeObserver(([e]) => { brazilWidth = e.contentRect.width; });
-      ro.observe(brazilContainerEl);
-      observers.push(ro);
-    }
-    if (detailContainerEl) {
-      detailWidth = detailContainerEl.clientWidth;
-      const ro = new ResizeObserver(([e]) => {
-        detailWidth = e.contentRect.width;
-      });
-      ro.observe(detailContainerEl);
-      observers.push(ro);
-    }
-
-    return () => observers.forEach(ro => ro.disconnect());
   });
 </script>
 
@@ -118,9 +104,17 @@
       <span class="panel-sub">Clique em um estado para explorar</span>
     </div>
 
-    <div bind:this={brazilContainerEl} class="map-el">
+    <div class="map-el" bind:clientWidth={brazilWidth}>
       {#if brazilGeo && brazilPathGen && brazilWidth > 0}
         <svg width={brazilWidth} height={brazilHeight} viewBox="0 0 {brazilWidth} {brazilHeight}">
+          <defs>
+            <linearGradient id={legendGradId} x1="0%" x2="100%">
+              {#each SCALE_STOPS as color, i (i)}
+                <stop offset="{(i / (SCALE_STOPS.length - 1)) * 100}%" stop-color={color} />
+              {/each}
+            </linearGradient>
+          </defs>
+
           <!-- State polygons -->
           {#each brazilGeo.features as feature (feature.properties.sigla)}
             <path
@@ -128,7 +122,7 @@
               fill={flat[feature.properties.name] > 0
                 ? colorResult.colorScale(flat[feature.properties.name])
                 : '#1a1a1a'}
-              stroke={feature.properties.sigla === selectedSigla ? '#ffffff' : '#333333'}
+              stroke={feature.properties.sigla === selectedSigla ? '#ffffff' : '#2a2a2a'}
               stroke-width={feature.properties.sigla === selectedSigla ? 2 : 0.5}
               style="cursor: pointer"
               role="button"
@@ -152,6 +146,13 @@
               pointer-events="none"
             >{feature.properties.sigla}</text>
           {/each}
+
+          <!-- Gradient legend -->
+          <g transform="translate({legendX},{legendY})">
+            <rect width={legendW} height={6} rx={2} fill="url(#{legendGradId})" />
+            <text x={0} y={18} font-size={9} fill="#888888" text-anchor="start">{format(0)}</text>
+            <text x={legendW} y={18} font-size={9} fill="#888888" text-anchor="end">{format(colorResult.sharedMax)}</text>
+          </g>
         </svg>
       {/if}
     </div>
@@ -172,16 +173,17 @@
       {/if}
     </div>
 
-    <div class="map-wrapper" bind:this={detailContainerEl}>
+    <div class="map-wrapper" bind:clientWidth={detailWidth}>
       {#if stateGeo && detailPathGen && !loadingState && detailWidth > 0 && detailHeight > 0}
         <svg width={detailWidth} height={detailHeight} viewBox="0 0 {detailWidth} {detailHeight}">
           <g transform="translate({DETAIL_PADDING},{DETAIL_PADDING})">
-            {#each stateGeo.features as feature (feature.properties?.id ?? feature.properties?.name ?? feature)}
+            {#each stateGeo.features as feature (feature.properties?.codarea ?? feature.properties?.id ?? feature.properties?.name)}
               <path
                 d={detailPathGen(feature) ?? ''}
                 fill={detailFill}
-                stroke="#000000"
-                stroke-width={0.35}
+                stroke="#ffffff"
+                stroke-opacity="0.15"
+                stroke-width={0.5}
               />
             {/each}
           </g>

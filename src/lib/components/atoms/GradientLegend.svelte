@@ -42,15 +42,15 @@
 <text
   x={0}
   y={height + 12}
-  font-size={typography.sizes.xs}
-  fill="#a0a0a0"
-  font-family={typography.fontFamily}
+  font-size={typography.sizes.sm}
+  fill="#000000"
+  font-family={typography.chartValueFontFamily}
 >{format(min)}</text>
 <text
   x={width}
   y={height + 12}
   text-anchor="end"
-  font-size={typography.sizes.xs}
-  fill="#a0a0a0"
-  font-family={typography.fontFamily}
+  font-size={typography.sizes.sm}
+  fill="#000000"
+  font-family={typography.chartValueFontFamily}
 >{format(max)}</text>
