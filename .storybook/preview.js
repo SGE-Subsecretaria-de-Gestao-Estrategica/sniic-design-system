@@ -1,20 +1,23 @@
+import SvgExportDecorator from '../src/lib/storybook/SvgExportDecorator.svelte';
+
 /** @type { import('@storybook/svelte-vite').Preview } */
 const preview = {
   parameters: {
     controls: {
       matchers: {
-       color: /(background|color)$/i,
-       date: /Date$/i,
+        color: /(background|color)$/i,
+        date: /Date$/i,
       },
     },
-
     a11y: {
-      // 'todo' - show a11y violations in the test UI only
-      // 'error' - fail CI on a11y violations
-      // 'off' - skip a11y checks entirely
-      test: "todo"
-    }
+      test: 'todo',
+    },
   },
+  decorators: [
+    // Wraps every story with an "Export SVG" button that serialises the
+    // first <svg> found in the rendered story and downloads it as a file.
+    () => ({ Component: SvgExportDecorator }),
+  ],
 };
 
 export default preview;

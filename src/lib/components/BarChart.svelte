@@ -1,6 +1,10 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { scaleBand, scaleLinear, max } from 'd3';
-  import { colors, defaultMargin, typography, type Margin } from '../tokens.js';
+  import { black, colors, defaultMargin, typography, type Margin } from '../tokens.js';
+  import XAxis from './atoms/XAxis.svelte';
+  import YAxis from './atoms/YAxis.svelte';
+  import GridLines from './atoms/GridLines.svelte';
 
   interface DataPoint {
     label: string;
@@ -9,7 +13,6 @@
 
   interface Props {
     data?: DataPoint[];
-    width?: number;
     height?: number;
     color?: string;
     margin?: Margin;
@@ -19,7 +22,6 @@
 
   let {
     data = [],
-    width = 600,
     height = 400,
     color = colors.primary[0],
     margin = defaultMargin,
@@ -27,8 +29,13 @@
     yLabel = '',
   }: Props = $props();
 
-  const innerWidth  = $derived(width - margin.left - margin.right);
-  const innerHeight = $derived(height - margin.top - margin.bottom);
+  const chartFont = typography.chartValueFontFamily;
+
+  let containerEl: HTMLDivElement | undefined = $state();
+  let width = $state(0);
+
+  const innerWidth  = $derived(width  - margin.left - margin.right);
+  const innerHeight = $derived(height - margin.top  - margin.bottom);
 
   const xScale = $derived(
     scaleBand()
@@ -44,85 +51,72 @@
       .range([innerHeight, 0])
   );
 
-  const yTicks = $derived(yScale.ticks(5));
+  const yTickValues = $derived(yScale.ticks(5));
+
+  const xTicks = $derived(
+    data.map(d => ({
+      value: d.label,
+      x: (xScale(d.label) ?? 0) + xScale.bandwidth() / 2,
+    }))
+  );
+
+  const yTicks = $derived(
+    yTickValues.map(v => ({ value: v, y: yScale(v) }))
+  );
+
+  const gridPositions = $derived(yTickValues.map(v => yScale(v)));
+
+  onMount(() => {
+    width = containerEl!.clientWidth;
+    const ro = new ResizeObserver(([e]) => { width = e.contentRect.width; });
+    ro.observe(containerEl!);
+    return () => ro.disconnect();
+  });
 </script>
 
-<svg {width} {height} role="img" aria-label="Bar chart">
-  <g transform="translate({margin.left},{margin.top})">
-    <!-- Grid lines -->
-    {#each yTicks as tick}
-      <line
-        x1={0} x2={innerWidth}
-        y1={yScale(tick)} y2={yScale(tick)}
-        stroke="#e2e8f0" stroke-width="1"
-      />
-    {/each}
+<!-- Space Grotesk (SIL OFL) — tipografia única deste gráfico; carrega com o componente. -->
+<svelte:head>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap"
+    rel="stylesheet"
+  />
+</svelte:head>
 
-    <!-- Bars -->
-    {#each data as d}
-      <rect
-        x={xScale(d.label)}
-        y={yScale(d.value)}
-        width={xScale.bandwidth()}
-        height={innerHeight - yScale(d.value)}
-        fill={color}
-        rx="3"
-        opacity="0.9"
-      >
-        <title>{d.label}: {d.value}</title>
-      </rect>
-    {/each}
+<div bind:this={containerEl} class="chart-container">
+  {#if width > 0}
+    <svg {width} {height} font-family={chartFont} style="overflow: visible;" role="img" aria-label="Bar chart">
+      <g transform="translate({margin.left},{margin.top})">
+        <GridLines positions={gridPositions} length={innerWidth} color={black} opacity={0.15} dashed />
 
-    <!-- X axis -->
-    <g transform="translate(0,{innerHeight})">
-      <line x1={0} x2={innerWidth} stroke="#94a3b8" />
-      {#each data as d}
-        <text
-          x={(xScale(d.label) ?? 0) + xScale.bandwidth() / 2}
-          y={20}
-          text-anchor="middle"
-          font-size={typography.sizes.sm}
-          fill="#64748b"
-          font-family={typography.fontFamily}
-        >{d.label}</text>
-      {/each}
-      {#if xLabel}
-        <text
-          x={innerWidth / 2}
-          y={36}
-          text-anchor="middle"
-          font-size={typography.sizes.sm}
-          fill="#334155"
-          font-family={typography.fontFamily}
-        >{xLabel}</text>
-      {/if}
-    </g>
+        {#each data as d (d.label)}
+          <rect
+            x={xScale(d.label)}
+            y={yScale(d.value)}
+            width={xScale.bandwidth()}
+            height={innerHeight - yScale(d.value)}
+            fill={color}
+            rx="3"
+            opacity="0.9"
+          >
+            <title>{d.label}: {d.value}</title>
+          </rect>
+        {/each}
 
-    <!-- Y axis -->
-    <g>
-      <line y1={0} y2={innerHeight} stroke="#94a3b8" />
-      {#each yTicks as tick}
-        <text
-          x={-8}
-          y={yScale(tick)}
-          text-anchor="end"
-          dominant-baseline="middle"
-          font-size={typography.sizes.sm}
-          fill="#64748b"
-          font-family={typography.fontFamily}
-        >{tick}</text>
-      {/each}
-      {#if yLabel}
-        <text
-          transform="rotate(-90)"
-          x={-innerHeight / 2}
-          y={-36}
-          text-anchor="middle"
-          font-size={typography.sizes.sm}
-          fill="#334155"
-          font-family={typography.fontFamily}
-        >{yLabel}</text>
-      {/if}
-    </g>
-  </g>
-</svg>
+        <XAxis ticks={xTicks} {innerHeight} {innerWidth} label={xLabel} fontFamily={chartFont} />
+        <YAxis ticks={yTicks} {innerHeight} label={yLabel} fontFamily={chartFont} />
+      </g>
+    </svg>
+  {/if}
+</div>
+
+<style>
+  .chart-container {
+    width: 100%;
+  }
+  svg {
+    display: block;
+    width: 100%;
+  }
+</style>

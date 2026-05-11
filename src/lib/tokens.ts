@@ -5,70 +5,60 @@ export interface Margin {
   left: number;
 }
 
-// Colors from the Brazilian Government Design System (Padrão Digital de Governo)
-// https://www.gov.br/ds/fundamentos-visuais/cores
+// Base colors — source of truth: src/lib/styles/tokens.css
+export const blue     = '#4271b5';
+export const orange   = '#ea662f';
+export const teal     = '#265c4f';
+export const yellow   = '#f6c341';
+export const purple   = '#a44c7f';
+export const lime     = '#81a72f';
+export const red      = '#cb4034';
+export const lavender = '#c9b6c5';
+export const white    = '#fffffe';
+export const cream    = '#ffffdeff';
+export const black    = '#000000';
+
+// Backward-compat aliases used by existing chart imports
+export const amber     = yellow;
+export const green     = lime;
+export const darkGreen = teal;
+
+// Gradient color scales — hue-varied for richer transitions (light → dark)
+export const colorScales = {
+  // Blue: 100 cools toward 212° → 900 deepens toward indigo (228°)
+  blue:     ['#d5e4f7', '#7ba6d9', '#4271b5', '#1e3882', '#0b1540'],
+  // Orange: 100 warms toward golden-yellow (35°) → 900 cools to brick-red (8°)
+  orange:   ['#fde9d4', '#f5a672', '#ea662f', '#943210', '#431609'],
+  // Teal: 100 opens toward mint (162°) → 900 deepens to forest teal (172°)
+  teal:     ['#cce8e3', '#5aab98', '#317a68', '#265c4f', '#102a24'],
+  // Yellow: 100 warms toward pale cream (52°) → 900 cools to warm brown (30°)
+  yellow:   ['#fef6cc', '#fadb7b', '#f6c341', '#c27c0c', '#5c3908'],
+  // Purple: 100 shifts toward lilac (312°) → 900 deepens to near-violet (303°)
+  purple:   ['#f0d8ec', '#cc8eb9', '#a44c7f', '#6b2455', '#2f0f29'],
+  // Lime: 100 opens toward yellow-green (85°) → 900 deepens to dark olive (68°)
+  lime:     ['#e7f5c4', '#aecf62', '#81a72f', '#4a6414', '#212e07'],
+  // Red: 100 shifts toward coral (12°) → 900 deepens to near-crimson (354°)
+  red:      ['#fbe8e5', '#e5847a', '#cb4034', '#7f1b14', '#380b0c'],
+  // Lavender: 100 lightens toward near-white (306°) → 900 deepens to dusty plum (315°)
+  lavender: ['#f4eff3', '#dccad8', '#c9b6c5', '#8a6d84', '#3d2a3a'],
+} as const;
+
+// Chart palette — primary (blue) and accent (orange), ordered vivid → dark → light
 export const colors = {
-  // Primary blue family (Blue Warm Vivid)
-  primary: [
-    '#071d41', // 90 - darkest
-    '#0c326f', // 70
-    '#1351b4', // 40 - main
-    '#2670e8', // 20
-    '#5992ed', // 10
-  ] as const,
-
-  // Extended color families
-  blue:    { 90: '#071d41', 70: '#0c326f', 40: '#1351b4', 20: '#2670e8', 10: '#5992ed' },
-  green:   { 90: '#1a4731', 70: '#146c43', 40: '#168821', 20: '#2da44e', 10: '#6cc24a' },
-  yellow:  { 90: '#7a4f00', 70: '#b38d00', 40: '#ffcd07', 20: '#ffe066', 10: '#fff3cd' },
-  red:     { 90: '#7a1200', 70: '#b20d02', 40: '#e52207', 20: '#f2614a', 10: '#f8b8ae' },
-  gold:    { 90: '#6b4c11', 70: '#936f38', 40: '#c2850c', 20: '#e5a000', 10: '#f5d680' },
-  cyan:    { 90: '#093b44', 70: '#0d6b7a', 40: '#009ec1', 20: '#52b9d1', 10: '#99dce8' },
-  indigo:  { 90: '#1b1e4d', 70: '#2e3391', 40: '#4a50c4', 20: '#7b82e0', 10: '#b4b8f0' },
-  magenta: { 90: '#4d0022', 70: '#8c0046', 40: '#d72d79', 20: '#e87aaa', 10: '#f5c2d8' },
-  orange:  { 90: '#5c1f00', 70: '#a33800', 40: '#e86f2c', 20: '#f0a57a', 10: '#f8d3b9' },
-  violet:  { 90: '#2e1a47', 70: '#54278f', 40: '#7b3fe4', 20: '#a87ff0', 10: '#d5baf8' },
-
-  // Neutral grays
-  neutral: [
-    '#1b1b1b', // darkest
-    '#2d2e2f',
-    '#565c65',
-    '#71767a',
-    '#a9aeb1',
-    '#dfe1e2',
-    '#f0f0f0',
-    '#fcfcfc', // lightest
-  ] as const,
-
-  // Semantic / feedback colors
-  success: '#168821', // Green Cool Vivid
-  warning: '#ffcd07', // Yellow Vivid
-  danger:  '#e52207', // Red Vivid
-  info:    '#155bcb', // Blue Warm Vivid
-
-  // Interactive states
-  interactive: '#1351b4',
-  visited:     '#0c326f',
-  focus:       '#c2850c', // Gold Vivid
+  primary: ['#4271b5', '#1e3882', '#0b1540', '#7ba6d9', '#d5e4f7'],
+  accent:  ['#ea662f', '#943210', '#431609', '#f5a672', '#fde9d4'],
 } as const;
 
 export const typography = {
   fontFamily: "'Inter', system-ui, sans-serif",
+  /**
+   * Valores em gráficos (rótulos em barras, etc.) — neo-grotesca geométrica no espírito de
+   * Clash Grotesk (Fontshare), com licença aberta: Space Grotesk (OFL, Google Fonts).
+   */
+  chartValueFontFamily: "'Space Grotesk', system-ui, sans-serif",
   sizes: { xs: 10, sm: 12, md: 14, lg: 16 } as const,
 } as const;
 
 export const spacing = { xs: 4, sm: 8, md: 16, lg: 24, xl: 32 } as const;
 
 export const defaultMargin: Margin = { top: 20, right: 20, bottom: 40, left: 48 };
-
-// Visualization palette (used by data-vis components)
-export const blue      = '#365da6';
-export const orange    = '#d86826';
-export const darkGreen = '#345c1a';
-export const red       = '#d2301d';
-export const amber     = '#ecb42d';
-export const green     = '#4f8c4e';
-export const white     = '#fffffe';
-export const black     = '#000000';
-export const yellow    = '#eac128';

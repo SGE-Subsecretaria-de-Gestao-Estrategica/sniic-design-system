@@ -1,7 +1,7 @@
 <script module>
   import { defineMeta } from '@storybook/addon-svelte-csf';
   import ChoroplethMap from '../lib/components/ChoroplethMap.svelte';
-  import { blue, amber, green } from '../lib/tokens.js';
+  import { colorScales } from '../lib/tokens.js';
 
   // Requires /geo/brazil-states.geojson to be served as a static asset
   const statesData = {
@@ -59,7 +59,7 @@
     metric: 'valorRecebido',
     label: 'Valor Recebido',
     format: (v) => BRL.format(v),
-    colorRange: ['#000000', blue],
+    colorRange: [...colorScales.blue],
     showCapitals: false,
   }}
 />
@@ -71,7 +71,7 @@
     metric: 'execucaoFinanceira',
     label: 'Execução Financeira',
     format: (v) => `${v.toFixed(1)}%`,
-    colorRange: ['#000000', green],
+    colorRange: [...colorScales.lime],
     showCapitals: false,
   }}
 />
@@ -83,7 +83,7 @@
     metric: 'valorPerCapita',
     label: 'Valor Per Capita',
     format: (v) => BRL.format(v),
-    colorRange: ['#000000', amber],
+    colorRange: [...colorScales.yellow],
     showCapitals: false,
   }}
 />

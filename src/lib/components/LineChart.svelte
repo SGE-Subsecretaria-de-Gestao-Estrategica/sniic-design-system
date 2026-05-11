@@ -1,6 +1,11 @@
 <script lang="ts">
-  import { scaleLinear, scalePoint, line, curveMonotoneX, curveLinear, extent } from 'd3';
-  import { colors, defaultMargin, typography, type Margin } from '../tokens.js';
+  import { scaleLinear, scalePoint, line, curveMonotoneX, curveLinear, extent, type ScalePoint, type ScaleLinear } from 'd3';
+  import { blue, orange, teal, yellow, purple, lime, red, lavender, defaultMargin, type Margin } from '../tokens.js';
+  import XAxis from './atoms/XAxis.svelte';
+  import YAxis from './atoms/YAxis.svelte';
+  import GridLines from './atoms/GridLines.svelte';
+  import Legend from './atoms/Legend.svelte';
+  import type { Snippet } from 'svelte';
 
   interface DataPoint {
     label: string;
@@ -13,6 +18,11 @@
     data: DataPoint[];
   }
 
+  interface AnnotationContext {
+    xScale: ScalePoint<string>;
+    yScale: ScaleLinear<number, number>;
+  }
+
   interface Props {
     series?: Series[];
     width?: number;
@@ -22,6 +32,9 @@
     yLabel?: string;
     showDots?: boolean;
     smooth?: boolean;
+    /** Snippet rendered inside the chart's inner <g>, after the lines.
+     *  Receives { xScale, yScale } so annotations can be placed in data space. */
+    annotations?: Snippet<[AnnotationContext]>;
   }
 
   let {
@@ -33,11 +46,14 @@
     yLabel = '',
     showDots = true,
     smooth = true,
+    annotations,
   }: Props = $props();
 
+  const defaultColors = [blue, orange, teal, yellow, purple, lime, red, lavender];
+
   const allData     = $derived(series.flatMap(s => s.data));
-  const innerWidth  = $derived(width - margin.left - margin.right);
-  const innerHeight = $derived(height - margin.top - margin.bottom);
+  const innerWidth  = $derived(width  - margin.left - margin.right);
+  const innerHeight = $derived(height - margin.top  - margin.bottom);
 
   const labels = $derived([...new Set(allData.map(d => d.label))]);
 
@@ -56,7 +72,11 @@
       .range([innerHeight, 0])
   );
 
-  const yTicks = $derived(yScale.ticks(5));
+  const yTickValues = $derived(yScale.ticks(5));
+
+  const xTicks = $derived(labels.map(l => ({ value: l, x: xScale(l) ?? 0 })));
+  const yTicks = $derived(yTickValues.map(v => ({ value: v, y: yScale(v) })));
+  const gridPositions = $derived(yTickValues.map(v => yScale(v)));
 
   const lineGen = $derived(
     line<DataPoint>()
@@ -65,22 +85,21 @@
       .curve(smooth ? curveMonotoneX : curveLinear)
   );
 
-  const defaultColors = colors.primary;
+  const legendItems = $derived(
+    series.length > 1
+      ? series.map((s, i) => ({
+          label: s.name,
+          color: s.color ?? defaultColors[i % defaultColors.length],
+        }))
+      : []
+  );
 </script>
 
 <svg {width} {height} role="img" aria-label="Line chart">
   <g transform="translate({margin.left},{margin.top})">
-    <!-- Grid lines -->
-    {#each yTicks as tick}
-      <line
-        x1={0} x2={innerWidth}
-        y1={yScale(tick)} y2={yScale(tick)}
-        stroke="#e2e8f0" stroke-width="1"
-      />
-    {/each}
+    <GridLines positions={gridPositions} length={innerWidth} />
 
-    <!-- Series lines & dots -->
-    {#each series as s, i}
+    {#each series as s, i (s.name)}
       {@const seriesColor = s.color ?? defaultColors[i % defaultColors.length]}
       <path
         d={lineGen(s.data) ?? ''}
@@ -91,7 +110,7 @@
         stroke-linecap="round"
       />
       {#if showDots}
-        {#each s.data as d}
+        {#each s.data as d (d.label)}
           <circle
             cx={xScale(d.label) ?? 0}
             cy={yScale(d.value)}
@@ -106,72 +125,15 @@
       {/if}
     {/each}
 
-    <!-- X axis -->
-    <g transform="translate(0,{innerHeight})">
-      <line x1={0} x2={innerWidth} stroke="#94a3b8" />
-      {#each labels as label}
-        <text
-          x={xScale(label) ?? 0}
-          y={20}
-          text-anchor="middle"
-          font-size={typography.sizes.sm}
-          fill="#64748b"
-          font-family={typography.fontFamily}
-        >{label}</text>
-      {/each}
-      {#if xLabel}
-        <text
-          x={innerWidth / 2}
-          y={36}
-          text-anchor="middle"
-          font-size={typography.sizes.sm}
-          fill="#334155"
-          font-family={typography.fontFamily}
-        >{xLabel}</text>
-      {/if}
-    </g>
+    {@render annotations?.({ xScale, yScale })}
 
-    <!-- Y axis -->
-    <g>
-      <line y1={0} y2={innerHeight} stroke="#94a3b8" />
-      {#each yTicks as tick}
-        <text
-          x={-8}
-          y={yScale(tick)}
-          text-anchor="end"
-          dominant-baseline="middle"
-          font-size={typography.sizes.sm}
-          fill="#64748b"
-          font-family={typography.fontFamily}
-        >{tick}</text>
-      {/each}
-      {#if yLabel}
-        <text
-          transform="rotate(-90)"
-          x={-innerHeight / 2}
-          y={-36}
-          text-anchor="middle"
-          font-size={typography.sizes.sm}
-          fill="#334155"
-          font-family={typography.fontFamily}
-        >{yLabel}</text>
-      {/if}
-    </g>
+    <XAxis ticks={xTicks} {innerHeight} {innerWidth} label={xLabel} />
+    <YAxis ticks={yTicks} {innerHeight} label={yLabel} />
 
-    <!-- Legend -->
-    {#if series.length > 1}
-      {#each series as s, i}
-        {@const seriesColor = s.color ?? defaultColors[i % defaultColors.length]}
-        <g transform="translate({i * 100}, {-margin.top + 4})">
-          <rect x={0} y={0} width={12} height={12} rx={2} fill={seriesColor} />
-          <text
-            x={16} y={10}
-            font-size={typography.sizes.sm}
-            fill="#334155"
-            font-family={typography.fontFamily}
-          >{s.name}</text>
-        </g>
-      {/each}
+    {#if legendItems.length > 0}
+      <g transform="translate(0, {-margin.top + 4})">
+        <Legend items={legendItems} spacing={100} />
+      </g>
     {/if}
   </g>
 </svg>
