@@ -56,6 +56,10 @@ export const typography = {
    * Clash Grotesk (Fontshare), com licença aberta: Space Grotesk (OFL, Google Fonts).
    */
   chartValueFontFamily: "'Space Grotesk', system-ui, sans-serif",
+  /** Rawline — tipografia oficial do Governo Federal (Raleway com algarismos alinhados). */
+  rawlineFontFamily: "'Rawline', 'Raleway', system-ui, sans-serif",
+  /** Raleway — geométrica elegante, base da Rawline. */
+  ralewayFontFamily: "'Raleway', system-ui, sans-serif",
   sizes: { xs: 10, sm: 12, md: 14, lg: 16 } as const,
 } as const;
 
