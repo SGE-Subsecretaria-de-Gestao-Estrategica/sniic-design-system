@@ -1,6 +1,6 @@
 <script lang="ts">
   import { scaleBand, scaleLinear, extent } from 'd3';
-  import { black, colorScales, defaultMargin, typography, type Margin } from '../tokens.js';
+  import { colorScales, defaultMargin, typography, type Margin } from '../tokens.js';
   import { getContrastColor } from '../utils/colorContrast.js';
   import XAxis from './atoms/XAxis.svelte';
   import YAxis from './atoms/YAxis.svelte';
