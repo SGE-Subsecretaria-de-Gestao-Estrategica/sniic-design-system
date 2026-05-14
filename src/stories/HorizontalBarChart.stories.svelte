@@ -1,15 +1,14 @@
 <script module>
   import { defineMeta } from '@storybook/addon-svelte-csf';
-  import VerticalBarChart from '../lib/components/VerticalBarChart.svelte';
+  import HorizontalBarChart from '../lib/components/HorizontalBarChart.svelte';
   import { colors } from '../lib/tokens.js';
 
   const { Story } = defineMeta({
-    title: 'Charts/VerticalBarChart',
-    component: VerticalBarChart,
+    title: 'Charts/HorizontalBarChart',
+    component: HorizontalBarChart,
     tags: ['autodocs'],
     argTypes: {
       color: { control: 'color' },
-      height: { control: { type: 'range', min: 200, max: 600, step: 50 } },
     },
   });
 </script>
@@ -25,37 +24,36 @@
       { label: 'May', value: 63 },
       { label: 'Jun', value: 110 },
     ],
-    height: 400,
     color: colors.primary[0],
-    xLabel: 'Month',
-    yLabel: 'Sales',
+    xLabel: 'Sales',
   }}
 />
 
 <Story
-  name="Accent Color"
+  name="With Format"
   args={{
     data: [
-      { label: 'Q1', value: 120 },
-      { label: 'Q2', value: 85 },
-      { label: 'Q3', value: 145 },
-      { label: 'Q4', value: 200 },
+      { label: 'Product A', value: 45000 },
+      { label: 'Product B', value: 32000 },
+      { label: 'Product C', value: 28000 },
+      { label: 'Product D', value: 19000 },
+      { label: 'Product E', value: 12000 },
     ],
     color: colors.accent[0],
-    xLabel: 'Quarter',
-    yLabel: 'Revenue ($k)',
+    format: (v) => `$${(v / 1000).toFixed(0)}k`,
+    xLabel: 'Revenue',
   }}
 />
 
 <Story
-  name="Small"
+  name="Few Items"
   args={{
     data: [
-      { label: 'A', value: 30 },
-      { label: 'B', value: 80 },
-      { label: 'C', value: 45 },
+      { label: 'Category A', value: 80 },
+      { label: 'Category B', value: 45 },
+      { label: 'Category C', value: 30 },
     ],
-    height: 240,
     color: colors.primary[1],
+    rowHeight: 48,
   }}
 />

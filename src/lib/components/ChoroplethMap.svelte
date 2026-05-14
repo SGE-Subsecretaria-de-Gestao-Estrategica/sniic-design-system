@@ -11,6 +11,7 @@
   import { BRLFull } from '../utils/formatters.js';
   import type { ChoroplethCapital } from '../charts/choroplethMap.js';
   import GradientLegend from './atoms/GradientLegend.svelte';
+  import BubbleWithLabel from './atoms/BubbleWithLabel.svelte';
   import Tooltip from './molecules/Tooltip.svelte';
 
   // Static — does not depend on any prop.
@@ -182,14 +183,17 @@
             onmousemove={isStatic ? undefined : (e) => { tooltip = { ...tooltip, ...relativePos(e, containerEl!) }; }}
             onmouseleave={isStatic ? undefined : () => { tooltip = { ...tooltip, visible: false }; }}
           >
-            <circle r={r + 3} fill="none" stroke={execColor(cap.execucaoFinanceira)} stroke-width={1.5} opacity={0.5} />
-            <circle {r} fill={execColor(cap.execucaoFinanceira)} opacity={0.85} />
-            {#if r >= 10}
-              {@const bubbleFill = execColor(cap.execucaoFinanceira)}
-              <text text-anchor="middle" dy="0.35em" font-size={8} font-weight={700} fill={getContrastColor(bubbleFill)} pointer-events="none">
-                {cap.uf.substring(0, 2).toUpperCase()}
-              </text>
-            {/if}
+            <BubbleWithLabel
+              {r}
+              fill={execColor(cap.execucaoFinanceira)}
+              opacity={0.85}
+              label={cap.uf.substring(0, 2).toUpperCase()}
+              labelFontSize={8}
+              ringGap={3}
+              ringStroke={execColor(cap.execucaoFinanceira)}
+              ringStrokeWidth={1.5}
+              ringOpacity={0.5}
+            />
           </g>
         {/each}
 
