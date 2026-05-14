@@ -1,52 +1,57 @@
 <script module>
   import { defineMeta } from '@storybook/addon-svelte-csf';
-  import AgeGroupChart from '../lib/components/AgeGroupChart.svelte';
+  import VerticalStackedBarChart from '../lib/components/VerticalStackedBarChart.svelte';
 
   const { Story } = defineMeta({
-    title: 'Charts/AgeGroupChart',
-    component: AgeGroupChart,
+    title: 'Charts/VerticalStackedBarChart',
+    component: VerticalStackedBarChart,
     tags: ['autodocs'],
   });
 </script>
 
 <Story
-  name="Default"
+  name="Age Groups (Normalized)"
   args={{
     data: [
-      { uf: 'SP', youth: 12000, adult: 28000, senior: 8000 },
-      { uf: 'RJ', youth: 7500,  adult: 18000, senior: 5500 },
-      { uf: 'MG', youth: 8200,  adult: 20000, senior: 6000 },
-      { uf: 'BA', youth: 6800,  adult: 14000, senior: 3500 },
-      { uf: 'RS', youth: 4200,  adult: 11000, senior: 4800 },
-      { uf: 'PR', youth: 5100,  adult: 13000, senior: 3200 },
-      { uf: 'PE', youth: 5600,  adult: 12000, senior: 2800 },
-      { uf: 'CE', youth: 5800,  adult: 11500, senior: 2500 },
+      { label: 'SP', youth: 12000, adult: 28000, senior: 8000 },
+      { label: 'RJ', youth: 7500,  adult: 18000, senior: 5500 },
+      { label: 'MG', youth: 8200,  adult: 20000, senior: 6000 },
+      { label: 'BA', youth: 6800,  adult: 14000, senior: 3500 },
+      { label: 'RS', youth: 4200,  adult: 11000, senior: 4800 },
+      { label: 'PR', youth: 5100,  adult: 13000, senior: 3200 },
+      { label: 'PE', youth: 5600,  adult: 12000, senior: 2800 },
+      { label: 'CE', youth: 5800,  adult: 11500, senior: 2500 },
     ],
+    keys: ['youth', 'adult', 'senior'],
+    labels: { youth: '15–29 anos', adult: '30–59 anos', senior: '60+ anos' },
+    normalize: true,
+    sortBy: 'youth',
   }}
 />
 
 <Story
-  name="Youth Dominant"
+  name="Absolute Values"
   args={{
     data: [
-      { uf: 'AM', youth: 9000, adult: 6000, senior: 1200 },
-      { uf: 'PA', youth: 8500, adult: 5800, senior: 1000 },
-      { uf: 'TO', youth: 3200, adult: 2400, senior: 500  },
-      { uf: 'RO', youth: 2800, adult: 2200, senior: 400  },
-      { uf: 'AC', youth: 2200, adult: 1800, senior: 300  },
-      { uf: 'RR', youth: 1800, adult: 1400, senior: 250  },
+      { label: 'SP', youth: 12000, adult: 28000, senior: 8000 },
+      { label: 'RJ', youth: 7500,  adult: 18000, senior: 5500 },
+      { label: 'MG', youth: 8200,  adult: 20000, senior: 6000 },
+      { label: 'BA', youth: 6800,  adult: 14000, senior: 3500 },
     ],
+    keys: ['youth', 'adult', 'senior'],
+    labels: { youth: 'Youth', adult: 'Adult', senior: 'Senior' },
+    normalize: false,
   }}
 />
 
 <Story
-  name="Senior Dominant"
+  name="Auto-detect Keys"
   args={{
     data: [
-      { uf: 'RS', youth: 2000, adult: 10000, senior: 8000 },
-      { uf: 'SC', youth: 2200, adult: 9500,  senior: 6500 },
-      { uf: 'SP', youth: 4000, adult: 18000, senior: 12000 },
-      { uf: 'RJ', youth: 3000, adult: 12000, senior: 9000 },
+      { label: 'Q1', revenue: 5000, costs: 3200, profit: 1800 },
+      { label: 'Q2', revenue: 6200, costs: 3800, profit: 2400 },
+      { label: 'Q3', revenue: 5800, costs: 3500, profit: 2300 },
+      { label: 'Q4', revenue: 7100, costs: 4100, profit: 3000 },
     ],
   }}
 />
