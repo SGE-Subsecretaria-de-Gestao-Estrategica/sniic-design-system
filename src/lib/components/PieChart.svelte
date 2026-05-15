@@ -1,0 +1,149 @@
+<script lang="ts" module>
+	export interface PieDatum {
+		label: string;
+		value: number;
+		color?: string;
+	}
+</script>
+
+<script lang="ts">
+	import { pie, arc, type PieArcDatum } from 'd3';
+	import { typography } from '../tokens.js';
+	import { categorical8 } from '../palettes.js';
+	import { getContrastColor } from '../utils/colorContrast.js';
+	import ChartFrame from './molecules/ChartFrame.svelte';
+	import Legend from './atoms/Legend.svelte';
+	import Tooltip from './molecules/Tooltip.svelte';
+	import { relativePos } from '../utils/tooltipState.js';
+
+	interface Props {
+		data?: PieDatum[];
+		/** Outer radius as a fraction of the available size (0–1). */
+		radiusFraction?: number;
+		height?: number;
+		colors?: readonly string[];
+		format?: (v: number) => string;
+		showLegend?: boolean;
+		/** Show percentage labels on slices. */
+		showLabels?: boolean;
+		/** Minimum arc angle (radians) to show a label. */
+		labelThreshold?: number;
+	}
+
+	let {
+		data = [],
+		radiusFraction = 0.42,
+		height = 360,
+		colors = categorical8,
+		format = (v: number) => v.toLocaleString(),
+		showLegend = true,
+		showLabels = true,
+		labelThreshold = 0.35,
+	}: Props = $props();
+
+	const chartFont = typography.chartValueFontFamily;
+	const MARGIN = { top: 16, right: 16, bottom: 16, left: 16 };
+	const LEGEND_H = 28;
+
+	let wrapperEl: HTMLDivElement | undefined = $state();
+	let innerW = $state(0);
+	let innerH = $state(0);
+	let tooltip = $state({ visible: false, x: 0, y: 0, html: '' });
+
+	const total = $derived(data.reduce((s, d) => s + d.value, 0));
+
+	const outerR = $derived(Math.min(innerW, innerH) * radiusFraction);
+
+	const cx = $derived(innerW / 2);
+	const cy = $derived((innerH - (showLegend ? LEGEND_H : 0)) / 2);
+
+	const pieLayout = $derived(
+		pie<PieDatum>()
+			.value((d) => d.value)
+			.sort(null)(data),
+	);
+
+	const arcGen = $derived(
+		arc<PieArcDatum<PieDatum>>()
+			.innerRadius(0)
+			.outerRadius(outerR)
+			.padAngle(0.015)
+			.cornerRadius(2),
+	);
+
+	const labelArcGen = $derived(
+		arc<PieArcDatum<PieDatum>>()
+			.innerRadius(outerR * 0.55)
+			.outerRadius(outerR * 0.55),
+	);
+
+	function sliceColor(d: PieDatum, i: number): string {
+		return d.color ?? colors[i % colors.length];
+	}
+
+	const legendItems = $derived(
+		data.map((d, i) => ({
+			label: d.label,
+			color: sliceColor(d, i),
+		})),
+	);
+</script>
+
+<div bind:this={wrapperEl} class="pie-wrapper">
+	<ChartFrame responsive {height} margin={MARGIN} bind:innerWidth={innerW} bind:innerHeight={innerH} ariaLabel="Pie chart">
+		<g transform="translate({cx},{cy})">
+			{#each pieLayout as slice, i (slice.data.label)}
+				{@const fill = sliceColor(slice.data, i)}
+				{@const centroid = labelArcGen.centroid(slice)}
+				{@const angle = slice.endAngle - slice.startAngle}
+				<path
+					d={arcGen(slice) ?? ''}
+					{fill}
+					stroke="white"
+					stroke-width={1.5}
+					role="img"
+					aria-label="{slice.data.label}: {format(slice.data.value)}"
+					onmouseenter={(e) => {
+						const pct = total > 0 ? ((slice.data.value / total) * 100).toFixed(1) : '0';
+						const html = `<strong>${slice.data.label}</strong><br/>${format(slice.data.value)} (${pct}%)`;
+						tooltip = { visible: true, ...relativePos(e, wrapperEl!), html };
+					}}
+					onmousemove={(e) => {
+						tooltip = { ...tooltip, ...relativePos(e, wrapperEl!) };
+					}}
+					onmouseleave={() => {
+						tooltip = { ...tooltip, visible: false };
+					}}
+				/>
+				{#if showLabels && angle > labelThreshold && outerR > 40}
+					<text
+						x={centroid[0]}
+						y={centroid[1]}
+						text-anchor="middle"
+						dy="0.35em"
+						font-size={Math.min(12, outerR * 0.12)}
+						font-weight={700}
+						font-family={chartFont}
+						fill={getContrastColor(fill)}
+						pointer-events="none"
+					>{total > 0 ? Math.round((slice.data.value / total) * 100) + '%' : ''}</text>
+				{/if}
+			{/each}
+		</g>
+
+		{#if showLegend && legendItems.length > 0}
+			<g transform="translate(0, {innerH - LEGEND_H})">
+				<Legend items={legendItems} spacing={Math.min(120, innerW / legendItems.length)} />
+			</g>
+		{/if}
+	</ChartFrame>
+
+	<Tooltip {...tooltip} offsetX={12} offsetY={-28} />
+</div>
+
+<style>
+	.pie-wrapper {
+		position: relative;
+		width: 100%;
+	}
+</style>
