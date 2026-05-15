@@ -13,6 +13,7 @@ export { default as BubbleWithLabel } from './components/atoms/BubbleWithLabel.s
 export { default as ChartFrame } from './components/molecules/ChartFrame.svelte';
 export { default as Tooltip } from './components/molecules/Tooltip.svelte';
 export { default as AnnotationBox } from './components/molecules/AnnotationBox.svelte';
+export { default as LegendBar } from './components/molecules/LegendBar.svelte';
 
 // Organisms — full chart components
 export { default as VerticalBarChart } from './components/VerticalBarChart.svelte';
@@ -35,6 +36,32 @@ export { default as BigNumber } from './components/BigNumber.svelte';
 export { default as HeatMap } from './components/HeatMap.svelte';
 export type { HeatMapCell } from './components/HeatMap.svelte';
 export { default as ColorPalette } from './components/ColorPalette.svelte';
+export { default as StreamGraph } from './components/StreamGraph.svelte';
+export type { StreamDatum } from './components/StreamGraph.svelte';
+export { default as PictogramChart } from './components/PictogramChart.svelte';
+export type { PictogramDatum } from './components/PictogramChart.svelte';
+export { default as ProportionalAreaChart } from './components/ProportionalAreaChart.svelte';
+export type { ProportionalDatum } from './components/ProportionalAreaChart.svelte';
+export { default as MarimekkoChart } from './components/MarimekkoChart.svelte';
+export type { MekkoDatum } from './components/MarimekkoChart.svelte';
+export { default as TreemapChart } from './components/TreemapChart.svelte';
+export type { TreemapNode } from './components/TreemapChart.svelte';
+export { default as DonutChart } from './components/DonutChart.svelte';
+export type { DonutDatum } from './components/DonutChart.svelte';
+export { default as GroupedColumnChart } from './components/GroupedColumnChart.svelte';
+export type { GroupedDatum } from './components/GroupedColumnChart.svelte';
+export { default as ParliamentChart } from './components/ParliamentChart.svelte';
+export type { ParliamentDatum } from './components/ParliamentChart.svelte';
+export { default as WaffleChart } from './components/WaffleChart.svelte';
+export type { WaffleDatum } from './components/WaffleChart.svelte';
+export { default as PieChart } from './components/PieChart.svelte';
+export type { PieDatum } from './components/PieChart.svelte';
+export { default as CorrelationMatrix } from './components/CorrelationMatrix.svelte';
+export type { CorrelationDatum } from './components/CorrelationMatrix.svelte';
+export { default as CalendarHeatmap } from './components/CalendarHeatmap.svelte';
+export type { CalendarDatum } from './components/CalendarHeatmap.svelte';
+export { default as ContourPlot } from './components/ContourPlot.svelte';
+export type { ContourPoint } from './components/ContourPlot.svelte';
 
 // Tokens
 export * from './tokens.js';
@@ -52,6 +79,7 @@ export * from './utils/resizeObserver.js';
 export * from './utils/exportSvg.js';
 export * from './utils/labelHelpers.js';
 export * from './utils/colorMapHelpers.js';
+export * from './utils/tooltipState.js';
 
 // Chart draw functions (for headless / custom-shell usage)
 export * from './charts/choroplethMap.js';
