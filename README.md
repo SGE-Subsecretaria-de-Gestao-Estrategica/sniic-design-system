@@ -1,28 +1,33 @@
-# sniic
+# sniic-design-system
 
 A Svelte component library with chart components and design tokens based on the [Brazilian Government Design System](https://www.gov.br/ds/fundamentos-visuais/cores) (Padrão Digital de Governo).
+
+## Installation
+
+```bash
+npm install sniic-design-system
+```
+
+### Peer dependencies
+
+This library requires **Svelte 5** and **D3 7+** as peer dependencies:
+
+```bash
+npm install svelte d3
+```
 
 ## Requirements
 
 - Node.js 18+
 - npm 9+
 
-## Getting started
+## Usage
 
-```bash
-npm install
+```svelte
+<script>
+  import { BarChart, LineChart, colors } from 'sniic-design-system';
+</script>
 ```
-
-## Scripts
-
-| Command | Description |
-|---|---|
-| `npm run dev` | Start Vite dev server |
-| `npm run build` | Build the library |
-| `npm run preview` | Preview the production build |
-| `npm run storybook` | Start Storybook on port 6006 |
-| `npm run build-storybook` | Build static Storybook |
-| `npm run check` | Run Svelte type checking |
 
 ## Components
 
@@ -32,7 +37,7 @@ Renders a vertical bar chart using D3.
 
 ```svelte
 <script>
-  import { BarChart } from 'sniic';
+  import { BarChart } from 'sniic-design-system';
 
   const data = [
     { label: 'Jan', value: 120 },
@@ -64,7 +69,7 @@ Renders a multi-series line chart using D3. Supports smooth curves and an automa
 
 ```svelte
 <script>
-  import { LineChart } from 'sniic';
+  import { LineChart } from 'sniic-design-system';
 
   const series = [
     {
@@ -121,7 +126,7 @@ Renders a stacked bar chart of age groups (youth / adult / senior) by state, nor
 
 ```svelte
 <script>
-  import { AgeGroupChart } from 'sniic';
+  import { AgeGroupChart } from 'sniic-design-system';
 
   const data = [
     { uf: 'SP', youth: 1200, adult: 3500, senior: 800 },
@@ -138,17 +143,6 @@ Renders a stacked bar chart of age groups (youth / adult / senior) by state, nor
 |---|---|---|---|
 | `data` | `StateAgeRow[]` | `[]` | Array of per-state age counts |
 
-**StateAgeRow type**
-
-```ts
-interface StateAgeRow {
-  uf: string;
-  youth: number;   // 15–29 years old
-  adult: number;   // 30–59 years old
-  senior: number;  // 60+ years old
-}
-```
-
 ---
 
 ### BubbleScatter
@@ -157,7 +151,7 @@ Renders a log-scale scatter plot where each bubble represents a Brazilian state.
 
 ```svelte
 <script>
-  import { BubbleScatter } from 'sniic';
+  import { BubbleScatter } from 'sniic-design-system';
 
   const states = {
     'São Paulo': { uf: 'São Paulo', popTotal: 45919049, valorRecebido: 500000000, qtdFomentos: 120, valorPerCapita: 10.88 },
@@ -172,19 +166,7 @@ Renders a log-scale scatter plot where each bubble represents a Brazilian state.
 
 | Prop | Type | Default | Description |
 |---|---|---|---|
-| `states` | `Record<string, BubbleScatterRow>` | `{}` | Map of state name → data row |
-
-**BubbleScatterRow type**
-
-```ts
-interface BubbleScatterRow {
-  uf: string;
-  popTotal: number;
-  valorRecebido: number;
-  qtdFomentos: number;
-  valorPerCapita: number;
-}
-```
+| `states` | `Record<string, BubbleScatterRow>` | `{}` | Map of state name to data row |
 
 ---
 
@@ -194,7 +176,7 @@ Renders a horizontal diverging bar chart showing female vs. male participation p
 
 ```svelte
 <script>
-  import { GenderDivergingBar } from 'sniic';
+  import { GenderDivergingBar } from 'sniic-design-system';
 
   const data = [
     { uf: 'SP', pctFeminino: 42.3, qtdFeminino: 508, qtdMasculino: 692 },
@@ -212,17 +194,6 @@ Renders a horizontal diverging bar chart showing female vs. male participation p
 | `data` | `GenderRow[]` | `[]` | Per-state gender breakdown |
 | `nationalAvg` | `number` | `0` | National average % (shown as dashed reference line) |
 
-**GenderRow type**
-
-```ts
-interface GenderRow {
-  uf: string;
-  pctFeminino: number;
-  qtdFeminino: number;
-  qtdMasculino: number;
-}
-```
-
 ---
 
 ### StackedBarChart
@@ -231,7 +202,7 @@ Renders a horizontal stacked bar chart split into two categories (`audiovisual` 
 
 ```svelte
 <script>
-  import { StackedBarChart } from 'sniic';
+  import { StackedBarChart } from 'sniic-design-system';
 
   const data = [
     { uf: 'SP', audiovisual: 12000000, demais: 8000000 },
@@ -248,16 +219,6 @@ Renders a horizontal stacked bar chart split into two categories (`audiovisual` 
 |---|---|---|---|
 | `data` | `StackedBarRow[]` | `[]` | Per-state values split by category |
 
-**StackedBarRow type**
-
-```ts
-interface StackedBarRow {
-  uf: string;
-  audiovisual: number;
-  demais: number;
-}
-```
-
 ---
 
 ### ChoroplethMap
@@ -266,7 +227,7 @@ Renders a choropleth map of Brazil coloured by a numeric metric. Supports an opt
 
 ```svelte
 <script>
-  import { ChoroplethMap } from 'sniic';
+  import { ChoroplethMap } from 'sniic-design-system';
 
   const states = {
     'São Paulo': { execucaoFinanceira: 95.2, valorRecebido: 500000000 },
@@ -289,7 +250,7 @@ Renders a choropleth map of Brazil coloured by a numeric metric. Supports an opt
 
 | Prop | Type | Default | Description |
 |---|---|---|---|
-| `states` | `Record<string, object>` | `{}` | Map of state name → data object |
+| `states` | `Record<string, object>` | `{}` | Map of state name to data object |
 | `metric` | `string` | `'execucaoFinanceira'` | Key to read from each state object |
 | `label` | `string` | `''` | Tooltip label prefix |
 | `format` | `(v: number) => string` | `v.toLocaleString('pt-BR')` | Value formatter |
@@ -302,11 +263,11 @@ Renders a choropleth map of Brazil coloured by a numeric metric. Supports an opt
 
 ### TierSmallMultiples
 
-Renders five small choropleth maps of Brazil, one per city-size tier (Capitais, Grande Porte, Médio Porte, Pequeno Porte II, Pequeno Porte I), sharing a common colour scale.
+Renders five small choropleth maps of Brazil, one per city-size tier (Capitais, Grande Porte, Medio Porte, Pequeno Porte II, Pequeno Porte I), sharing a common colour scale.
 
 ```svelte
 <script>
-  import { TierSmallMultiples } from 'sniic';
+  import { TierSmallMultiples } from 'sniic-design-system';
 
   const tiers = {
     Capitais:          { 'São Paulo': { execucaoFinanceira: 95.2 } },
@@ -328,7 +289,7 @@ Renders five small choropleth maps of Brazil, one per city-size tier (Capitais, 
 
 | Prop | Type | Default | Description |
 |---|---|---|---|
-| `tiers` | `Record<string, Record<string, object>>` | `{}` | Map of tier name → (state name → data) |
+| `tiers` | `Record<string, Record<string, object>>` | `{}` | Map of tier name to (state name to data) |
 | `metric` | `string` | `'execucaoFinanceira'` | Key to read from each city object |
 | `format` | `(v: number) => string` | `` `${v.toFixed(1)}%` `` | Value formatter for legend |
 
@@ -339,7 +300,7 @@ Renders five small choropleth maps of Brazil, one per city-size tier (Capitais, 
 Tokens are exported from the package root and can be imported directly.
 
 ```ts
-import { colors, typography, spacing, defaultMargin } from 'sniic';
+import { colors, typography, spacing, defaultMargin } from 'sniic-design-system';
 ```
 
 ### Colors
@@ -348,9 +309,9 @@ Derived from the Brazilian Government Design System (Padrão Digital de Governo)
 
 | Token | Description |
 |---|---|
-| `colors.primary` | Blue Warm Vivid ramp (5 shades, darkest → lightest) |
+| `colors.primary` | Blue Warm Vivid ramp (5 shades, darkest to lightest) |
 | `colors.blue/green/yellow/red/...` | Extended color families with shades `90, 70, 40, 20, 10` |
-| `colors.neutral` | Gray ramp (8 shades, darkest → lightest) |
+| `colors.neutral` | Gray ramp (8 shades, darkest to lightest) |
 | `colors.success` | `#168821` |
 | `colors.warning` | `#ffcd07` |
 | `colors.danger` | `#e52207` |
@@ -388,7 +349,17 @@ defaultMargin // { top: 20, right: 20, bottom: 40, left: 48 }
 The `Margin` interface is also exported for typing custom margin props:
 
 ```ts
-import type { Margin } from 'sniic';
+import type { Margin } from 'sniic-design-system';
+```
+
+## Development
+
+```bash
+npm install          # Install dependencies
+npm run dev          # Start Vite dev server
+npm run build        # Build the library
+npm run storybook    # Start Storybook on port 6006
+npm run check        # Run Svelte type checking
 ```
 
 ## Tech stack
@@ -397,5 +368,8 @@ import type { Margin } from 'sniic';
 - [D3](https://d3js.org) — scales, axes, and path generation
 - [Vite](https://vitejs.dev) — bundler
 - [Storybook](https://storybook.js.org) — component explorer
-- [Vitest](https://vitest.dev) — unit tests
 - [TypeScript](https://www.typescriptlang.org)
+
+## License
+
+MIT
