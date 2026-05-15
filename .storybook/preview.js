@@ -12,11 +12,17 @@ const preview = {
     backgrounds: {
       options: {
         light: { name: 'light', value: '#ffffdeff' },
+        cream: { name: 'cream', value: '#fffde6' },
         dark: { name: 'dark', value: '#000000ff' },
       },
     },
     a11y: {
       test: 'todo',
+    },
+    options: {
+      storySort: {
+        order: ['Design System', 'Atoms', 'Molecules', 'Charts'],
+      },
     },
   },
   initialGlobals: {

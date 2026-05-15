@@ -13,19 +13,13 @@
   import GradientLegend from './atoms/GradientLegend.svelte';
   import BubbleWithLabel from './atoms/BubbleWithLabel.svelte';
   import Tooltip from './molecules/Tooltip.svelte';
+  import { relativePos } from '../utils/tooltipState.js';
 
   // Static — does not depend on any prop.
   const execColor = scaleSequential()
     .domain([80, 100])
     .interpolator(interpolateRgbBasis([red, amber, green]))
     .clamp(true);
-
-  // ── Interaction helpers (pure functions) ──────────────────────────────────
-
-  function relativePos(event: MouseEvent, el: HTMLElement) {
-    const rect = el.getBoundingClientRect();
-    return { x: event.clientX - rect.left, y: event.clientY - rect.top };
-  }
 
   function stateTooltipHtml(name: string, val: number): string {
     return `<strong>${name}</strong><br/>${label}: ${format(val)}`;
@@ -102,6 +96,110 @@
   );
   const pathGen = $derived(projection ? geoPath().projection(projection) : null);
 
+  // ── Static label layout (internal vs external with leader lines) ──────
+  const LABEL_LINE_HEIGHT = 14;
+  const LABEL_MIN_DIM = 42; // min bbox dimension (px) to fit a label inside
+  const ALWAYS_EXTERNAL = new Set(['PB', 'RN', 'SE', 'PE', 'AL', 'AC', 'RJ', 'ES']);
+
+  interface StateLabel {
+    name: string;
+    sigla: string;
+    val: number;
+    cx: number;
+    cy: number;
+    fillColor: string;
+    internal: boolean;
+    // external-only fields
+    labelX?: number;
+    labelY?: number;
+    elbowX?: number;
+    anchor?: string;
+  }
+
+  const stateLabels = $derived.by((): StateLabel[] => {
+    if (!pathGen || !geojson || !isStatic || width <= 0) return [];
+
+    const internal: StateLabel[] = [];
+    const externalRaw: (StateLabel & { cy: number })[] = [];
+
+    // First pass: compute map extent
+    let mapMinX = Infinity, mapMaxX = -Infinity;
+    for (const feature of geojson.features) {
+      const [[x0], [x1]] = pathGen.bounds(feature);
+      mapMinX = Math.min(mapMinX, x0);
+      mapMaxX = Math.max(mapMaxX, x1);
+    }
+
+    // Second pass: classify states
+    for (const feature of geojson.features) {
+      const name = feature.properties.name;
+      const sigla = feature.properties.sigla ?? name;
+      const val = valueByName.get(name) ?? 0;
+      if (val <= 0) continue;
+
+      const [cx, cy] = pathGen.centroid(feature);
+      const [[x0, y0], [x1, y1]] = pathGen.bounds(feature);
+      const bw = x1 - x0;
+      const bh = y1 - y0;
+      const fillColor = colorScale(val);
+
+      if (bw >= LABEL_MIN_DIM && bh >= LABEL_MIN_DIM && !ALWAYS_EXTERNAL.has(sigla)) {
+        internal.push({ name, sigla, val, cx, cy, fillColor, internal: true });
+      } else {
+        const onRight = cx > width / 2;
+        externalRaw.push({ name, sigla, val, cx, cy, fillColor, internal: false,
+          anchor: onRight ? 'start' : 'end' });
+      }
+    }
+
+    // Place labels just outside the map extent (not SVG edges)
+    const rightElbow = mapMaxX + 6;
+    const rightLabel = rightElbow + 8;
+    const leftElbow = mapMinX - 6;
+    const leftLabel = leftElbow - 8;
+
+    // Split external labels into left/right groups and distribute vertically
+    const leftGroup = externalRaw.filter(s => s.anchor === 'end').sort((a, b) => a.cy - b.cy);
+    const rightGroup = externalRaw.filter(s => s.anchor === 'start').sort((a, b) => a.cy - b.cy);
+
+    function distribute(group: typeof externalRaw, onRight: boolean): StateLabel[] {
+      if (group.length === 0) return [];
+      const edgeX = onRight ? rightLabel : leftLabel;
+      const elbowX = onRight ? rightElbow : leftElbow;
+      const slots = group.map(s => ({ ...s, labelY: s.cy }));
+
+      // Push overlapping labels apart
+      for (let i = 1; i < slots.length; i++) {
+        const minY = slots[i - 1].labelY! + LABEL_LINE_HEIGHT;
+        if (slots[i].labelY! < minY) slots[i].labelY = minY;
+      }
+      // Clamp to SVG bounds
+      const maxLabelY = height - 44;
+      const minLabelY = 10;
+      if (slots.length > 0) {
+        const overflow = slots[slots.length - 1].labelY! - maxLabelY;
+        if (overflow > 0) for (const s of slots) s.labelY! -= overflow;
+        if (slots[0].labelY! < minLabelY) {
+          const shift = minLabelY - slots[0].labelY!;
+          for (const s of slots) s.labelY! += shift;
+          for (let i = 1; i < slots.length; i++) {
+            const minY = slots[i - 1].labelY! + LABEL_LINE_HEIGHT;
+            if (slots[i].labelY! < minY) slots[i].labelY = minY;
+          }
+        }
+      }
+
+      return slots.map(s => ({
+        ...s,
+        labelX: edgeX,
+        elbowX,
+        anchor: onRight ? 'start' : 'end',
+      }));
+    }
+
+    return [...internal, ...distribute(leftGroup, false), ...distribute(rightGroup, true)];
+  });
+
   // Capital bubble scale.
   const maxBubbleVal = $derived(
     capitals.length > 0 ? (max(capitals, c => c.valorRecebido) ?? 1) : 1
@@ -150,22 +248,45 @@
             tooltip = { ...tooltip, visible: false };
           }}
         />
-        {#if isStatic && val > 0}
-          {@const [cx, cy] = pathGen.centroid(feature)}
-          {@const stateFill = colorScale(val)}
-          <text
-            x={cx} y={cy}
-            text-anchor="middle"
-            font-size={9}
-            font-family="'Space Grotesk', system-ui, sans-serif"
-            fill={getContrastColor(stateFill)}
-            pointer-events="none"
-          >
-            <tspan x={cx} dy="-0.4em" font-weight={700}>{feature.properties.sigla ?? name}</tspan>
-            <tspan x={cx} dy="1.2em">{format(val)}</tspan>
-          </text>
-        {/if}
       {/each}
+
+      <!-- ── Static state labels ──────────────────────────────────────────── -->
+      {#if isStatic}
+        {#each stateLabels as sl (sl.name)}
+          {#if sl.internal}
+            <text
+              x={sl.cx} y={sl.cy}
+              text-anchor="middle"
+              font-size={13}
+              font-family="'Space Grotesk', system-ui, sans-serif"
+              fill={getContrastColor(sl.fillColor)}
+              pointer-events="none"
+            >
+              <tspan x={sl.cx} dy="-0.4em" font-weight={700}>{sl.sigla}</tspan>
+              <tspan x={sl.cx} dy="1.2em">{format(sl.val)}</tspan>
+            </text>
+          {:else}
+            <polyline
+              points="{sl.cx},{sl.cy} {sl.elbowX},{sl.cy} {sl.elbowX},{sl.labelY} {sl.labelX},{sl.labelY}"
+              fill="none"
+              stroke="#555"
+              stroke-width={0.7}
+            />
+            <circle cx={sl.cx} cy={sl.cy} r={2} fill="#555" />
+            <text
+              x={sl.labelX} y={sl.labelY}
+              text-anchor={sl.anchor}
+              font-size={12}
+              font-family="'Space Grotesk', system-ui, sans-serif"
+              fill={black}
+              pointer-events="none"
+            >
+              <tspan x={sl.labelX} dy="-0.5em" font-weight={700}>{sl.sigla}</tspan>
+              <tspan x={sl.labelX} dy="1.2em">{format(sl.val)}</tspan>
+            </text>
+          {/if}
+        {/each}
+      {/if}
 
       <!-- ── Capital bubbles overlay ────────────────────────────────────── -->
       {#if showCapitals && capitals.length}

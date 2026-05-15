@@ -1,152 +1,227 @@
-<script lang="ts">
-	import { colorScales, black, white, typography, type Margin } from '../tokens.js';
-	import { getContrastColor } from '../utils/colorContrast.js';
-	import ChartFrame from './molecules/ChartFrame.svelte';
-
+<script lang="ts" module>
 	export interface PyramidTier {
 		label: string;
-		value: number;
-		color?: string;
+		left: number;
+		right: number;
 	}
-
-	interface Props {
-		tiers?: PyramidTier[];
-		height?: number;
-		margin?: Margin;
-		showDifferences?: boolean;
-		gap?: number;
-		valueFormat?: (v: number) => string;
-		colors?: readonly string[];
-	}
-
-	const defaultPyramidColors = [
-		colorScales.yellow[4],
-		colorScales.yellow[3],
-		colorScales.yellow[2],
-	];
-
-	let {
-		tiers = [],
-		height = 380,
-		margin = { top: 20, right: 160, bottom: 20, left: 20 },
-		showDifferences = true,
-		gap = 3,
-		valueFormat = (v: number) => v.toLocaleString('pt-BR'),
-		colors = defaultPyramidColors,
-	}: Props = $props();
-
-	const defaultColors = $derived(colors);
-
-	let innerWidth = $state(0);
-	let innerHeight = $state(0);
-
-	const sorted = $derived([...tiers].sort((a, b) => a.value - b.value));
-	const maxVal = $derived(sorted.length > 0 ? sorted[sorted.length - 1].value : 1);
-	const n = $derived(sorted.length);
-	const tierH = $derived((innerHeight - gap * Math.max(n - 1, 0)) / Math.max(n, 1));
-	const cx = $derived(innerWidth / 2);
-
-	const halfWidths = $derived(sorted.map((t) => (t.value / maxVal) * (innerWidth / 2)));
-
-	const shapes = $derived(
-		sorted.map((tier, i) => {
-			const hw1 = halfWidths[i];
-			const hw2 = halfWidths[i + 1] ?? halfWidths[i];
-			const y1 = i * (tierH + gap);
-			const y2 = y1 + tierH;
-			const midY = (y1 + y2) / 2;
-			const color = tier.color ?? defaultColors[i % defaultColors.length];
-			const isLight = getContrastColor(color) === black;
-			return {
-				label: tier.label,
-				value: valueFormat(tier.value),
-				color,
-				points: `${cx - hw1},${y1} ${cx + hw1},${y1} ${cx + hw2},${y2} ${cx - hw2},${y2}`,
-				midY,
-				rightX: cx + hw2,
-				textFill: isLight ? '#3d1a00' : white,
-				labelFill: isLight ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.82)',
-			};
-		}),
-	);
-
-	const diffs = $derived(
-		showDifferences
-			? sorted.slice(0, -1).map((t, i) => ({
-					label: '+' + valueFormat(sorted[i + 1].value - t.value),
-					y: (shapes[i].midY + shapes[i + 1].midY) / 2,
-				}))
-			: [],
-	);
 </script>
 
-<ChartFrame
-	responsive
-	{height}
-	{margin}
-	bind:innerWidth
-	bind:innerHeight
-	ariaLabel="Pyramid chart"
->
-	<!-- Tier trapezoids + inner labels -->
-	{#each shapes as shape, i (i)}
-		<polygon
-			points={shape.points}
-			fill={shape.color}
-			stroke="white"
-			stroke-width="1"
-		/>
-		<text
-			x={cx}
-			y={shape.midY - 7}
-			text-anchor="middle"
-			dominant-baseline="auto"
-			font-size={typography.sizes.lg}
-			font-weight="700"
-			fill={shape.textFill}
-		>{shape.value}</text>
-		<text
-			x={cx}
-			y={shape.midY + 7}
-			text-anchor="middle"
-			dominant-baseline="hanging"
-			font-size={typography.sizes.sm}
-			font-weight="500"
-			fill={shape.labelFill}
-		>{shape.label}</text>
-	{/each}
+<script lang="ts">
+	import { scaleLinear, scaleBand, max } from 'd3';
+	import { black, typography, type Margin } from '../tokens.js';
+	import { colorPairs, type ColorPair } from '../palettes.js';
+	import { getContrastColor } from '../utils/colorContrast.js';
+	import { segmentLabelFontSize, labelFitsInBar } from '../utils/labelHelpers.js';
+	import ChartFrame from './molecules/ChartFrame.svelte';
+	import BarRect from './atoms/BarRect.svelte';
+	import LegendBar from './molecules/LegendBar.svelte';
+	import Tooltip from './molecules/Tooltip.svelte';
+	import { relativePos } from '../utils/tooltipState.js';
 
-	<!-- Right-side connectors and tier annotations -->
-	{#each shapes as shape, i (i)}
+	interface Props {
+		data?: PyramidTier[];
+		leftLabel?: string;
+		rightLabel?: string;
+		height?: number;
+		margin?: Margin;
+		colors?: ColorPair;
+		format?: (v: number) => string;
+		/** Gap between the two sides in pixels. */
+		centerGap?: number;
+	}
+
+	let {
+		data = [],
+		leftLabel = 'Masculino',
+		rightLabel = 'Feminino',
+		height = 420,
+		margin = { top: 16, right: 16, bottom: 68, left: 16 },
+		colors = colorPairs.bluePurple,
+		format = (v: number) => v.toLocaleString(),
+		centerGap = 48,
+	}: Props = $props();
+
+	const chartFont = typography.chartValueFontFamily;
+	const STROKE_W = 0.5;
+	const LEGEND_BAR_H = 34;
+	const LABEL_PAD = 4;
+
+	let wrapperEl: HTMLDivElement | undefined = $state();
+	let innerW = $state(0);
+	let innerH = $state(0);
+	let tooltip = $state({ visible: false, x: 0, y: 0, html: '' });
+
+	const barAreaH = $derived(innerH - LEGEND_BAR_H - 18);
+	const halfW = $derived((innerW - centerGap) / 2);
+	const centerX = $derived(innerW / 2);
+
+	const maxVal = $derived(
+		max(data, (d) => Math.max(d.left, d.right)) ?? 1,
+	);
+
+	const xScaleLeft = $derived(
+		scaleLinear().domain([0, maxVal]).range([0, halfW]).nice(),
+	);
+
+	const xScaleRight = $derived(
+		scaleLinear().domain([0, maxVal]).range([0, halfW]).nice(),
+	);
+
+	const yScale = $derived(
+		scaleBand()
+			.domain(data.map((d) => d.label))
+			.range([barAreaH, 0])
+			.padding(0.12),
+	);
+
+	const legendItems = $derived([
+		{ label: leftLabel, color: colors[0] },
+		{ label: rightLabel, color: colors[1] },
+	]);
+
+	const legendBarY = $derived(barAreaH + 18);
+</script>
+
+<div bind:this={wrapperEl} class="pyramid-wrapper">
+	<ChartFrame responsive {height} {margin} bind:innerWidth={innerW} bind:innerHeight={innerH} ariaLabel="Population pyramid">
+		{#each data as d (d.label)}
+			{@const yPos = yScale(d.label) ?? 0}
+			{@const band = yScale.bandwidth()}
+			{@const leftW = xScaleLeft(d.left)}
+			{@const rightW = xScaleRight(d.right)}
+			{@const leftX = centerX - centerGap / 2 - leftW}
+			{@const rightX = centerX + centerGap / 2}
+			{@const labelFs = segmentLabelFontSize(band)}
+
+			<!-- Left bar -->
+			<g
+				role="img"
+				aria-label="{d.label} {leftLabel}: {format(d.left)}"
+				onmouseenter={(e) => {
+					const html = `<strong>${d.label}</strong><br/>${leftLabel}: ${format(d.left)}<br/>${rightLabel}: ${format(d.right)}`;
+					tooltip = { visible: true, ...relativePos(e, wrapperEl!), html };
+				}}
+				onmousemove={(e) => {
+					tooltip = { ...tooltip, ...relativePos(e, wrapperEl!) };
+				}}
+				onmouseleave={() => {
+					tooltip = { ...tooltip, visible: false };
+				}}
+			>
+				<BarRect
+					x={leftX}
+					y={yPos}
+					width={leftW}
+					height={band}
+					fill={colors[0]}
+					stroke={black}
+					strokeWidth={STROKE_W}
+					shapeRendering="crispEdges"
+				/>
+				{#if labelFitsInBar(format(d.left), labelFs, leftW, LABEL_PAD, LABEL_PAD)}
+					<text
+						x={leftX + LABEL_PAD}
+						y={yPos + band / 2}
+						dy="0.35em"
+						font-size={labelFs}
+						font-weight={700}
+						font-family={chartFont}
+						fill={getContrastColor(colors[0])}
+						pointer-events="none"
+					>{format(d.left)}</text>
+				{/if}
+			</g>
+
+			<!-- Right bar -->
+			<g
+				role="img"
+				aria-label="{d.label} {rightLabel}: {format(d.right)}"
+				onmouseenter={(e) => {
+					const html = `<strong>${d.label}</strong><br/>${leftLabel}: ${format(d.left)}<br/>${rightLabel}: ${format(d.right)}`;
+					tooltip = { visible: true, ...relativePos(e, wrapperEl!), html };
+				}}
+				onmousemove={(e) => {
+					tooltip = { ...tooltip, ...relativePos(e, wrapperEl!) };
+				}}
+				onmouseleave={() => {
+					tooltip = { ...tooltip, visible: false };
+				}}
+			>
+				<BarRect
+					x={rightX}
+					y={yPos}
+					width={rightW}
+					height={band}
+					fill={colors[1]}
+					stroke={black}
+					strokeWidth={STROKE_W}
+					shapeRendering="crispEdges"
+				/>
+				{#if labelFitsInBar(format(d.right), labelFs, rightW, LABEL_PAD, LABEL_PAD)}
+					<text
+						x={rightX + rightW - LABEL_PAD}
+						y={yPos + band / 2}
+						dy="0.35em"
+						text-anchor="end"
+						font-size={labelFs}
+						font-weight={700}
+						font-family={chartFont}
+						fill={getContrastColor(colors[1])}
+						pointer-events="none"
+					>{format(d.right)}</text>
+				{/if}
+			</g>
+
+			<!-- Center age label -->
+			<text
+				x={centerX}
+				y={yPos + band / 2}
+				dy="0.35em"
+				text-anchor="middle"
+				font-size={Math.min(11, band * 0.55)}
+				font-weight={600}
+				font-family={chartFont}
+				fill={black}
+			>{d.label}</text>
+		{/each}
+
+		<!-- Center axis line -->
 		<line
-			x1={shape.rightX}
-			y1={shape.midY}
-			x2={innerWidth + 12}
-			y2={shape.midY}
+			x1={centerX - centerGap / 2}
+			x2={centerX - centerGap / 2}
+			y1={0}
+			y2={barAreaH}
 			stroke={black}
-			stroke-width="1"
-			stroke-opacity="0.25"
-			stroke-dasharray="3,3"
+			stroke-width={STROKE_W}
+			stroke-opacity={0.3}
 		/>
-		<text
-			x={innerWidth + 16}
-			y={shape.midY}
-			dominant-baseline="middle"
-			font-size={typography.sizes.sm}
-			font-weight="600"
-			fill={black}
-		>{shape.label}: {shape.value}</text>
-	{/each}
+		<line
+			x1={centerX + centerGap / 2}
+			x2={centerX + centerGap / 2}
+			y1={0}
+			y2={barAreaH}
+			stroke={black}
+			stroke-width={STROKE_W}
+			stroke-opacity={0.3}
+		/>
 
-	<!-- Difference annotations between adjacent tiers -->
-	{#each diffs as d, i (i)}
-		<text
-			x={innerWidth + 16}
-			y={d.y}
-			dominant-baseline="middle"
-			font-size={typography.sizes.xs}
-			fill={black}
-			opacity="0.55"
-		>▲ {d.label}</text>
-	{/each}
-</ChartFrame>
+		<LegendBar
+			items={legendItems}
+			y={legendBarY}
+			width={innerW}
+			height={LEGEND_BAR_H}
+			strokeWidth={STROKE_W}
+			fontFamily={chartFont}
+			centered
+		/>
+	</ChartFrame>
+
+	<Tooltip {...tooltip} offsetX={12} offsetY={-28} />
+</div>
+
+<style>
+	.pyramid-wrapper {
+		position: relative;
+		width: 100%;
+	}
+</style>

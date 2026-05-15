@@ -2,6 +2,7 @@
   import { scaleLinear, scalePoint, line, curveMonotoneX, curveLinear, extent, type ScalePoint, type ScaleLinear } from 'd3';
   import { defaultMargin, type Margin } from '../tokens.js';
   import { categorical8 } from '../palettes.js';
+  import ChartFrame from './molecules/ChartFrame.svelte';
   import XAxis from './atoms/XAxis.svelte';
   import YAxis from './atoms/YAxis.svelte';
   import GridLines from './atoms/GridLines.svelte';
@@ -54,9 +55,10 @@
 
   const defaultColors = $derived(colors);
 
-  const allData     = $derived(series.flatMap(s => s.data));
-  const innerWidth  = $derived(width  - margin.left - margin.right);
-  const innerHeight = $derived(height - margin.top  - margin.bottom);
+  const allData = $derived(series.flatMap(s => s.data));
+
+  let innerWidth = $state(0);
+  let innerHeight = $state(0);
 
   const labels = $derived([...new Set(allData.map(d => d.label))]);
 
@@ -98,45 +100,43 @@
   );
 </script>
 
-<svg {width} {height} role="img" aria-label="Line chart">
-  <g transform="translate({margin.left},{margin.top})">
-    <GridLines positions={gridPositions} length={innerWidth} />
+<ChartFrame {width} {height} {margin} bind:innerWidth bind:innerHeight ariaLabel="Line chart">
+  <GridLines positions={gridPositions} length={innerWidth} />
 
-    {#each series as s, i (s.name)}
-      {@const seriesColor = s.color ?? defaultColors[i % defaultColors.length]}
-      <path
-        d={lineGen(s.data) ?? ''}
-        fill="none"
-        stroke={seriesColor}
-        stroke-width="2.5"
-        stroke-linejoin="round"
-        stroke-linecap="round"
-      />
-      {#if showDots}
-        {#each s.data as d (d.label)}
-          <circle
-            cx={xScale(d.label) ?? 0}
-            cy={yScale(d.value)}
-            r="4"
-            fill={seriesColor}
-            stroke="white"
-            stroke-width="2"
-          >
-            <title>{s.name} — {d.label}: {d.value}</title>
-          </circle>
-        {/each}
-      {/if}
-    {/each}
-
-    {@render annotations?.({ xScale, yScale })}
-
-    <XAxis ticks={xTicks} {innerHeight} {innerWidth} label={xLabel} />
-    <YAxis ticks={yTicks} {innerHeight} label={yLabel} />
-
-    {#if legendItems.length > 0}
-      <g transform="translate(0, {-margin.top + 4})">
-        <Legend items={legendItems} spacing={100} />
-      </g>
+  {#each series as s, i (s.name)}
+    {@const seriesColor = s.color ?? defaultColors[i % defaultColors.length]}
+    <path
+      d={lineGen(s.data) ?? ''}
+      fill="none"
+      stroke={seriesColor}
+      stroke-width="2.5"
+      stroke-linejoin="round"
+      stroke-linecap="round"
+    />
+    {#if showDots}
+      {#each s.data as d (d.label)}
+        <circle
+          cx={xScale(d.label) ?? 0}
+          cy={yScale(d.value)}
+          r="4"
+          fill={seriesColor}
+          stroke="white"
+          stroke-width="2"
+        >
+          <title>{s.name} — {d.label}: {d.value}</title>
+        </circle>
+      {/each}
     {/if}
-  </g>
-</svg>
+  {/each}
+
+  {@render annotations?.({ xScale, yScale })}
+
+  <XAxis ticks={xTicks} {innerHeight} {innerWidth} label={xLabel} />
+  <YAxis ticks={yTicks} {innerHeight} label={yLabel} />
+
+  {#if legendItems.length > 0}
+    <g transform="translate(0, {-margin.top + 4})">
+      <Legend items={legendItems} spacing={100} />
+    </g>
+  {/if}
+</ChartFrame>

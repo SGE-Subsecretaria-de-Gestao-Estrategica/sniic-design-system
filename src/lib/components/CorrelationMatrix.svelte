@@ -1,25 +1,26 @@
 <script lang="ts">
-  import { scaleBand, scaleLinear, extent } from 'd3';
+  import { scaleBand, scaleLinear } from 'd3';
   import { colorScales, defaultMargin, typography, type Margin } from '../tokens.js';
   import { getContrastColor } from '../utils/colorContrast.js';
   import ChartFrame from './molecules/ChartFrame.svelte';
-  import XAxis from './atoms/XAxis.svelte';
-  import YAxis from './atoms/YAxis.svelte';
   import GradientLegend from './atoms/GradientLegend.svelte';
 
-  export interface HeatMapCell {
+  export interface CorrelationDatum {
     x: string;
     y: string;
     value: number;
   }
 
   interface Props {
-    data?: HeatMapCell[];
+    data?: CorrelationDatum[];
     height?: number;
     margin?: Margin;
-    colorRange?: readonly string[];
-    xLabel?: string;
-    yLabel?: string;
+    /** Color for negative values (−1). */
+    negativeColor?: string;
+    /** Color for the neutral midpoint (0). */
+    neutralColor?: string;
+    /** Color for positive values (+1). */
+    positiveColor?: string;
     format?: (v: number) => string;
     showValues?: boolean;
     showLegend?: boolean;
@@ -32,20 +33,20 @@
     data = [],
     height = 400,
     margin = defaultMargin,
-    colorRange = colorScales.blue,
-    xLabel = '',
-    yLabel = '',
-    format = (v: number) => String(v),
-    showValues = false,
+    negativeColor = colorScales.red[2],
+    neutralColor = '#f5f5f5',
+    positiveColor = colorScales.blue[2],
+    format = (v: number) => v.toFixed(2),
+    showValues = true,
     showLegend = true,
     cellRadius = 3,
     cellGap = 4,
-    xRotate = 0,
+    xRotate = -45,
   }: Props = $props();
 
   const chartFont = typography.chartValueFontFamily;
   const legendHeight = 28;
-  const legendWidth = 160;
+  const legendWidth = 180;
 
   const legendReserve = $derived(showLegend ? legendHeight + 12 : 0);
   const totalHeight = $derived(height + legendReserve);
@@ -57,50 +58,43 @@
   let innerWidth = $state(0);
   let innerHeight = $state(0);
 
-  const xDomain = $derived([...new Set(data.map(d => d.x))]);
-  const yDomain = $derived([...new Set(data.map(d => d.y))]);
+  const variables = $derived([...new Set([...data.map(d => d.x), ...data.map(d => d.y)])]);
 
   const xPadding = $derived(
-    innerWidth > 0 ? (cellGap * xDomain.length) / (innerWidth + cellGap) : 0
+    innerWidth > 0 ? (cellGap * variables.length) / (innerWidth + cellGap) : 0
   );
   const yPadding = $derived(
-    innerHeight > 0 ? (cellGap * yDomain.length) / (innerHeight + cellGap) : 0
+    innerHeight > 0 ? (cellGap * variables.length) / (innerHeight + cellGap) : 0
   );
 
   const xScale = $derived(
-    scaleBand().domain(xDomain).range([0, innerWidth]).paddingInner(xPadding)
+    scaleBand().domain(variables).range([0, innerWidth]).paddingInner(xPadding)
   );
-
   const yScale = $derived(
-    scaleBand().domain(yDomain).range([0, innerHeight]).paddingInner(yPadding)
+    scaleBand().domain(variables).range([0, innerHeight]).paddingInner(yPadding)
   );
 
-  const valueExtent = $derived(
-    (extent(data, d => d.value) as [number, number]) ?? [0, 1]
+  const colorScale = $derived(
+    scaleLinear<string>()
+      .domain([-1, 0, 1])
+      .range([negativeColor, neutralColor, positiveColor])
   );
-
-  const colorScale = $derived.by(() => {
-    const [lo, hi] = valueExtent;
-    const n = colorRange.length;
-    const domain = Array.from({ length: n }, (_, i) => lo + (hi - lo) * (i / (n - 1)));
-    return scaleLinear<string>().domain(domain).range([...colorRange]);
-  });
 
   const xTicks = $derived(
-    xDomain.map(v => ({ value: v, x: (xScale(v) ?? 0) + xScale.bandwidth() / 2 }))
+    variables.map(v => ({ value: v, x: (xScale(v) ?? 0) + xScale.bandwidth() / 2 }))
   );
-
   const yTicks = $derived(
-    yDomain.map(v => ({ value: v, y: (yScale(v) ?? 0) + yScale.bandwidth() / 2 }))
+    variables.map(v => ({ value: v, y: (yScale(v) ?? 0) + yScale.bandwidth() / 2 }))
   );
 
-  // Show value label only when cell is tall enough
-  const minCellForLabel = 16;
+  const minCellForLabel = 28;
   const showCellValues = $derived(
     showValues && yScale.bandwidth() >= minCellForLabel && xScale.bandwidth() >= minCellForLabel
   );
 
   const legendBarY = $derived(innerHeight + margin.bottom - legendReserve + 28);
+
+  const divergingRange = $derived([negativeColor, neutralColor, positiveColor]);
 </script>
 
 <ChartFrame
@@ -109,9 +103,8 @@
   margin={frameMargin}
   bind:innerWidth
   bind:innerHeight
-  ariaLabel="Heat map"
+  ariaLabel="Correlation matrix"
 >
-  <!-- Cells -->
   {#each data as cell (`${cell.x}__${cell.y}`)}
     {@const cx = xScale(cell.x) ?? 0}
     {@const cy = yScale(cell.y) ?? 0}
@@ -141,32 +134,44 @@
     {/if}
   {/each}
 
-  <XAxis
-    ticks={xTicks}
-    {innerHeight}
-    {innerWidth}
-    label={xLabel}
-    fontFamily={chartFont}
-    rotate={xRotate}
-    showLine={false}
-  />
-  <YAxis
-    ticks={yTicks}
-    {innerHeight}
-    label={yLabel}
-    fontFamily={chartFont}
-    showLine={false}
-  />
+  <!-- X axis labels -->
+  <g transform="translate(0,{innerHeight})">
+    {#each xTicks as tick (tick.value)}
+      <text
+        x={tick.x}
+        y={0}
+        dy="0.5em"
+        dx="-0.5em"
+        text-anchor="end"
+        font-size={typography.sizes.sm}
+        fill="#64748b"
+        font-family={chartFont}
+        transform="rotate({xRotate}, {tick.x}, 0)"
+      >{tick.value}</text>
+    {/each}
+  </g>
 
-  <!-- Gradient legend -->
+  <!-- Y axis labels -->
+  {#each yTicks as tick (tick.value)}
+    <text
+      x={-8}
+      y={tick.y}
+      text-anchor="end"
+      dominant-baseline="middle"
+      font-size={typography.sizes.sm}
+      fill="#64748b"
+      font-family={chartFont}
+    >{tick.value}</text>
+  {/each}
+
   {#if showLegend}
     <g transform="translate(0,{legendBarY})">
       <GradientLegend
-        colorRange={[...colorRange]}
-        min={valueExtent[0]}
-        max={valueExtent[1]}
+        colorRange={divergingRange}
+        min={-1}
+        max={1}
         width={legendWidth}
-        {format}
+        format={(v) => v.toFixed(1)}
       />
     </g>
   {/if}

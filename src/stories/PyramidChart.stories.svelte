@@ -1,55 +1,53 @@
 <script module>
   import { defineMeta } from '@storybook/addon-svelte-csf';
   import PyramidChart from '../lib/components/PyramidChart.svelte';
-  import { blue, teal, orange } from '../lib/tokens.js';
+  import { colorPairs } from '../lib/palettes.js';
 
   const { Story } = defineMeta({
     title: 'Charts/PyramidChart',
     component: PyramidChart,
     tags: ['autodocs'],
     argTypes: {
-      height: { control: { type: 'range', min: 200, max: 600, step: 20 } },
-      gap:    { control: { type: 'range', min: 0, max: 20, step: 1 } },
-      showDifferences: { control: 'boolean' },
+      height: { control: { type: 'range', min: 300, max: 600, step: 20 } },
+      centerGap: { control: { type: 'range', min: 20, max: 80, step: 4 } },
     },
   });
 </script>
 
 <Story
-  name="Default"
+  name="Population Pyramid"
   args={{
-    tiers: [
-      { label: 'Conscientização', value: 12000 },
-      { label: 'Consideração',    value: 4800  },
-      { label: 'Conversão',       value: 960   },
+    data: [
+      { label: '0–9',   left: 7200, right: 6900 },
+      { label: '10–19', left: 8100, right: 7800 },
+      { label: '20–29', left: 9500, right: 9200 },
+      { label: '30–39', left: 10800, right: 10500 },
+      { label: '40–49', left: 9200, right: 9600 },
+      { label: '50–59', left: 7500, right: 8100 },
+      { label: '60–69', left: 5200, right: 6000 },
+      { label: '70–79', left: 2800, right: 3600 },
+      { label: '80+',   left: 900,  right: 1500 },
     ],
-    height: 380,
-    showDifferences: true,
+    leftLabel: 'Masculino',
+    rightLabel: 'Feminino',
+    height: 460,
   }}
 />
 
 <Story
   name="Custom Colors"
   args={{
-    tiers: [
-      { label: 'Top',    value: 500,  color: blue   },
-      { label: 'Middle', value: 2100, color: teal   },
-      { label: 'Base',   value: 8700, color: orange },
+    data: [
+      { label: '0–14',  left: 22000, right: 21000 },
+      { label: '15–29', left: 25000, right: 24500 },
+      { label: '30–44', left: 28000, right: 27000 },
+      { label: '45–59', left: 21000, right: 22500 },
+      { label: '60–74', left: 14000, right: 16000 },
+      { label: '75+',   left: 5000,  right: 7500  },
     ],
-    height: 380,
-    showDifferences: true,
-  }}
-/>
-
-<Story
-  name="No Differences"
-  args={{
-    tiers: [
-      { label: 'Visitantes',  value: 50000 },
-      { label: 'Leads',       value: 8500  },
-      { label: 'Clientes',    value: 1200  },
-    ],
-    height: 380,
-    showDifferences: false,
+    leftLabel: 'Homens',
+    rightLabel: 'Mulheres',
+    colors: colorPairs.orangeTeal,
+    height: 400,
   }}
 />
