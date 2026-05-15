@@ -11,14 +11,22 @@ import { black, white } from '../tokens.js';
  * getContrastColor('#f6c341') // → '#000000' (black — light bg)
  */
 export function getContrastColor(bgColor: string): string {
-  const hex = bgColor.replace('#', '').slice(0, 6);
-  const full = hex.length === 3
-    ? hex.split('').map(c => c + c).join('')
-    : hex;
+  let r: number, g: number, b: number;
 
-  const r = parseInt(full.slice(0, 2), 16);
-  const g = parseInt(full.slice(2, 4), 16);
-  const b = parseInt(full.slice(4, 6), 16);
+  const rgbMatch = bgColor.match(/^rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/);
+  if (rgbMatch) {
+    r = +rgbMatch[1];
+    g = +rgbMatch[2];
+    b = +rgbMatch[3];
+  } else {
+    const hex = bgColor.replace('#', '').slice(0, 6);
+    const full = hex.length === 3
+      ? hex.split('').map(c => c + c).join('')
+      : hex;
+    r = parseInt(full.slice(0, 2), 16);
+    g = parseInt(full.slice(2, 4), 16);
+    b = parseInt(full.slice(4, 6), 16);
+  }
 
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
   return luminance > 0.55 ? black : white;

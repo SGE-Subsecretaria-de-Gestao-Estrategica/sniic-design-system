@@ -36,6 +36,26 @@ export function measureTextWidth(
  * Checks whether a label fits inside a bar segment of the given width,
  * accounting for left padding and right margin.
  */
+/**
+ * Checks whether a label fits inside a circle of the given radius.
+ * Uses the horizontal chord width at the text's vertical offset to determine available space.
+ */
+export function labelFitsInCircle(
+	text: string,
+	fontSize: number,
+	radius: number,
+	dyFraction: number = 0,
+	padding: number = 6,
+): boolean {
+	if (radius <= 0) return false;
+	const yOffset = Math.abs(dyFraction * fontSize);
+	if (yOffset >= radius) return false;
+	const chordHalfWidth = Math.sqrt(radius * radius - yOffset * yOffset);
+	const availableWidth = chordHalfWidth * 2;
+	const textW = measureTextWidth(text, fontSize);
+	return availableWidth >= textW + padding;
+}
+
 export function labelFitsInBar(
 	text: string,
 	fontSize: number,
