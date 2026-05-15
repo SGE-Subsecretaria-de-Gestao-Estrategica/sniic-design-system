@@ -11,7 +11,9 @@
 	import { buildColorMap, buildLegendItems } from '../utils/colorMapHelpers.js';
 	import type { StackedDatum } from './VerticalStackedBarChart.svelte';
 	import ChartFrame from './molecules/ChartFrame.svelte';
+	import LegendBar from './molecules/LegendBar.svelte';
 	import XAxis from './atoms/XAxis.svelte';
+	import YAxis from './atoms/YAxis.svelte';
 	import GridLines from './atoms/GridLines.svelte';
 	import BarRect from './atoms/BarRect.svelte';
 
@@ -24,6 +26,9 @@
 		colors?: readonly string[];
 		rowHeight?: number;
 		showTotalLabel?: boolean;
+		/** Optional map of category → image URL, rendered next to Y-axis labels. */
+		icons?: Record<string, string>;
+		iconSize?: number;
 	}
 
 	let {
@@ -35,22 +40,25 @@
 		colors = categorical8,
 		rowHeight = 52,
 		showTotalLabel = true,
+		icons,
+		iconSize = 20,
 	}: Props = $props();
 
 	const chartFont = typography.chartValueFontFamily;
 
 	const X_AXIS_LABEL_RESERVE = 22;
 	const LEGEND_BAR_H = 34;
-	const LEGEND_TEXT_PAD = 12;
 	const STROKE_W = 0.5;
 	const SEGMENT_LABEL_PAD = 6;
 	const LABEL_FONT_WEIGHT = 700;
-	const FRAME_MARGIN = {
+	const ICON_GAP = 6;
+	const iconExtra = $derived(icons ? iconSize + ICON_GAP : 0);
+	const FRAME_MARGIN = $derived({
 		top: 16,
 		right: 28,
 		bottom: 12 + X_AXIS_LABEL_RESERVE + LEGEND_BAR_H,
-		left: 50,
-	};
+		left: 50 + iconExtra,
+	});
 
 	let innerW = $state(0);
 
@@ -100,6 +108,13 @@
 	const xGridPositions = $derived(xTickValues.map((v) => xScale(v)));
 
 	const legendBarY = $derived(barAreaH + X_AXIS_LABEL_RESERVE);
+
+	const yTicks = $derived(
+		sorted.map((d) => ({
+			value: String(d[categoryKey]),
+			y: (yScale(String(d[categoryKey])) ?? 0) + yScale.bandwidth() / 2,
+		})),
+	);
 
 	function rowTotal(d: StackedDatum): number {
 		return effectiveKeys.reduce((s, k) => s + (Number(d[k]) || 0), 0);
@@ -165,18 +180,31 @@
 		{/each}
 	{/if}
 
-	{#each sorted as d (String(d[categoryKey]))}
-		{@const barCenter = (yScale(String(d[categoryKey])) ?? 0) + yScale.bandwidth() / 2}
-		<text
-			x={-8}
-			y={barCenter}
-			text-anchor="end"
-			dominant-baseline="middle"
-			font-size={11}
-			font-family={chartFont}
-			fill="#a0a0a0"
-		>{String(d[categoryKey])}</text>
-	{/each}
+	<YAxis
+		ticks={yTicks}
+		innerHeight={barAreaH}
+		showLine={false}
+		color="#a0a0a0"
+		fontSize={11}
+		tickOffset={-8}
+		fontFamily={chartFont}
+	/>
+
+	{#if icons}
+		{#each sorted as d (String(d[categoryKey]))}
+			{@const cat = String(d[categoryKey])}
+			{@const iconUrl = icons[cat]}
+			{#if iconUrl}
+				<image
+					href={iconUrl}
+					x={-(FRAME_MARGIN.left - 4)}
+					y={(yScale(cat) ?? 0) + yScale.bandwidth() / 2 - iconSize / 2}
+					width={iconSize}
+					height={iconSize}
+				/>
+			{/if}
+		{/each}
+	{/if}
 
 	<XAxis
 		ticks={xTicks}
@@ -189,46 +217,12 @@
 	/>
 
 	<!-- Legend bar -->
-	{#each legendItems as item, i (item.label)}
-		{@const segW = innerW / legendItems.length}
-		<BarRect
-			x={i * segW}
-			y={legendBarY}
-			width={segW}
-			height={LEGEND_BAR_H}
-			fill={item.color}
-			shapeRendering="crispEdges"
-		/>
-		<text
-			x={i * segW + LEGEND_TEXT_PAD}
-			y={legendBarY + LEGEND_BAR_H / 2}
-			dy="0.35em"
-			font-size={typography.sizes.sm}
-			font-weight="600"
-			font-family={chartFont}
-			fill={getContrastColor(item.color)}
-		>{item.label}</text>
-	{/each}
-	{#each { length: legendItems.length - 1 } as _, i (i)}
-		{@const segW = innerW / legendItems.length}
-		<line
-			x1={(i + 1) * segW}
-			y1={legendBarY}
-			x2={(i + 1) * segW}
-			y2={legendBarY + LEGEND_BAR_H}
-			stroke={black}
-			stroke-width={STROKE_W}
-			shape-rendering="crispEdges"
-		/>
-	{/each}
-	<rect
-		x={0}
+	<LegendBar
+		items={legendItems}
 		y={legendBarY}
 		width={innerW}
 		height={LEGEND_BAR_H}
-		fill="none"
-		stroke={black}
-		stroke-width={STROKE_W}
-		shape-rendering="crispEdges"
+		strokeWidth={STROKE_W}
+		fontFamily={chartFont}
 	/>
 </ChartFrame>

@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { scaleBand, scaleLinear, max } from 'd3';
 	import { black, colors, defaultMargin, typography, type Margin } from '../tokens.js';
+
+	const STROKE_W = 0.5;
 	import ChartFrame from './molecules/ChartFrame.svelte';
 	import XAxis from './atoms/XAxis.svelte';
 	import YAxis from './atoms/YAxis.svelte';
@@ -72,8 +74,9 @@
 			width={xScale.bandwidth()}
 			height={innerHeight - yScale(d.value)}
 			fill={color}
-			rx={3}
-			opacity={0.9}
+			stroke={black}
+			strokeWidth={STROKE_W}
+			shapeRendering="crispEdges"
 			title="{d.label}: {d.value}"
 		/>
 	{/each}

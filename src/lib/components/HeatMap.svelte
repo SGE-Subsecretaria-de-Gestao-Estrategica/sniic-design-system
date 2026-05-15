@@ -2,6 +2,7 @@
   import { scaleBand, scaleLinear, extent } from 'd3';
   import { colorScales, defaultMargin, typography, type Margin } from '../tokens.js';
   import { getContrastColor } from '../utils/colorContrast.js';
+  import ChartFrame from './molecules/ChartFrame.svelte';
   import XAxis from './atoms/XAxis.svelte';
   import YAxis from './atoms/YAxis.svelte';
   import GradientLegend from './atoms/GradientLegend.svelte';
@@ -23,6 +24,7 @@
     showValues?: boolean;
     showLegend?: boolean;
     cellRadius?: number;
+    cellGap?: number;
     xRotate?: number;
   }
 
@@ -37,6 +39,7 @@
     showValues = false,
     showLegend = true,
     cellRadius = 3,
+    cellGap = 4,
     xRotate = 0,
   }: Props = $props();
 
@@ -44,20 +47,32 @@
   const legendHeight = 28;
   const legendWidth = 160;
 
-  let width = $state(0);
+  const legendReserve = $derived(showLegend ? legendHeight + 12 : 0);
+  const totalHeight = $derived(height + legendReserve);
+  const frameMargin = $derived({
+    ...margin,
+    bottom: margin.bottom + legendReserve,
+  });
 
-  const innerWidth  = $derived(width  - margin.left - margin.right);
-  const innerHeight = $derived(height - margin.top  - margin.bottom);
+  let innerWidth = $state(0);
+  let innerHeight = $state(0);
 
   const xDomain = $derived([...new Set(data.map(d => d.x))]);
   const yDomain = $derived([...new Set(data.map(d => d.y))]);
 
+  const xPadding = $derived(
+    innerWidth > 0 ? (cellGap * xDomain.length) / (innerWidth + cellGap) : 0
+  );
+  const yPadding = $derived(
+    innerHeight > 0 ? (cellGap * yDomain.length) / (innerHeight + cellGap) : 0
+  );
+
   const xScale = $derived(
-    scaleBand().domain(xDomain).range([0, innerWidth]).padding(0.05)
+    scaleBand().domain(xDomain).range([0, innerWidth]).paddingInner(xPadding)
   );
 
   const yScale = $derived(
-    scaleBand().domain(yDomain).range([0, innerHeight]).padding(0.05)
+    scaleBand().domain(yDomain).range([0, innerHeight]).paddingInner(yPadding)
   );
 
   const valueExtent = $derived(
@@ -85,106 +100,74 @@
     showValues && yScale.bandwidth() >= minCellForLabel && xScale.bandwidth() >= minCellForLabel
   );
 
-  const totalHeight = $derived(height + (showLegend ? legendHeight + 12 : 0));
-
-  function observeWidth(node: HTMLDivElement) {
-    width = node.clientWidth;
-    const ro = new ResizeObserver(([e]) => { width = e.contentRect.width; });
-    ro.observe(node);
-    return () => ro.disconnect();
-  }
+  const legendBarY = $derived(innerHeight + margin.bottom - legendReserve + 28);
 </script>
 
-<svelte:head>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap"
-    rel="stylesheet"
-  />
-</svelte:head>
-
-<div {@attach observeWidth} class="chart-container">
-  {#if width > 0}
-    <svg
-      {width}
-      height={totalHeight}
-      font-family={chartFont}
-      style="overflow: visible;"
-      role="img"
-      aria-label="Heat map"
+<ChartFrame
+  responsive
+  height={totalHeight}
+  margin={frameMargin}
+  bind:innerWidth
+  bind:innerHeight
+  ariaLabel="Heat map"
+>
+  <!-- Cells -->
+  {#each data as cell (`${cell.x}__${cell.y}`)}
+    {@const cx = xScale(cell.x) ?? 0}
+    {@const cy = yScale(cell.y) ?? 0}
+    {@const cw = xScale.bandwidth()}
+    {@const ch = yScale.bandwidth()}
+    {@const fill = colorScale(cell.value)}
+    <rect
+      x={cx}
+      y={cy}
+      width={cw}
+      height={ch}
+      rx={cellRadius}
+      {fill}
     >
-      <g transform="translate({margin.left},{margin.top})">
-        <!-- Cells -->
-        {#each data as cell (`${cell.x}__${cell.y}`)}
-          {@const cx = xScale(cell.x) ?? 0}
-          {@const cy = yScale(cell.y) ?? 0}
-          {@const cw = xScale.bandwidth()}
-          {@const ch = yScale.bandwidth()}
-          {@const fill = colorScale(cell.value)}
-          <rect
-            x={cx}
-            y={cy}
-            width={cw}
-            height={ch}
-            rx={cellRadius}
-            {fill}
-          >
-            <title>{cell.x} / {cell.y}: {format(cell.value)}</title>
-          </rect>
+      <title>{cell.x} / {cell.y}: {format(cell.value)}</title>
+    </rect>
 
-          {#if showCellValues}
-            <text
-              x={cx + cw / 2}
-              y={cy + ch / 2}
-              text-anchor="middle"
-              dominant-baseline="middle"
-              font-size={typography.sizes.xs}
-              fill={getContrastColor(fill)}
-            >{format(cell.value)}</text>
-          {/if}
-        {/each}
+    {#if showCellValues}
+      <text
+        x={cx + cw / 2}
+        y={cy + ch / 2}
+        text-anchor="middle"
+        dominant-baseline="middle"
+        font-size={typography.sizes.xs}
+        fill={getContrastColor(fill)}
+      >{format(cell.value)}</text>
+    {/if}
+  {/each}
 
-        <XAxis
-          ticks={xTicks}
-          {innerHeight}
-          {innerWidth}
-          label={xLabel}
-          fontFamily={chartFont}
-          rotate={xRotate}
-          showLine={false}
-        />
-        <YAxis
-          ticks={yTicks}
-          {innerHeight}
-          label={yLabel}
-          fontFamily={chartFont}
-          showLine={false}
-        />
-      </g>
+  <XAxis
+    ticks={xTicks}
+    {innerHeight}
+    {innerWidth}
+    label={xLabel}
+    fontFamily={chartFont}
+    rotate={xRotate}
+    showLine={false}
+  />
+  <YAxis
+    ticks={yTicks}
+    {innerHeight}
+    label={yLabel}
+    fontFamily={chartFont}
+    showLine={false}
+  />
 
-      <!-- Gradient legend -->
-      {#if showLegend}
-        <g transform="translate({margin.left},{height + 4})">
-          <GradientLegend
-            colorRange={[...colorRange]}
-            min={valueExtent[0]}
-            max={valueExtent[1]}
-            width={legendWidth}
-            {format}
-          />
-        </g>
-      {/if}
-    </svg>
+  <!-- Gradient legend -->
+  {#if showLegend}
+    <g transform="translate(0,{legendBarY})">
+      <GradientLegend
+        colorRange={[...colorRange]}
+        min={valueExtent[0]}
+        max={valueExtent[1]}
+        width={legendWidth}
+        {format}
+      />
+    </g>
   {/if}
-</div>
-
-<style>
-  .chart-container {
-    width: 100%;
-  }
-  svg {
-    display: block;
-    width: 100%;
-  }
-</style>
+</ChartFrame>

@@ -2,6 +2,7 @@
   import { scaleLinear } from 'd3';
   import { black, typography } from '../tokens.js';
   import { categorical8 } from '../palettes.js';
+  import Legend from './atoms/Legend.svelte';
 
   interface DataPoint {
     axis: string;
@@ -34,9 +35,9 @@
     maxValue,
     levels = 5,
     size = 400,
-    dotRadius = 4,
+    dotRadius = 6,
     strokeWidth = 2,
-    format = (v: number) => String(v),
+    format = (v: number) => Number.isInteger(v) ? String(v) : v.toFixed(2).replace(/\.?0+$/, ''),
     showDots = true,
     showLevelLabels = true,
     showLegend = true,
@@ -133,6 +134,12 @@
   // Level label position: top of the chart (index 0 is up, -π/2)
   const levelLabelX = $derived(cx);
   const levelLabelY = $derived.by(() => (r: number) => cy - r);
+
+  const legendItems = $derived(
+    series.length > 1
+      ? seriesShapes.map(s => ({ label: s.name, color: s.color }))
+      : []
+  );
 </script>
 
 <svelte:head>
@@ -235,27 +242,10 @@
     {/each}
 
     <!-- Legend -->
-    {#if showLegend && series.length > 1}
-      {@const legendX = 12}
-      {@const legendY = size - 12 - series.length * 20}
-      {#each seriesShapes as shape, si (shape.name)}
-        <rect
-          x={legendX}
-          y={legendY + si * 20}
-          width={12}
-          height={12}
-          rx="2"
-          fill={shape.color}
-          fill-opacity="0.85"
-        />
-        <text
-          x={legendX + 18}
-          y={legendY + si * 20 + 6}
-          font-size={typography.sizes.sm}
-          fill={black}
-          dominant-baseline="middle"
-        >{shape.name}</text>
-      {/each}
+    {#if showLegend && legendItems.length > 0}
+      <g transform="translate(12, {size - 12 - legendItems.length * 20})">
+        <Legend items={legendItems} direction="col" spacing={20} />
+      </g>
     {/if}
   {/if}
 </svg>

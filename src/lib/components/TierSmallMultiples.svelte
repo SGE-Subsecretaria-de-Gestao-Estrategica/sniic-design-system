@@ -13,6 +13,7 @@
     format?: (v: number) => string;
     cities?: CityMarker[];
     municipalities?: MunicipalityData;
+    initialState?: string;
   }
 
   let {
@@ -21,6 +22,7 @@
     format = (v: number) => `${v.toFixed(1)}%`,
     cities = [],
     municipalities = {},
+    initialState,
   }: Props = $props();
 
   // ── DOM dimensions (bind:clientWidth handles ResizeObserver internally) ───
@@ -60,7 +62,7 @@
 
   // ── State detail map ──────────────────────────────────────────────────────
 
-  const LABEL_MARGIN = 70;   // horizontal space reserved for labels on each side
+  const LABEL_MARGIN = 90;   // horizontal space reserved for labels on each side
   const DETAIL_PAD_Y = 12;
   const detailHeight = $derived(detailWidth * 1.3);
   const mapTop       = $derived(detailHeight * 0.1);  // space above map for labels
@@ -103,7 +105,7 @@
     isCapital: boolean;
   }
 
-  const LINE_HEIGHT = 11;
+  const LINE_HEIGHT = 14;
 
   const cityLayouts = $derived.by((): CityLayout[] => {
     if (!detailProj || stateCities.length === 0 || mapWidth <= 0) return [];
@@ -186,7 +188,17 @@
   // ── Lifecycle ─────────────────────────────────────────────────────────────
 
   onMount(() => {
-    loadBrazilGeoJSON().then((geo) => { brazilGeo = geo; });
+    loadBrazilGeoJSON().then(async (geo) => {
+      brazilGeo = geo;
+      if (initialState && geo) {
+        const feature = geo.features.find(
+          (f: any) => f.properties.sigla === initialState || f.properties.name === initialState,
+        );
+        if (feature) {
+          await handleStateClick(feature);
+        }
+      }
+    });
   });
 </script>
 
@@ -332,7 +344,7 @@
                 x={cl.labelX} y={cl.labelY}
                 text-anchor={cl.anchor}
                 dominant-baseline="middle"
-                font-size={cl.isCapital ? 7.5 : 6.5}
+                font-size={cl.isCapital ? 10 : 8.5}
                 font-weight={cl.isCapital ? '700' : '400'}
                 fill="#2f0f29"
                 pointer-events="none"

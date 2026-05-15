@@ -19,6 +19,7 @@
 	import Legend from './atoms/Legend.svelte';
 	import BubbleWithLabel from './atoms/BubbleWithLabel.svelte';
 	import Tooltip from './molecules/Tooltip.svelte';
+	import { relativePos } from '../utils/tooltipState.js';
 
 	interface Props {
 		data?: BubbleDatum[];
@@ -67,14 +68,6 @@
 		if (sizeLabel) lines.push(`${sizeLabel}: ${d.size.toLocaleString()}`);
 		if (d.group) lines.push(`${d.group}`);
 		return lines.join('<br/>');
-	}
-
-	function relativePos(
-		event: MouseEvent,
-		container: HTMLElement,
-	): { x: number; y: number } {
-		const rect = container.getBoundingClientRect();
-		return { x: event.clientX - rect.left, y: event.clientY - rect.top };
 	}
 
 	function bubbleColor(d: BubbleDatum): string {

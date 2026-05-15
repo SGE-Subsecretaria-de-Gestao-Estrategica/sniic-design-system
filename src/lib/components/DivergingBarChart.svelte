@@ -12,6 +12,7 @@
 	import { colorPairs, type ColorPair } from '../palettes.js';
 	import { segmentLabelFontSize, labelFitsInBar } from '../utils/labelHelpers.js';
 	import ChartFrame from './molecules/ChartFrame.svelte';
+	import LegendBar from './molecules/LegendBar.svelte';
 	import XAxis from './atoms/XAxis.svelte';
 	import YAxis from './atoms/YAxis.svelte';
 	import GridLines from './atoms/GridLines.svelte';
@@ -46,7 +47,6 @@
 
 	const X_AXIS_LABEL_RESERVE = 22;
 	const LEGEND_BAR_H = 34;
-	const LEGEND_TEXT_PAD = 12;
 	const STROKE_W = 0.5;
 	const SEGMENT_LABEL_PAD = 6;
 	const LABEL_FONT_WEIGHT = 700;
@@ -92,7 +92,11 @@
 	);
 
 	const legendBarY = $derived(barAreaH + X_AXIS_LABEL_RESERVE);
-	const legendHalfW = $derived(innerW / 2);
+
+	const legendItems = $derived([
+		{ label: leftLabel, color: COLORS.left },
+		{ label: rightLabel, color: COLORS.right },
+	]);
 </script>
 
 <ChartFrame responsive {height} margin={FRAME_MARGIN} bind:innerWidth={innerW}>
@@ -207,57 +211,12 @@
 	/>
 
 	<!-- Legend bar -->
-	<BarRect
-		x={0}
-		y={legendBarY}
-		width={legendHalfW}
-		height={LEGEND_BAR_H}
-		fill={COLORS.left}
-		shapeRendering="crispEdges"
-	/>
-	<BarRect
-		x={legendHalfW}
-		y={legendBarY}
-		width={legendHalfW}
-		height={LEGEND_BAR_H}
-		fill={COLORS.right}
-		shapeRendering="crispEdges"
-	/>
-	<line
-		x1={legendHalfW}
-		y1={legendBarY}
-		x2={legendHalfW}
-		y2={legendBarY + LEGEND_BAR_H}
-		stroke={black}
-		stroke-width={STROKE_W}
-		shape-rendering="crispEdges"
-	/>
-	<rect
-		x={0}
+	<LegendBar
+		items={legendItems}
 		y={legendBarY}
 		width={innerW}
 		height={LEGEND_BAR_H}
-		fill="none"
-		stroke={black}
-		stroke-width={STROKE_W}
-		shape-rendering="crispEdges"
+		strokeWidth={STROKE_W}
+		fontFamily={chartFont}
 	/>
-	<text
-		x={LEGEND_TEXT_PAD}
-		y={legendBarY + LEGEND_BAR_H / 2}
-		dy="0.35em"
-		font-size={typography.sizes.sm}
-		font-weight="600"
-		font-family={chartFont}
-		fill={black}
-	>{leftLabel}</text>
-	<text
-		x={legendHalfW + LEGEND_TEXT_PAD}
-		y={legendBarY + LEGEND_BAR_H / 2}
-		dy="0.35em"
-		font-size={typography.sizes.sm}
-		font-weight="600"
-		font-family={chartFont}
-		fill={black}
-	>{rightLabel}</text>
 </ChartFrame>
