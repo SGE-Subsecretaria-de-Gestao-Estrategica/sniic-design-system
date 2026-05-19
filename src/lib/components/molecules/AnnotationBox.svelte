@@ -6,6 +6,8 @@
    * Renders a bordered label box with a two-segment connector line and a circle highlight
    * around the annotated data point.
    */
+  import type { Snippet } from 'svelte';
+
   interface Props {
     /** Coordinates of the annotated data point (inner chart space). */
     pointX: number;
@@ -19,9 +21,13 @@
     color?: string;
     /** Width of the annotation box in px. */
     boxWidth?: number;
+    /** Height override for the annotation box (required when using children). */
+    boxHeight?: number;
     /** Radius of the highlight ring drawn around the data point. */
     circleRadius?: number;
     fontFamily?: string;
+    /** Optional slotted content rendered inside the box via foreignObject. */
+    children?: Snippet;
   }
 
   let {
@@ -33,8 +39,10 @@
     subtitle = '',
     color = orange,
     boxWidth = 220,
+    boxHeight: boxHeightProp,
     circleRadius = 16,
     fontFamily = typography.chartValueFontFamily,
+    children,
   }: Props = $props();
 
   // Layout constants
@@ -46,9 +54,10 @@
 
   // Split subtitle into lines to support manual wrapping (\n or passed as array)
   const subtitleLines = $derived(subtitle ? subtitle.split('\n') : []);
-  const boxHeight = $derived(
+  const autoBoxHeight = $derived(
     pad * 2 + titleHeight + (subtitleLines.length > 0 ? subtitleLines.length * lineHeight + 6 : 0)
   );
+  const boxHeight = $derived(boxHeightProp ?? autoBoxHeight);
 
   // Box center
   const boxCX = $derived(boxX + boxWidth / 2);
@@ -115,3 +124,16 @@
     font-family={fontFamily}
   >{line}</text>
 {/each}
+
+{#if children}
+  <foreignObject
+    x={boxX}
+    y={boxY + pad + titleHeight + (subtitleLines.length > 0 ? subtitleLines.length * lineHeight + 6 : 0)}
+    width={boxWidth}
+    height={boxHeight - pad - titleHeight - (subtitleLines.length > 0 ? subtitleLines.length * lineHeight + 6 : 0)}
+  >
+    <div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;">
+      {@render children()}
+    </div>
+  </foreignObject>
+{/if}

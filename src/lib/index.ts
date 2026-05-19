@@ -9,11 +9,23 @@ export { default as BarRect } from './components/atoms/BarRect.svelte';
 export { default as ReferenceLine } from './components/atoms/ReferenceLine.svelte';
 export { default as BubbleWithLabel } from './components/atoms/BubbleWithLabel.svelte';
 
+// Icons — territory
+export { default as IconFavela } from './components/atoms/icons/IconFavela.svelte';
+export { default as IconTerritorioIndigena } from './components/atoms/icons/IconTerritorioIndigena.svelte';
+export { default as IconTerritorioQuilombola } from './components/atoms/icons/IconTerritorioQuilombola.svelte';
+export { default as IconRural } from './components/atoms/icons/IconRural.svelte';
+
+// Icons — state flags
+export { default as StateFlag } from './components/atoms/icons/StateFlag.svelte';
+
 // Molecules — composed SVG/HTML shells
 export { default as ChartFrame } from './components/molecules/ChartFrame.svelte';
 export { default as Tooltip } from './components/molecules/Tooltip.svelte';
 export { default as AnnotationBox } from './components/molecules/AnnotationBox.svelte';
+export { default as SimpleBox } from './components/molecules/SimpleBox.svelte';
 export { default as LegendBar } from './components/molecules/LegendBar.svelte';
+export { default as DataTable } from './components/molecules/DataTable.svelte';
+export type { TableColumn } from './components/molecules/DataTable.svelte';
 
 // Organisms — full chart components
 export { default as VerticalBarChart } from './components/VerticalBarChart.svelte';

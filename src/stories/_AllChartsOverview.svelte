@@ -26,7 +26,11 @@
   import CorrelationMatrix from '../lib/components/CorrelationMatrix.svelte';
   import CalendarHeatmap from '../lib/components/CalendarHeatmap.svelte';
   import ContourPlot from '../lib/components/ContourPlot.svelte';
-  import { colorScales } from '../lib/tokens.js';
+  import AnnotationBox from '../lib/components/molecules/AnnotationBox.svelte';
+  import SimpleBox from '../lib/components/molecules/SimpleBox.svelte';
+  import DataTable from '../lib/components/molecules/DataTable.svelte';
+  import type { TableColumn } from '../lib/components/molecules/DataTable.svelte';
+  import { colorScales, orange, teal, blue, purple, lime } from '../lib/tokens.js';
 
   // ── Shared sample data ──────────────────────────────────────────────────
 
@@ -433,6 +437,57 @@
     return pts;
   })();
 
+  // ── Table data ──────────────────────────────────────────────────────
+
+  const regionCols: TableColumn[] = [
+    { key: 'regiao', label: 'Região', align: 'left', width: 140 },
+    { key: 'museus', label: 'Museus', align: 'right', width: 90 },
+    { key: 'bibliotecas', label: 'Bibliotecas', align: 'right', width: 110 },
+    { key: 'teatros', label: 'Teatros', align: 'right', width: 90 },
+    { key: 'cinemas', label: 'Cinemas', align: 'right', width: 90 },
+    { key: 'total', label: 'Total', align: 'right', width: 90 },
+    { key: 'pct', label: '% do total', align: 'right', width: 90 },
+  ];
+
+  const regionRows = [
+    { regiao: 'Sudeste', museus: '1.247', bibliotecas: '3.891', teatros: '842', cinemas: '1.563', total: '7.543', pct: '42,1%' },
+    { regiao: 'Nordeste', museus: '623', bibliotecas: '2.456', teatros: '318', cinemas: '487', total: '3.884', pct: '21,7%' },
+    { regiao: 'Sul', museus: '534', bibliotecas: '1.987', teatros: '412', cinemas: '678', total: '3.611', pct: '20,2%' },
+    { regiao: 'Centro-Oeste', museus: '198', bibliotecas: '812', teatros: '145', cinemas: '312', total: '1.467', pct: '8,2%' },
+    { regiao: 'Norte', museus: '87', bibliotecas: '623', teatros: '56', cinemas: '142', total: '908', pct: '5,1%' },
+  ];
+
+  const orcamentoCols: TableColumn[] = [
+    { key: 'programa', label: 'Programa / Ação', align: 'left', width: 220 },
+    { key: 'dotacao', label: 'Dotação inicial', align: 'right', width: 130 },
+    { key: 'empenhado', label: 'Empenhado', align: 'right', width: 130 },
+    { key: 'liquidado', label: 'Liquidado', align: 'right', width: 130 },
+    { key: 'pago', label: 'Pago', align: 'right', width: 130 },
+    { key: 'execucao', label: '% execução', align: 'right', width: 100 },
+  ];
+
+  const orcamentoRows = [
+    { programa: 'Fomento à cultura', dotacao: 'R$ 412,5 mi', empenhado: 'R$ 398,2 mi', liquidado: 'R$ 371,8 mi', pago: 'R$ 358,4 mi', execucao: '86,9%' },
+    { programa: 'Preservação do patrimônio', dotacao: 'R$ 287,3 mi', empenhado: 'R$ 265,1 mi', liquidado: 'R$ 241,6 mi', pago: 'R$ 228,9 mi', execucao: '79,7%' },
+    { programa: 'Economia criativa e diversidade cultural', dotacao: 'R$ 198,6 mi', empenhado: 'R$ 192,4 mi', liquidado: 'R$ 185,3 mi', pago: 'R$ 179,1 mi', execucao: '90,2%' },
+    { programa: 'Infraestrutura cultural', dotacao: 'R$ 156,8 mi', empenhado: 'R$ 134,2 mi', liquidado: 'R$ 112,7 mi', pago: 'R$ 98,5 mi', execucao: '62,8%' },
+    { programa: 'Gestão e administração do MinC', dotacao: 'R$ 89,4 mi', empenhado: 'R$ 87,6 mi', liquidado: 'R$ 86,1 mi', pago: 'R$ 85,3 mi', execucao: '95,4%' },
+    { programa: 'Audiovisual e comunicação', dotacao: 'R$ 142,1 mi', empenhado: 'R$ 138,7 mi', liquidado: 'R$ 130,2 mi', pago: 'R$ 124,6 mi', execucao: '87,7%' },
+  ];
+
+  const simpleCols: TableColumn[] = [
+    { key: 'uf', label: 'UF', align: 'left', width: 60 },
+    { key: 'projetos', label: 'Projetos', align: 'right', width: 90 },
+    { key: 'valor', label: 'Valor captado', align: 'right', width: 130 },
+  ];
+
+  const simpleRows = [
+    { uf: 'SP', projetos: '4.231', valor: 'R$ 1,2 bi' },
+    { uf: 'RJ', projetos: '2.876', valor: 'R$ 890 mi' },
+    { uf: 'MG', projetos: '1.543', valor: 'R$ 420 mi' },
+    { uf: 'RS', projetos: '987', valor: 'R$ 310 mi' },
+  ];
+
   const tierData: Record<string, Record<string, Record<string, any>>> = {
     Capitais: {
       'São Paulo':         { execucaoFinanceira: 87.2 },
@@ -769,6 +824,201 @@
         cities={tierCities}
         initialState="MG"
       />
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <h2 class="category-title">Anotacoes</h2>
+
+  <div class="row">
+    <div class="cell">
+      <span class="label">Caixa de Anotacao</span>
+      <svg width="100%" viewBox="0 0 600 300">
+        <AnnotationBox
+          pointX={450}
+          pointY={180}
+          boxX={160}
+          boxY={100}
+          title="Pico historico"
+          subtitle={"Maior valor registrado\nno periodo analisado"}
+          color={orange}
+        />
+      </svg>
+    </div>
+    <div class="cell">
+      <span class="label">Anotacao com BigNumber</span>
+      <svg width="100%" viewBox="0 0 600 300">
+        <AnnotationBox
+          pointX={450}
+          pointY={200}
+          boxX={100}
+          boxY={30}
+          title="Destaque"
+          color={orange}
+          boxWidth={220}
+          boxHeight={160}
+        >
+          <BigNumber value={93} suffix="%" label="execução financeira" fontSize={48} shadowDepth={4} />
+        </AnnotationBox>
+      </svg>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="cell">
+      <span class="label">Caixa Simples (numero grande)</span>
+      <svg width="100%" viewBox="0 0 600 300">
+        <SimpleBox
+          x={40}
+          y={40}
+          title="Museus"
+          value="1.247"
+          subtitle="cadastrados em 2024"
+          color={teal}
+        />
+      </svg>
+    </div>
+    <div class="cell">
+      <span class="label">Caixa Simples (percentual)</span>
+      <svg width="100%" viewBox="0 0 600 300">
+        <SimpleBox
+          x={40}
+          y={40}
+          title="Execucao"
+          value="93%"
+          color={orange}
+          valueSize={40}
+        />
+      </svg>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="cell">
+      <span class="label">Caixa Simples (somente texto)</span>
+      <svg width="100%" viewBox="0 0 600 300">
+        <SimpleBox
+          x={40}
+          y={40}
+          title="Nota"
+          subtitle={"Valores preliminares\nsujeitos a revisao"}
+          color={blue}
+          boxWidth={200}
+        />
+      </svg>
+    </div>
+    <div class="cell">
+      <span class="label">Caixa Simples (sem titulo)</span>
+      <svg width="100%" viewBox="0 0 600 300">
+        <SimpleBox
+          x={40}
+          y={40}
+          value="R$ 3,4 bi"
+          subtitle="investimento total"
+          valueSize={28}
+        />
+      </svg>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="cell">
+      <span class="label">Caixa Simples (titulo e texto longo)</span>
+      <svg width="100%" viewBox="0 0 600 300">
+        <SimpleBox
+          x={40}
+          y={40}
+          title="Metodologia"
+          subtitle={"Os dados apresentados referem-se\nao levantamento realizado entre\njaneiro e dezembro de 2024,\nabrangendo todos os municipios\ncom mais de 50 mil habitantes."}
+          color={purple}
+          boxWidth={240}
+        />
+      </svg>
+    </div>
+    <div class="cell">
+      <span class="label">Caixa Simples (texto longo, sem titulo)</span>
+      <svg width="100%" viewBox="0 0 600 300">
+        <SimpleBox
+          x={40}
+          y={40}
+          subtitle={"Fonte: Sistema Nacional de\nInformacoes e Indicadores Culturais\n(SNIIC), com base nos registros\ndo Cadastro Nacional de Museus\ne do Sistema Nacional de\nBibliotecas Publicas."}
+          color={lime}
+          boxWidth={240}
+        />
+      </svg>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <h2 class="category-title">Tabelas</h2>
+
+  <div class="row">
+    <div class="cell span-2">
+      <span class="label">Tabela CNAE (5 colunas, padrão)</span>
+      <svg width="100%" viewBox="0 0 700 180">
+        <DataTable x={10} y={10} />
+      </svg>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="cell span-2">
+      <span class="label">Equipamentos culturais por região (7 colunas, azul)</span>
+      <svg width="100%" viewBox="0 0 720 230">
+        <DataTable
+          x={10}
+          y={10}
+          columns={regionCols}
+          rows={regionRows}
+          headerColor={blue}
+          lineColor="#b0b0b0"
+        />
+      </svg>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="cell span-2">
+      <span class="label">Execução orçamentária (6 colunas, 6 linhas, roxo)</span>
+      <svg width="100%" viewBox="0 0 860 290">
+        <DataTable
+          x={10}
+          y={10}
+          columns={orcamentoCols}
+          rows={orcamentoRows}
+          headerColor={purple}
+          lineColor="#c0b0bc"
+        />
+      </svg>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="cell">
+      <span class="label">Tabela compacta (3 colunas, laranja)</span>
+      <svg width="100%" viewBox="0 0 300 190">
+        <DataTable
+          x={10}
+          y={10}
+          columns={simpleCols}
+          rows={simpleRows}
+          headerColor={orange}
+          lineColor="#d4a080"
+        />
+      </svg>
+    </div>
+    <div class="cell">
+      <span class="label">Tabela compacta (3 colunas, verde)</span>
+      <svg width="100%" viewBox="0 0 300 190">
+        <DataTable
+          x={10}
+          y={10}
+          columns={simpleCols}
+          rows={simpleRows}
+          headerColor={lime}
+          lineColor="#b0c490"
+        />
+      </svg>
     </div>
   </div>
 </div>
