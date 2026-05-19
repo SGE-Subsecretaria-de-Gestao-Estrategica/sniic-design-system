@@ -97,7 +97,7 @@
   const pathGen = $derived(projection ? geoPath().projection(projection) : null);
 
   // ── Static label layout (internal vs external with leader lines) ──────
-  const LABEL_LINE_HEIGHT = 14;
+  const LABEL_LINE_HEIGHT = 28;
   const LABEL_MIN_DIM = 42; // min bbox dimension (px) to fit a label inside
   const ALWAYS_EXTERNAL = new Set(['PB', 'RN', 'SE', 'PE', 'AL', 'AC', 'RJ', 'ES']);
 

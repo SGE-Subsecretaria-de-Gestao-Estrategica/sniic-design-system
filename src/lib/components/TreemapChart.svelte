@@ -113,8 +113,8 @@
 					width={w}
 					height={h}
 					{fill}
-					stroke={black}
-					strokeWidth={STROKE_W}
+					stroke="none"
+					strokeWidth={0}
 					shapeRendering="crispEdges"
 				/>
 				{#if w >= MIN_LABEL_W && h >= MIN_LABEL_H}

@@ -51,8 +51,10 @@
 	const STROKE_W = 0.5;
 	const SEGMENT_LABEL_PAD = 6;
 	const LABEL_FONT_WEIGHT = 700;
+	const ICON_RATIO = 3 / 2;
 	const ICON_GAP = 6;
-	const iconExtra = $derived(icons ? iconSize + ICON_GAP : 0);
+	const iconW = $derived(iconSize * ICON_RATIO);
+	const iconExtra = $derived(icons ? iconW + ICON_GAP : 0);
 	const FRAME_MARGIN = $derived({
 		top: 16,
 		right: 28,
@@ -147,8 +149,8 @@
 				width={segW}
 				height={band}
 				{fill}
-				stroke={black}
-				strokeWidth={STROKE_W}
+				stroke="none"
+				strokeWidth={0}
 				shapeRendering="crispEdges"
 			/>
 			{#if amount > 0 && labelFitsInBar(labelText, labelFs, segW)}
@@ -199,7 +201,7 @@
 					href={iconUrl}
 					x={-(FRAME_MARGIN.left - 4)}
 					y={(yScale(cat) ?? 0) + yScale.bandwidth() / 2 - iconSize / 2}
-					width={iconSize}
+					width={iconW}
 					height={iconSize}
 				/>
 			{/if}

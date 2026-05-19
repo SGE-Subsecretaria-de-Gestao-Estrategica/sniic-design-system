@@ -1,6 +1,6 @@
 # sniic-design-system
 
-A Svelte component library with chart components and design tokens based on the [Brazilian Government Design System](https://www.gov.br/ds/fundamentos-visuais/cores) (Padrão Digital de Governo).
+A Svelte component library with chart components and design tokens based on the [Brazilian Government Design System](https://www.gov.br/ds/fundamentos-visuais/cores) (Padrao Digital de Governo).
 
 ## Installation
 
@@ -25,309 +25,130 @@ npm install svelte d3
 
 ```svelte
 <script>
-  import { BarChart, LineChart, colors } from 'sniic-design-system';
+  import { VerticalBarChart, LineChart } from 'sniic-design-system';
+  import { blue, orange } from 'sniic-design-system';
 </script>
 ```
+
+## Architecture
+
+The library follows **atomic design** principles:
+
+- **Atoms** — Single-responsibility SVG fragments (axes, legends, bars, labels)
+- **Molecules** — Composed SVG/HTML shells (ChartFrame, Tooltip, AnnotationBox, DataTable)
+- **Organisms** — Full chart components built from atoms and molecules
+
+All charts use **D3** for scales and layouts with **SVG rendering**. `ChartFrame` handles responsive sizing via `ResizeObserver`, SVG setup, and font loading.
 
 ## Components
 
-### BarChart
-
-Renders a vertical bar chart using D3.
-
-```svelte
-<script>
-  import { BarChart } from 'sniic-design-system';
-
-  const data = [
-    { label: 'Jan', value: 120 },
-    { label: 'Feb', value: 85 },
-    { label: 'Mar', value: 200 },
-  ];
-</script>
-
-<BarChart {data} width={600} height={400} xLabel="Month" yLabel="Sales" />
-```
-
-**Props**
-
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `data` | `{ label: string; value: number }[]` | `[]` | Data points to render |
-| `width` | `number` | `600` | SVG width in px |
-| `height` | `number` | `400` | SVG height in px |
-| `color` | `string` | `colors.primary[0]` | Bar fill color |
-| `margin` | `Margin` | `defaultMargin` | Chart margins |
-| `xLabel` | `string` | `''` | X-axis label |
-| `yLabel` | `string` | `''` | Y-axis label |
-
----
-
-### LineChart
-
-Renders a multi-series line chart using D3. Supports smooth curves and an automatic legend.
-
-```svelte
-<script>
-  import { LineChart } from 'sniic-design-system';
-
-  const series = [
-    {
-      name: 'Revenue',
-      data: [
-        { label: 'Jan', value: 100 },
-        { label: 'Feb', value: 140 },
-        { label: 'Mar', value: 130 },
-      ],
-    },
-    {
-      name: 'Expenses',
-      color: '#e52207',
-      data: [
-        { label: 'Jan', value: 60 },
-        { label: 'Feb', value: 75 },
-        { label: 'Mar', value: 90 },
-      ],
-    },
-  ];
-</script>
-
-<LineChart {series} width={600} height={400} smooth xLabel="Month" yLabel="USD" />
-```
-
-**Props**
-
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `series` | `Series[]` | `[]` | Array of named data series |
-| `width` | `number` | `600` | SVG width in px |
-| `height` | `number` | `400` | SVG height in px |
-| `margin` | `Margin` | `defaultMargin` | Chart margins |
-| `xLabel` | `string` | `''` | X-axis label |
-| `yLabel` | `string` | `''` | Y-axis label |
-| `showDots` | `boolean` | `true` | Show data point dots |
-| `smooth` | `boolean` | `true` | Use monotone curve interpolation |
-
-**Series type**
-
-```ts
-interface Series {
-  name: string;
-  color?: string; // defaults to colors.primary palette
-  data: { label: string; value: number }[];
-}
-```
-
----
-
-### AgeGroupChart
-
-Renders a stacked bar chart of age groups (youth / adult / senior) by state, normalised to percentages.
-
-```svelte
-<script>
-  import { AgeGroupChart } from 'sniic-design-system';
-
-  const data = [
-    { uf: 'SP', youth: 1200, adult: 3500, senior: 800 },
-    { uf: 'RJ', youth: 900,  adult: 2800, senior: 650 },
-  ];
-</script>
-
-<AgeGroupChart {data} />
-```
-
-**Props**
-
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `data` | `StateAgeRow[]` | `[]` | Array of per-state age counts |
-
----
-
-### BubbleScatter
-
-Renders a log-scale scatter plot where each bubble represents a Brazilian state. Bubble size encodes number of funded projects; colour encodes region. Includes interactive tooltips.
-
-```svelte
-<script>
-  import { BubbleScatter } from 'sniic-design-system';
-
-  const states = {
-    'São Paulo': { uf: 'São Paulo', popTotal: 45919049, valorRecebido: 500000000, qtdFomentos: 120, valorPerCapita: 10.88 },
-    'Pará':      { uf: 'Pará',      popTotal: 8690745,  valorRecebido:  80000000, qtdFomentos:  30, valorPerCapita:  9.20 },
-  };
-</script>
-
-<BubbleScatter {states} />
-```
-
-**Props**
-
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `states` | `Record<string, BubbleScatterRow>` | `{}` | Map of state name to data row |
-
----
-
-### GenderDivergingBar
-
-Renders a horizontal diverging bar chart showing female vs. male participation per state, with an optional national average reference line.
-
-```svelte
-<script>
-  import { GenderDivergingBar } from 'sniic-design-system';
-
-  const data = [
-    { uf: 'SP', pctFeminino: 42.3, qtdFeminino: 508, qtdMasculino: 692 },
-    { uf: 'BA', pctFeminino: 38.1, qtdFeminino: 210, qtdMasculino: 341 },
-  ];
-</script>
-
-<GenderDivergingBar {data} nationalAvg={40.5} />
-```
-
-**Props**
-
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `data` | `GenderRow[]` | `[]` | Per-state gender breakdown |
-| `nationalAvg` | `number` | `0` | National average % (shown as dashed reference line) |
-
----
-
-### StackedBarChart
-
-Renders a horizontal stacked bar chart split into two categories (`audiovisual` and `demais`), sorted by total value descending. Values are formatted as BRL currency.
-
-```svelte
-<script>
-  import { StackedBarChart } from 'sniic-design-system';
-
-  const data = [
-    { uf: 'SP', audiovisual: 12000000, demais: 8000000 },
-    { uf: 'RJ', audiovisual:  7500000, demais: 4200000 },
-  ];
-</script>
-
-<StackedBarChart {data} />
-```
-
-**Props**
-
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `data` | `StackedBarRow[]` | `[]` | Per-state values split by category |
-
----
-
-### ChoroplethMap
-
-Renders a choropleth map of Brazil coloured by a numeric metric. Supports an optional capital-city bubble overlay and emits the hovered state via a bindable prop.
-
-```svelte
-<script>
-  import { ChoroplethMap } from 'sniic-design-system';
-
-  const states = {
-    'São Paulo': { execucaoFinanceira: 95.2, valorRecebido: 500000000 },
-    'Pará':      { execucaoFinanceira: 78.4, valorRecebido:  80000000 },
-  };
-
-  let activeState = $state(null);
-</script>
-
-<ChoroplethMap
-  {states}
-  metric="execucaoFinanceira"
-  label="Execução financeira (%)"
-  format={(v) => `${v.toFixed(1)}%`}
-  bind:activeState
-/>
-```
-
-**Props**
-
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `states` | `Record<string, object>` | `{}` | Map of state name to data object |
-| `metric` | `string` | `'execucaoFinanceira'` | Key to read from each state object |
-| `label` | `string` | `''` | Tooltip label prefix |
-| `format` | `(v: number) => string` | `v.toLocaleString('pt-BR')` | Value formatter |
-| `colorRange` | `string[]` | `[black, blue]` | Two-colour gradient range |
-| `activeState` | `object \| null` | `null` | Bindable — set to hovered state object |
-| `capitals` | `ChoroplethCapital[]` | `[]` | Capital city data for bubble overlay |
-| `showCapitals` | `boolean` | `false` | Enable capital bubble overlay |
-
----
-
-### TierSmallMultiples
-
-Renders five small choropleth maps of Brazil, one per city-size tier (Capitais, Grande Porte, Medio Porte, Pequeno Porte II, Pequeno Porte I), sharing a common colour scale.
-
-```svelte
-<script>
-  import { TierSmallMultiples } from 'sniic-design-system';
-
-  const tiers = {
-    Capitais:          { 'São Paulo': { execucaoFinanceira: 95.2 } },
-    'Grande Porte':    { 'Campinas':  { execucaoFinanceira: 88.0 } },
-    'Médio Porte':     {},
-    'Pequeno Porte II':{},
-    'Pequeno Porte I': {},
-  };
-</script>
-
-<TierSmallMultiples
-  {tiers}
-  metric="execucaoFinanceira"
-  format={(v) => `${v.toFixed(1)}%`}
-/>
-```
-
-**Props**
-
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `tiers` | `Record<string, Record<string, object>>` | `{}` | Map of tier name to (state name to data) |
-| `metric` | `string` | `'execucaoFinanceira'` | Key to read from each city object |
-| `format` | `(v: number) => string` | `` `${v.toFixed(1)}%` `` | Value formatter for legend |
-
----
+### Atoms
+
+Low-level building blocks for composing custom charts.
+
+| Component | Description |
+|---|---|
+| `XAxis` | Horizontal axis with ticks and labels |
+| `YAxis` | Vertical axis with ticks and labels |
+| `GridLines` | Horizontal/vertical grid lines |
+| `Legend` | Color-keyed legend |
+| `ChartTitle` | Chart title text |
+| `GradientLegend` | Continuous color gradient legend |
+| `BarRect` | Reusable bar rect with safety guards |
+| `ReferenceLine` | Annotated reference line (vertical/horizontal) |
+| `BubbleWithLabel` | Circle with optional ring and contrast-aware text label |
+
+### Icons
+
+| Component | Description |
+|---|---|
+| `IconFavela` | Territory icon for favelas/urban communities |
+| `IconTerritorioIndigena` | Territory icon for indigenous territories |
+| `IconTerritorioQuilombola` | Territory icon for quilombola territories |
+| `IconRural` | Territory icon for rural areas |
+| `StateFlag` | Brazilian state flag by UF code |
+
+### Molecules
+
+| Component | Description |
+|---|---|
+| `ChartFrame` | Responsive SVG wrapper with margins, font loading, and ResizeObserver |
+| `Tooltip` | Positioned tooltip overlay |
+| `AnnotationBox` | Bordered label box with connector line and highlight circle. Supports slotted children via snippet |
+| `SimpleBox` | Bordered box with optional title, value, and subtitle |
+| `LegendBar` | Horizontal color-keyed legend bar |
+| `DataTable` | SVG-rendered data table with configurable columns, header color, and alignment |
+
+### Chart Components (Organisms)
+
+| Component | Description |
+|---|---|
+| `VerticalBarChart` | Vertical bar chart |
+| `HorizontalBarChart` | Horizontal bar chart |
+| `LineChart` | Multi-series line chart with smooth curves and legend |
+| `VerticalStackedBarChart` | Vertical stacked bar chart |
+| `HorizontalStackedBarChart` | Horizontal stacked bar chart with optional icons/flags |
+| `DivergingBarChart` | Horizontal diverging bar chart with reference line |
+| `BubbleChart` | Scatter plot with sized bubbles |
+| `GroupedColumnChart` | Grouped column chart |
+| `SlopeGraph` | Slope graph comparing two time points |
+| `RadialChart` | Radar/spider chart with optional icon labels |
+| `PyramidChart` | Population pyramid chart |
+| `DonutChart` | Donut chart |
+| `PieChart` | Pie chart |
+| `WaffleChart` | Waffle/grid chart |
+| `ParliamentChart` | Parliament/hemicycle chart |
+| `PictogramChart` | Pictogram/icon array chart |
+| `MarimekkoChart` | Marimekko/mosaic chart |
+| `TreemapChart` | Treemap chart |
+| `ProportionalAreaChart` | Proportional area comparison |
+| `StreamGraph` | Streamgraph (stacked area) |
+| `HeatMap` | Heat map grid |
+| `CorrelationMatrix` | Correlation matrix with color scale |
+| `CalendarHeatmap` | Calendar-based heatmap |
+| `ContourPlot` | 2D density contour plot |
+| `BigNumber` | Large formatted number display with shadow depth |
+| `ChoroplethMap` | Choropleth map of Brazil with optional capital bubbles |
+| `TierSmallMultiples` | Five small choropleth maps by city-size tier |
+| `ColorPalette` | Visual display of color palettes |
 
 ## Design tokens
 
-Tokens are exported from the package root and can be imported directly.
+Tokens are exported from the package root.
 
 ```ts
-import { colors, typography, spacing, defaultMargin } from 'sniic-design-system';
+import { blue, orange, teal, black, typography, spacing, defaultMargin } from 'sniic-design-system';
 ```
 
-### Colors
+### Named colors
 
-Derived from the Brazilian Government Design System (Padrão Digital de Governo).
+Individual color constants derived from the Brazilian Government Design System:
 
-| Token | Description |
-|---|---|
-| `colors.primary` | Blue Warm Vivid ramp (5 shades, darkest to lightest) |
-| `colors.blue/green/yellow/red/...` | Extended color families with shades `90, 70, 40, 20, 10` |
-| `colors.neutral` | Gray ramp (8 shades, darkest to lightest) |
-| `colors.success` | `#168821` |
-| `colors.warning` | `#ffcd07` |
-| `colors.danger` | `#e52207` |
-| `colors.info` | `#155bcb` |
-| `colors.interactive` | `#1351b4` |
-| `colors.visited` | `#0c326f` |
-| `colors.focus` | `#c2850c` |
+`blue`, `orange`, `teal`, `yellow`, `purple`, `lime`, `red`, `green`, `black`, `white`
+
+### Color scales
+
+```ts
+import { colorScales } from 'sniic-design-system';
+// colorScales.sequential, colorScales.diverging, etc.
+```
+
+### Palettes
+
+```ts
+import { categorical8 } from 'sniic-design-system';
+// 8-color categorical palette
+```
 
 ### Typography
 
 ```ts
-typography.fontFamily // "'Inter', system-ui, sans-serif"
-typography.sizes.xs   // 10
-typography.sizes.sm   // 12
-typography.sizes.md   // 14
-typography.sizes.lg   // 16
+typography.fontFamily          // "'Inter', system-ui, sans-serif"
+typography.chartValueFontFamily // "'Space Grotesk', monospace"
+typography.sizes.xs            // 10
+typography.sizes.sm            // 12
+typography.sizes.md            // 14
+typography.sizes.lg            // 16
 ```
 
 ### Spacing
@@ -351,6 +172,21 @@ The `Margin` interface is also exported for typing custom margin props:
 ```ts
 import type { Margin } from 'sniic-design-system';
 ```
+
+## Utilities
+
+| Export | Description |
+|---|---|
+| `colorContrast` | Pick light/dark text for a given background |
+| `formatters` | Brazilian locale number/currency formatters |
+| `tooltip` | Tooltip positioning helpers |
+| `geoLoader` | Async GeoJSON loader for Brazil maps |
+| `axisHelpers` | Axis tick calculation utilities |
+| `resizeObserver` | Svelte-friendly ResizeObserver action |
+| `exportSvg` | Export SVG elements to PNG/SVG files |
+| `labelHelpers` | Text measurement, font sizing, label fitting |
+| `colorMapHelpers` | Category-to-color mapping and legend item builders |
+| `tooltipState` | Shared tooltip state management |
 
 ## Development
 

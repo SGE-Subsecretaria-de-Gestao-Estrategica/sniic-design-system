@@ -3,6 +3,7 @@
   import { black, typography } from '../tokens.js';
   import { categorical8 } from '../palettes.js';
   import Legend from './atoms/Legend.svelte';
+  import type { Component } from 'svelte';
 
   interface DataPoint {
     axis: string;
@@ -28,6 +29,8 @@
     showLegend?: boolean;
     fillOpacity?: number;
     colors?: readonly string[];
+    icons?: Record<string, Component<{ size?: number; color?: string; title?: string }>>;
+    iconSize?: number;
   }
 
   let {
@@ -43,12 +46,15 @@
     showLegend = true,
     fillOpacity = 0.15,
     colors = categorical8,
+    icons = {},
+    iconSize = 32,
   }: Props = $props();
 
   const defaultColors = $derived(colors);
   const chartFont = typography.chartValueFontFamily;
 
-  const margin = 72;
+  const hasIcons = $derived(Object.keys(icons).length > 0);
+  const margin = $derived(hasIcons ? 72 + iconSize / 2 : 72);
   const cx = $derived(size / 2);
   const cy = $derived(size / 2);
   const radius = $derived(size / 2 - margin);
@@ -201,15 +207,29 @@
 
     <!-- Axis labels -->
     {#each axisLabels as al (al.label)}
-      <text
-        x={al.x}
-        y={al.y}
-        font-size={typography.sizes.sm}
-        fill={black}
-        text-anchor={al.anchor}
-        dominant-baseline="middle"
-        font-weight="600"
-      >{al.label}</text>
+      {#if icons[al.label]}
+        {@const IconComponent = icons[al.label]}
+        <foreignObject
+          x={al.x - iconSize / 2 + (al.anchor === 'end' ? -iconSize / 2 : al.anchor === 'start' ? iconSize / 2 : 0)}
+          y={al.y - iconSize / 2}
+          width={iconSize}
+          height={iconSize}
+        >
+          <div xmlns="http://www.w3.org/1999/xhtml" class="icon-wrapper">
+            <IconComponent size={iconSize} color={black} title={al.label} />
+          </div>
+        </foreignObject>
+      {:else}
+        <text
+          x={al.x}
+          y={al.y}
+          font-size={typography.sizes.sm}
+          fill={black}
+          text-anchor={al.anchor}
+          dominant-baseline="middle"
+          font-weight="600"
+        >{al.label}</text>
+      {/if}
     {/each}
 
     <!-- Series -->
@@ -253,5 +273,12 @@
 <style>
   svg {
     display: block;
+  }
+  .icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
   }
 </style>

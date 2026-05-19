@@ -29,7 +29,9 @@
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "dev:demo": "vite --config vite.config.demo.ts",
+    "build:demo": "vite build --config vite.config.demo.ts && mv dist-demo/demo/index.html dist-demo/index.html && rm -rf dist-demo/demo"
   },
   "devDependencies": {
     "@chromatic-com/storybook": "^5.1.2",

@@ -2,6 +2,10 @@
   import { defineMeta } from '@storybook/addon-svelte-csf';
   import RadialChart from '../lib/components/RadialChart.svelte';
   import { blue, orange, teal, yellow, purple, lime } from '../lib/tokens.js';
+  import IconFavela from '../lib/components/atoms/icons/IconFavela.svelte';
+  import IconTerritorioIndigena from '../lib/components/atoms/icons/IconTerritorioIndigena.svelte';
+  import IconTerritorioQuilombola from '../lib/components/atoms/icons/IconTerritorioQuilombola.svelte';
+  import IconRural from '../lib/components/atoms/icons/IconRural.svelte';
 
   const { Story } = defineMeta({
     title: 'Charts/RadialChart',
@@ -159,6 +163,82 @@
           { axis: 'Renda',      value: 55 },
           { axis: 'Habitação',  value: 62 },
           { axis: 'Ambiente',   value: 58 },
+        ],
+      },
+    ],
+  }}
+/>
+
+<Story
+  name="With Territory Icons"
+  args={{
+    size: 480,
+    levels: 5,
+    showDots: true,
+    showLevelLabels: true,
+    showLegend: false,
+    strokeWidth: 2,
+    dotRadius: 5,
+    fillOpacity: 0.18,
+    iconSize: 36,
+    icons: {
+      'Favelas e comunidades urbanas': IconFavela,
+      'Território indígena': IconTerritorioIndigena,
+      'Território quilombola': IconTerritorioQuilombola,
+      'Área rural': IconRural,
+    },
+    series: [
+      {
+        name: 'Cobertura cultural',
+        color: blue,
+        values: [
+          { axis: 'Favelas e comunidades urbanas', value: 42 },
+          { axis: 'Território indígena',           value: 28 },
+          { axis: 'Território quilombola',         value: 35 },
+          { axis: 'Área rural',                    value: 51 },
+        ],
+      },
+    ],
+  }}
+/>
+
+<Story
+  name="Icons Multi-series"
+  args={{
+    size: 480,
+    levels: 5,
+    showDots: true,
+    showLevelLabels: true,
+    showLegend: true,
+    strokeWidth: 2,
+    dotRadius: 4,
+    fillOpacity: 0.12,
+    iconSize: 36,
+    icons: {
+      'Favelas e comunidades urbanas': IconFavela,
+      'Território indígena': IconTerritorioIndigena,
+      'Território quilombola': IconTerritorioQuilombola,
+      'Área rural': IconRural,
+    },
+    series: [
+      {
+        name: '2019',
+        color: yellow,
+        values: [
+          { axis: 'Favelas e comunidades urbanas', value: 30 },
+          { axis: 'Território indígena',           value: 18 },
+          { axis: 'Território quilombola',         value: 22 },
+          { axis: 'Área rural',                    value: 40 },
+        ],
+      },
+      {
+        name: '2024',
+        color: teal,
+        values: [
+          { axis: 'Favelas e comunidades urbanas', value: 52 },
+          { axis: 'Território indígena',           value: 35 },
+          { axis: 'Território quilombola',         value: 41 },
+          { axis: 'Área rural',                    value: 58 },
         ],
       },
     ],

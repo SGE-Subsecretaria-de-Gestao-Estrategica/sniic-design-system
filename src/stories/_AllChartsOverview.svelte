@@ -26,7 +26,11 @@
   import CorrelationMatrix from '../lib/components/CorrelationMatrix.svelte';
   import CalendarHeatmap from '../lib/components/CalendarHeatmap.svelte';
   import ContourPlot from '../lib/components/ContourPlot.svelte';
-  import { colorScales } from '../lib/tokens.js';
+  import AnnotationBox from '../lib/components/molecules/AnnotationBox.svelte';
+  import SimpleBox from '../lib/components/molecules/SimpleBox.svelte';
+  import DataTable from '../lib/components/molecules/DataTable.svelte';
+  import type { TableColumn } from '../lib/components/molecules/DataTable.svelte';
+  import { colorScales, orange, teal, blue, purple, lime } from '../lib/tokens.js';
 
   // ── Shared sample data ──────────────────────────────────────────────────
 
@@ -40,14 +44,71 @@
   ];
 
   const stackedData = [
+    { label: 'AC', youth: 1200, adult: 3200, senior: 900 },
+    { label: 'AL', youth: 2800, adult: 6500, senior: 1800 },
+    { label: 'AP', youth: 1000, adult: 2800, senior: 700 },
+    { label: 'AM', youth: 3200, adult: 8400, senior: 2100 },
+    { label: 'BA', youth: 6800, adult: 14000, senior: 3500 },
+    { label: 'CE', youth: 5200, adult: 11000, senior: 3000 },
+    { label: 'DF', youth: 3800, adult: 9500, senior: 2800 },
+    { label: 'ES', youth: 3400, adult: 8200, senior: 2400 },
+    { label: 'GO', youth: 4100, adult: 9800, senior: 2700 },
+    { label: 'MA', youth: 2400, adult: 5800, senior: 1500 },
+    { label: 'MT', youth: 2600, adult: 6200, senior: 1700 },
+    { label: 'MS', youth: 2200, adult: 5500, senior: 1600 },
+    { label: 'MG', youth: 8200, adult: 20000, senior: 6000 },
+    { label: 'PA', youth: 4500, adult: 10200, senior: 2600 },
+    { label: 'PB', youth: 2600, adult: 6000, senior: 1700 },
+    { label: 'PR', youth: 5800, adult: 14500, senior: 4200 },
+    { label: 'PE', youth: 5000, adult: 11500, senior: 3200 },
+    { label: 'PI', youth: 1800, adult: 4200, senior: 1200 },
+    { label: 'RJ', youth: 7500, adult: 18000, senior: 5500 },
+    { label: 'RN', youth: 2400, adult: 5600, senior: 1600 },
+    { label: 'RS', youth: 4200, adult: 11000, senior: 4800 },
+    { label: 'RO', youth: 1600, adult: 3800, senior: 1000 },
+    { label: 'RR', youth: 800,  adult: 2000, senior: 500 },
+    { label: 'SC', youth: 4000, adult: 10500, senior: 3200 },
     { label: 'SP', youth: 12000, adult: 28000, senior: 8000 },
-    { label: 'RJ', youth: 7500,  adult: 18000, senior: 5500 },
-    { label: 'MG', youth: 8200,  adult: 20000, senior: 6000 },
-    { label: 'BA', youth: 6800,  adult: 14000, senior: 3500 },
-    { label: 'RS', youth: 4200,  adult: 11000, senior: 4800 },
+    { label: 'SE', youth: 1800, adult: 4500, senior: 1200 },
+    { label: 'TO', youth: 1200, adult: 3000, senior: 800 },
   ];
   const stackedKeys = ['youth', 'adult', 'senior'];
   const stackedLabels = { youth: '15–29', adult: '30–59', senior: '60+' };
+
+  const stackedCatData = [
+    { label: 'AC', musica: 28, cinema: 12, teatro: 8,  danca: 6,  artesVisuais: 10, literatura: 18, fotografia: 11, circo: 7 },
+    { label: 'AL', musica: 25, cinema: 14, teatro: 9,  danca: 5,  artesVisuais: 8,  literatura: 20, fotografia: 12, circo: 7 },
+    { label: 'AP', musica: 30, cinema: 10, teatro: 7,  danca: 8,  artesVisuais: 9,  literatura: 16, fotografia: 13, circo: 7 },
+    { label: 'AM', musica: 22, cinema: 15, teatro: 10, danca: 7,  artesVisuais: 11, literatura: 17, fotografia: 10, circo: 8 },
+    { label: 'BA', musica: 32, cinema: 13, teatro: 11, danca: 9,  artesVisuais: 7,  literatura: 14, fotografia: 8,  circo: 6 },
+    { label: 'CE', musica: 27, cinema: 16, teatro: 10, danca: 6,  artesVisuais: 9,  literatura: 15, fotografia: 11, circo: 6 },
+    { label: 'DF', musica: 20, cinema: 18, teatro: 14, danca: 5,  artesVisuais: 12, literatura: 16, fotografia: 9,  circo: 6 },
+    { label: 'ES', musica: 24, cinema: 14, teatro: 9,  danca: 7,  artesVisuais: 10, literatura: 18, fotografia: 12, circo: 6 },
+    { label: 'GO', musica: 29, cinema: 12, teatro: 8,  danca: 6,  artesVisuais: 8,  literatura: 19, fotografia: 11, circo: 7 },
+    { label: 'MA', musica: 33, cinema: 10, teatro: 7,  danca: 8,  artesVisuais: 6,  literatura: 17, fotografia: 12, circo: 7 },
+    { label: 'MT', musica: 26, cinema: 13, teatro: 9,  danca: 5,  artesVisuais: 9,  literatura: 20, fotografia: 11, circo: 7 },
+    { label: 'MS', musica: 25, cinema: 14, teatro: 10, danca: 6,  artesVisuais: 8,  literatura: 19, fotografia: 12, circo: 6 },
+    { label: 'MG', musica: 23, cinema: 16, teatro: 12, danca: 6,  artesVisuais: 11, literatura: 16, fotografia: 10, circo: 6 },
+    { label: 'PA', musica: 31, cinema: 11, teatro: 8,  danca: 7,  artesVisuais: 7,  literatura: 18, fotografia: 11, circo: 7 },
+    { label: 'PB', musica: 26, cinema: 13, teatro: 9,  danca: 7,  artesVisuais: 9,  literatura: 18, fotografia: 12, circo: 6 },
+    { label: 'PR', musica: 22, cinema: 15, teatro: 11, danca: 5,  artesVisuais: 12, literatura: 17, fotografia: 11, circo: 7 },
+    { label: 'PE', musica: 30, cinema: 14, teatro: 10, danca: 8,  artesVisuais: 8,  literatura: 15, fotografia: 9,  circo: 6 },
+    { label: 'PI', musica: 34, cinema: 9,  teatro: 7,  danca: 6,  artesVisuais: 7,  literatura: 19, fotografia: 12, circo: 6 },
+    { label: 'RJ', musica: 21, cinema: 19, teatro: 14, danca: 6,  artesVisuais: 13, literatura: 14, fotografia: 8,  circo: 5 },
+    { label: 'RN', musica: 27, cinema: 13, teatro: 9,  danca: 6,  artesVisuais: 9,  literatura: 18, fotografia: 11, circo: 7 },
+    { label: 'RS', musica: 23, cinema: 15, teatro: 11, danca: 5,  artesVisuais: 11, literatura: 18, fotografia: 10, circo: 7 },
+    { label: 'RO', musica: 29, cinema: 11, teatro: 8,  danca: 6,  artesVisuais: 8,  literatura: 20, fotografia: 12, circo: 6 },
+    { label: 'RR', musica: 31, cinema: 10, teatro: 7,  danca: 7,  artesVisuais: 8,  literatura: 17, fotografia: 13, circo: 7 },
+    { label: 'SC', musica: 21, cinema: 16, teatro: 12, danca: 5,  artesVisuais: 12, literatura: 17, fotografia: 10, circo: 7 },
+    { label: 'SP', musica: 19, cinema: 20, teatro: 15, danca: 6,  artesVisuais: 14, literatura: 13, fotografia: 8,  circo: 5 },
+    { label: 'SE', musica: 28, cinema: 12, teatro: 9,  danca: 7,  artesVisuais: 8,  literatura: 18, fotografia: 12, circo: 6 },
+    { label: 'TO', musica: 30, cinema: 11, teatro: 8,  danca: 6,  artesVisuais: 7,  literatura: 19, fotografia: 12, circo: 7 },
+  ];
+  const stackedCatKeys = ['musica', 'cinema', 'teatro', 'danca', 'artesVisuais', 'literatura', 'fotografia', 'circo'];
+  const stackedCatLabels = {
+    musica: 'Musica', cinema: 'Cinema', teatro: 'Teatro', danca: 'Danca',
+    artesVisuais: 'Artes Visuais', literatura: 'Literatura', fotografia: 'Fotografia', circo: 'Circo',
+  };
 
   const hStackedData = [
     { label: 'São Paulo',      audiovisual: 320, demais: 500 },
@@ -64,6 +125,18 @@
     { label: 'BA', audiovisual: 75,  demais: 135 },
     { label: 'PR', audiovisual: 65,  demais: 125 },
   ];
+
+  const allStateFlags: Record<string, string> = {
+    AC: '/flags/states/AC.svg', AL: '/flags/states/AL.svg', AP: '/flags/states/AP.svg',
+    AM: '/flags/states/AM.svg', BA: '/flags/states/BA.svg', CE: '/flags/states/CE.svg',
+    DF: '/flags/states/DF.svg', ES: '/flags/states/ES.svg', GO: '/flags/states/GO.svg',
+    MA: '/flags/states/MA.svg', MT: '/flags/states/MT.svg', MS: '/flags/states/MS.svg',
+    MG: '/flags/states/MG.svg', PA: '/flags/states/PA.svg', PB: '/flags/states/PB.svg',
+    PR: '/flags/states/PR.svg', PE: '/flags/states/PE.svg', PI: '/flags/states/PI.svg',
+    RJ: '/flags/states/RJ.svg', RN: '/flags/states/RN.svg', RS: '/flags/states/RS.svg',
+    RO: '/flags/states/RO.svg', RR: '/flags/states/RR.svg', SC: '/flags/states/SC.svg',
+    SP: '/flags/states/SP.svg', SE: '/flags/states/SE.svg', TO: '/flags/states/TO.svg',
+  };
 
   const stateFlags: Record<string, string> = {
     SP: '/flags/states/SP.svg',
@@ -364,6 +437,57 @@
     return pts;
   })();
 
+  // ── Table data ──────────────────────────────────────────────────────
+
+  const regionCols: TableColumn[] = [
+    { key: 'regiao', label: 'Região', align: 'left', width: 140 },
+    { key: 'museus', label: 'Museus', align: 'right', width: 90 },
+    { key: 'bibliotecas', label: 'Bibliotecas', align: 'right', width: 110 },
+    { key: 'teatros', label: 'Teatros', align: 'right', width: 90 },
+    { key: 'cinemas', label: 'Cinemas', align: 'right', width: 90 },
+    { key: 'total', label: 'Total', align: 'right', width: 90 },
+    { key: 'pct', label: '% do total', align: 'right', width: 90 },
+  ];
+
+  const regionRows = [
+    { regiao: 'Sudeste', museus: '1.247', bibliotecas: '3.891', teatros: '842', cinemas: '1.563', total: '7.543', pct: '42,1%' },
+    { regiao: 'Nordeste', museus: '623', bibliotecas: '2.456', teatros: '318', cinemas: '487', total: '3.884', pct: '21,7%' },
+    { regiao: 'Sul', museus: '534', bibliotecas: '1.987', teatros: '412', cinemas: '678', total: '3.611', pct: '20,2%' },
+    { regiao: 'Centro-Oeste', museus: '198', bibliotecas: '812', teatros: '145', cinemas: '312', total: '1.467', pct: '8,2%' },
+    { regiao: 'Norte', museus: '87', bibliotecas: '623', teatros: '56', cinemas: '142', total: '908', pct: '5,1%' },
+  ];
+
+  const orcamentoCols: TableColumn[] = [
+    { key: 'programa', label: 'Programa / Ação', align: 'left', width: 220 },
+    { key: 'dotacao', label: 'Dotação inicial', align: 'right', width: 130 },
+    { key: 'empenhado', label: 'Empenhado', align: 'right', width: 130 },
+    { key: 'liquidado', label: 'Liquidado', align: 'right', width: 130 },
+    { key: 'pago', label: 'Pago', align: 'right', width: 130 },
+    { key: 'execucao', label: '% execução', align: 'right', width: 100 },
+  ];
+
+  const orcamentoRows = [
+    { programa: 'Fomento à cultura', dotacao: 'R$ 412,5 mi', empenhado: 'R$ 398,2 mi', liquidado: 'R$ 371,8 mi', pago: 'R$ 358,4 mi', execucao: '86,9%' },
+    { programa: 'Preservação do patrimônio', dotacao: 'R$ 287,3 mi', empenhado: 'R$ 265,1 mi', liquidado: 'R$ 241,6 mi', pago: 'R$ 228,9 mi', execucao: '79,7%' },
+    { programa: 'Economia criativa e diversidade cultural', dotacao: 'R$ 198,6 mi', empenhado: 'R$ 192,4 mi', liquidado: 'R$ 185,3 mi', pago: 'R$ 179,1 mi', execucao: '90,2%' },
+    { programa: 'Infraestrutura cultural', dotacao: 'R$ 156,8 mi', empenhado: 'R$ 134,2 mi', liquidado: 'R$ 112,7 mi', pago: 'R$ 98,5 mi', execucao: '62,8%' },
+    { programa: 'Gestão e administração do MinC', dotacao: 'R$ 89,4 mi', empenhado: 'R$ 87,6 mi', liquidado: 'R$ 86,1 mi', pago: 'R$ 85,3 mi', execucao: '95,4%' },
+    { programa: 'Audiovisual e comunicação', dotacao: 'R$ 142,1 mi', empenhado: 'R$ 138,7 mi', liquidado: 'R$ 130,2 mi', pago: 'R$ 124,6 mi', execucao: '87,7%' },
+  ];
+
+  const simpleCols: TableColumn[] = [
+    { key: 'uf', label: 'UF', align: 'left', width: 60 },
+    { key: 'projetos', label: 'Projetos', align: 'right', width: 90 },
+    { key: 'valor', label: 'Valor captado', align: 'right', width: 130 },
+  ];
+
+  const simpleRows = [
+    { uf: 'SP', projetos: '4.231', valor: 'R$ 1,2 bi' },
+    { uf: 'RJ', projetos: '2.876', valor: 'R$ 890 mi' },
+    { uf: 'MG', projetos: '1.543', valor: 'R$ 420 mi' },
+    { uf: 'RS', projetos: '987', valor: 'R$ 310 mi' },
+  ];
+
   const tierData: Record<string, Record<string, Record<string, any>>> = {
     Capitais: {
       'São Paulo':         { execucaoFinanceira: 87.2 },
@@ -501,16 +625,45 @@
   <h2 class="category-title">Proporcoes e composicao</h2>
 
   <div class="row">
-    <div class="cell">
-      <span class="label">Grafico de Barras Empilhadas Vertical</span>
+    <div class="cell span-2">
+      <span class="label">Grafico de Barras Empilhadas Vertical (todos os estados)</span>
       <VerticalStackedBarChart
         data={stackedData}
         keys={stackedKeys}
         labels={stackedLabels}
         normalize
-        height={240}
+        height={320}
       />
     </div>
+  </div>
+
+  <div class="row">
+    <div class="cell span-2">
+      <span class="label">Grafico de Barras Empilhadas Vertical (8 categorias por estado)</span>
+      <VerticalStackedBarChart
+        data={stackedCatData}
+        keys={stackedCatKeys}
+        labels={stackedCatLabels}
+        normalize
+        height={320}
+      />
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="cell span-2">
+      <span class="label">Grafico de Barras Empilhadas Vertical (com bandeiras)</span>
+      <VerticalStackedBarChart
+        data={stackedData}
+        keys={stackedKeys}
+        labels={stackedLabels}
+        height={320}
+        icons={allStateFlags}
+      />
+    </div>
+  </div>
+
+  <div class="row">
     <div class="cell">
       <span class="label">Grafico de Barras Empilhadas Horizontal</span>
       <HorizontalStackedBarChart
@@ -671,6 +824,201 @@
         cities={tierCities}
         initialState="MG"
       />
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <h2 class="category-title">Anotacoes</h2>
+
+  <div class="row">
+    <div class="cell">
+      <span class="label">Caixa de Anotacao</span>
+      <svg width="100%" viewBox="0 0 600 300">
+        <AnnotationBox
+          pointX={450}
+          pointY={180}
+          boxX={160}
+          boxY={100}
+          title="Pico historico"
+          subtitle={"Maior valor registrado\nno periodo analisado"}
+          color={orange}
+        />
+      </svg>
+    </div>
+    <div class="cell">
+      <span class="label">Anotacao com BigNumber</span>
+      <svg width="100%" viewBox="0 0 600 300">
+        <AnnotationBox
+          pointX={450}
+          pointY={200}
+          boxX={100}
+          boxY={30}
+          title="Destaque"
+          color={orange}
+          boxWidth={220}
+          boxHeight={160}
+        >
+          <BigNumber value={93} suffix="%" label="execução financeira" fontSize={48} shadowDepth={4} />
+        </AnnotationBox>
+      </svg>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="cell">
+      <span class="label">Caixa Simples (numero grande)</span>
+      <svg width="100%" viewBox="0 0 600 300">
+        <SimpleBox
+          x={40}
+          y={40}
+          title="Museus"
+          value="1.247"
+          subtitle="cadastrados em 2024"
+          color={teal}
+        />
+      </svg>
+    </div>
+    <div class="cell">
+      <span class="label">Caixa Simples (percentual)</span>
+      <svg width="100%" viewBox="0 0 600 300">
+        <SimpleBox
+          x={40}
+          y={40}
+          title="Execucao"
+          value="93%"
+          color={orange}
+          valueSize={40}
+        />
+      </svg>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="cell">
+      <span class="label">Caixa Simples (somente texto)</span>
+      <svg width="100%" viewBox="0 0 600 300">
+        <SimpleBox
+          x={40}
+          y={40}
+          title="Nota"
+          subtitle={"Valores preliminares\nsujeitos a revisao"}
+          color={blue}
+          boxWidth={200}
+        />
+      </svg>
+    </div>
+    <div class="cell">
+      <span class="label">Caixa Simples (sem titulo)</span>
+      <svg width="100%" viewBox="0 0 600 300">
+        <SimpleBox
+          x={40}
+          y={40}
+          value="R$ 3,4 bi"
+          subtitle="investimento total"
+          valueSize={28}
+        />
+      </svg>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="cell">
+      <span class="label">Caixa Simples (titulo e texto longo)</span>
+      <svg width="100%" viewBox="0 0 600 300">
+        <SimpleBox
+          x={40}
+          y={40}
+          title="Metodologia"
+          subtitle={"Os dados apresentados referem-se\nao levantamento realizado entre\njaneiro e dezembro de 2024,\nabrangendo todos os municipios\ncom mais de 50 mil habitantes."}
+          color={purple}
+          boxWidth={240}
+        />
+      </svg>
+    </div>
+    <div class="cell">
+      <span class="label">Caixa Simples (texto longo, sem titulo)</span>
+      <svg width="100%" viewBox="0 0 600 300">
+        <SimpleBox
+          x={40}
+          y={40}
+          subtitle={"Fonte: Sistema Nacional de\nInformacoes e Indicadores Culturais\n(SNIIC), com base nos registros\ndo Cadastro Nacional de Museus\ne do Sistema Nacional de\nBibliotecas Publicas."}
+          color={lime}
+          boxWidth={240}
+        />
+      </svg>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <h2 class="category-title">Tabelas</h2>
+
+  <div class="row">
+    <div class="cell span-2">
+      <span class="label">Tabela CNAE (5 colunas, padrão)</span>
+      <svg width="100%" viewBox="0 0 700 180">
+        <DataTable x={10} y={10} />
+      </svg>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="cell span-2">
+      <span class="label">Equipamentos culturais por região (7 colunas, azul)</span>
+      <svg width="100%" viewBox="0 0 720 230">
+        <DataTable
+          x={10}
+          y={10}
+          columns={regionCols}
+          rows={regionRows}
+          headerColor={blue}
+          lineColor="#b0b0b0"
+        />
+      </svg>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="cell span-2">
+      <span class="label">Execução orçamentária (6 colunas, 6 linhas, roxo)</span>
+      <svg width="100%" viewBox="0 0 860 290">
+        <DataTable
+          x={10}
+          y={10}
+          columns={orcamentoCols}
+          rows={orcamentoRows}
+          headerColor={purple}
+          lineColor="#c0b0bc"
+        />
+      </svg>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="cell">
+      <span class="label">Tabela compacta (3 colunas, laranja)</span>
+      <svg width="100%" viewBox="0 0 300 190">
+        <DataTable
+          x={10}
+          y={10}
+          columns={simpleCols}
+          rows={simpleRows}
+          headerColor={orange}
+          lineColor="#d4a080"
+        />
+      </svg>
+    </div>
+    <div class="cell">
+      <span class="label">Tabela compacta (3 colunas, verde)</span>
+      <svg width="100%" viewBox="0 0 300 190">
+        <DataTable
+          x={10}
+          y={10}
+          columns={simpleCols}
+          rows={simpleRows}
+          headerColor={lime}
+          lineColor="#b0c490"
+        />
+      </svg>
     </div>
   </div>
 </div>
