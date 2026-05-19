@@ -40,14 +40,71 @@
   ];
 
   const stackedData = [
+    { label: 'AC', youth: 1200, adult: 3200, senior: 900 },
+    { label: 'AL', youth: 2800, adult: 6500, senior: 1800 },
+    { label: 'AP', youth: 1000, adult: 2800, senior: 700 },
+    { label: 'AM', youth: 3200, adult: 8400, senior: 2100 },
+    { label: 'BA', youth: 6800, adult: 14000, senior: 3500 },
+    { label: 'CE', youth: 5200, adult: 11000, senior: 3000 },
+    { label: 'DF', youth: 3800, adult: 9500, senior: 2800 },
+    { label: 'ES', youth: 3400, adult: 8200, senior: 2400 },
+    { label: 'GO', youth: 4100, adult: 9800, senior: 2700 },
+    { label: 'MA', youth: 2400, adult: 5800, senior: 1500 },
+    { label: 'MT', youth: 2600, adult: 6200, senior: 1700 },
+    { label: 'MS', youth: 2200, adult: 5500, senior: 1600 },
+    { label: 'MG', youth: 8200, adult: 20000, senior: 6000 },
+    { label: 'PA', youth: 4500, adult: 10200, senior: 2600 },
+    { label: 'PB', youth: 2600, adult: 6000, senior: 1700 },
+    { label: 'PR', youth: 5800, adult: 14500, senior: 4200 },
+    { label: 'PE', youth: 5000, adult: 11500, senior: 3200 },
+    { label: 'PI', youth: 1800, adult: 4200, senior: 1200 },
+    { label: 'RJ', youth: 7500, adult: 18000, senior: 5500 },
+    { label: 'RN', youth: 2400, adult: 5600, senior: 1600 },
+    { label: 'RS', youth: 4200, adult: 11000, senior: 4800 },
+    { label: 'RO', youth: 1600, adult: 3800, senior: 1000 },
+    { label: 'RR', youth: 800,  adult: 2000, senior: 500 },
+    { label: 'SC', youth: 4000, adult: 10500, senior: 3200 },
     { label: 'SP', youth: 12000, adult: 28000, senior: 8000 },
-    { label: 'RJ', youth: 7500,  adult: 18000, senior: 5500 },
-    { label: 'MG', youth: 8200,  adult: 20000, senior: 6000 },
-    { label: 'BA', youth: 6800,  adult: 14000, senior: 3500 },
-    { label: 'RS', youth: 4200,  adult: 11000, senior: 4800 },
+    { label: 'SE', youth: 1800, adult: 4500, senior: 1200 },
+    { label: 'TO', youth: 1200, adult: 3000, senior: 800 },
   ];
   const stackedKeys = ['youth', 'adult', 'senior'];
   const stackedLabels = { youth: '15–29', adult: '30–59', senior: '60+' };
+
+  const stackedCatData = [
+    { label: 'AC', musica: 28, cinema: 12, teatro: 8,  danca: 6,  artesVisuais: 10, literatura: 18, fotografia: 11, circo: 7 },
+    { label: 'AL', musica: 25, cinema: 14, teatro: 9,  danca: 5,  artesVisuais: 8,  literatura: 20, fotografia: 12, circo: 7 },
+    { label: 'AP', musica: 30, cinema: 10, teatro: 7,  danca: 8,  artesVisuais: 9,  literatura: 16, fotografia: 13, circo: 7 },
+    { label: 'AM', musica: 22, cinema: 15, teatro: 10, danca: 7,  artesVisuais: 11, literatura: 17, fotografia: 10, circo: 8 },
+    { label: 'BA', musica: 32, cinema: 13, teatro: 11, danca: 9,  artesVisuais: 7,  literatura: 14, fotografia: 8,  circo: 6 },
+    { label: 'CE', musica: 27, cinema: 16, teatro: 10, danca: 6,  artesVisuais: 9,  literatura: 15, fotografia: 11, circo: 6 },
+    { label: 'DF', musica: 20, cinema: 18, teatro: 14, danca: 5,  artesVisuais: 12, literatura: 16, fotografia: 9,  circo: 6 },
+    { label: 'ES', musica: 24, cinema: 14, teatro: 9,  danca: 7,  artesVisuais: 10, literatura: 18, fotografia: 12, circo: 6 },
+    { label: 'GO', musica: 29, cinema: 12, teatro: 8,  danca: 6,  artesVisuais: 8,  literatura: 19, fotografia: 11, circo: 7 },
+    { label: 'MA', musica: 33, cinema: 10, teatro: 7,  danca: 8,  artesVisuais: 6,  literatura: 17, fotografia: 12, circo: 7 },
+    { label: 'MT', musica: 26, cinema: 13, teatro: 9,  danca: 5,  artesVisuais: 9,  literatura: 20, fotografia: 11, circo: 7 },
+    { label: 'MS', musica: 25, cinema: 14, teatro: 10, danca: 6,  artesVisuais: 8,  literatura: 19, fotografia: 12, circo: 6 },
+    { label: 'MG', musica: 23, cinema: 16, teatro: 12, danca: 6,  artesVisuais: 11, literatura: 16, fotografia: 10, circo: 6 },
+    { label: 'PA', musica: 31, cinema: 11, teatro: 8,  danca: 7,  artesVisuais: 7,  literatura: 18, fotografia: 11, circo: 7 },
+    { label: 'PB', musica: 26, cinema: 13, teatro: 9,  danca: 7,  artesVisuais: 9,  literatura: 18, fotografia: 12, circo: 6 },
+    { label: 'PR', musica: 22, cinema: 15, teatro: 11, danca: 5,  artesVisuais: 12, literatura: 17, fotografia: 11, circo: 7 },
+    { label: 'PE', musica: 30, cinema: 14, teatro: 10, danca: 8,  artesVisuais: 8,  literatura: 15, fotografia: 9,  circo: 6 },
+    { label: 'PI', musica: 34, cinema: 9,  teatro: 7,  danca: 6,  artesVisuais: 7,  literatura: 19, fotografia: 12, circo: 6 },
+    { label: 'RJ', musica: 21, cinema: 19, teatro: 14, danca: 6,  artesVisuais: 13, literatura: 14, fotografia: 8,  circo: 5 },
+    { label: 'RN', musica: 27, cinema: 13, teatro: 9,  danca: 6,  artesVisuais: 9,  literatura: 18, fotografia: 11, circo: 7 },
+    { label: 'RS', musica: 23, cinema: 15, teatro: 11, danca: 5,  artesVisuais: 11, literatura: 18, fotografia: 10, circo: 7 },
+    { label: 'RO', musica: 29, cinema: 11, teatro: 8,  danca: 6,  artesVisuais: 8,  literatura: 20, fotografia: 12, circo: 6 },
+    { label: 'RR', musica: 31, cinema: 10, teatro: 7,  danca: 7,  artesVisuais: 8,  literatura: 17, fotografia: 13, circo: 7 },
+    { label: 'SC', musica: 21, cinema: 16, teatro: 12, danca: 5,  artesVisuais: 12, literatura: 17, fotografia: 10, circo: 7 },
+    { label: 'SP', musica: 19, cinema: 20, teatro: 15, danca: 6,  artesVisuais: 14, literatura: 13, fotografia: 8,  circo: 5 },
+    { label: 'SE', musica: 28, cinema: 12, teatro: 9,  danca: 7,  artesVisuais: 8,  literatura: 18, fotografia: 12, circo: 6 },
+    { label: 'TO', musica: 30, cinema: 11, teatro: 8,  danca: 6,  artesVisuais: 7,  literatura: 19, fotografia: 12, circo: 7 },
+  ];
+  const stackedCatKeys = ['musica', 'cinema', 'teatro', 'danca', 'artesVisuais', 'literatura', 'fotografia', 'circo'];
+  const stackedCatLabels = {
+    musica: 'Musica', cinema: 'Cinema', teatro: 'Teatro', danca: 'Danca',
+    artesVisuais: 'Artes Visuais', literatura: 'Literatura', fotografia: 'Fotografia', circo: 'Circo',
+  };
 
   const hStackedData = [
     { label: 'São Paulo',      audiovisual: 320, demais: 500 },
@@ -64,6 +121,18 @@
     { label: 'BA', audiovisual: 75,  demais: 135 },
     { label: 'PR', audiovisual: 65,  demais: 125 },
   ];
+
+  const allStateFlags: Record<string, string> = {
+    AC: '/flags/states/AC.svg', AL: '/flags/states/AL.svg', AP: '/flags/states/AP.svg',
+    AM: '/flags/states/AM.svg', BA: '/flags/states/BA.svg', CE: '/flags/states/CE.svg',
+    DF: '/flags/states/DF.svg', ES: '/flags/states/ES.svg', GO: '/flags/states/GO.svg',
+    MA: '/flags/states/MA.svg', MT: '/flags/states/MT.svg', MS: '/flags/states/MS.svg',
+    MG: '/flags/states/MG.svg', PA: '/flags/states/PA.svg', PB: '/flags/states/PB.svg',
+    PR: '/flags/states/PR.svg', PE: '/flags/states/PE.svg', PI: '/flags/states/PI.svg',
+    RJ: '/flags/states/RJ.svg', RN: '/flags/states/RN.svg', RS: '/flags/states/RS.svg',
+    RO: '/flags/states/RO.svg', RR: '/flags/states/RR.svg', SC: '/flags/states/SC.svg',
+    SP: '/flags/states/SP.svg', SE: '/flags/states/SE.svg', TO: '/flags/states/TO.svg',
+  };
 
   const stateFlags: Record<string, string> = {
     SP: '/flags/states/SP.svg',
@@ -501,16 +570,45 @@
   <h2 class="category-title">Proporcoes e composicao</h2>
 
   <div class="row">
-    <div class="cell">
-      <span class="label">Grafico de Barras Empilhadas Vertical</span>
+    <div class="cell span-2">
+      <span class="label">Grafico de Barras Empilhadas Vertical (todos os estados)</span>
       <VerticalStackedBarChart
         data={stackedData}
         keys={stackedKeys}
         labels={stackedLabels}
         normalize
-        height={240}
+        height={320}
       />
     </div>
+  </div>
+
+  <div class="row">
+    <div class="cell span-2">
+      <span class="label">Grafico de Barras Empilhadas Vertical (8 categorias por estado)</span>
+      <VerticalStackedBarChart
+        data={stackedCatData}
+        keys={stackedCatKeys}
+        labels={stackedCatLabels}
+        normalize
+        height={320}
+      />
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="cell span-2">
+      <span class="label">Grafico de Barras Empilhadas Vertical (com bandeiras)</span>
+      <VerticalStackedBarChart
+        data={stackedData}
+        keys={stackedKeys}
+        labels={stackedLabels}
+        height={320}
+        icons={allStateFlags}
+      />
+    </div>
+  </div>
+
+  <div class="row">
     <div class="cell">
       <span class="label">Grafico de Barras Empilhadas Horizontal</span>
       <HorizontalStackedBarChart

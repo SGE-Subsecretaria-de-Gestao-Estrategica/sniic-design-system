@@ -149,8 +149,8 @@
 						width={col.w}
 						height={seg.h}
 						fill={seg.fill}
-						stroke={black}
-						strokeWidth={STROKE_W}
+						stroke="none"
+						strokeWidth={0}
 						shapeRendering="crispEdges"
 					/>
 					{#if seg.h > 16 && labelFitsInBar(pctFormat(seg.pct), labelFs, col.w)}
@@ -185,7 +185,7 @@
 			y={legendBarY}
 			width={innerW}
 			height={LEGEND_BAR_H}
-			strokeWidth={STROKE_W}
+			strokeWidth={0}
 			fontFamily={chartFont}
 		/>
 	</ChartFrame>

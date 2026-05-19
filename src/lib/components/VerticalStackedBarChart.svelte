@@ -25,6 +25,9 @@
 		colors?: readonly string[];
 		height?: number;
 		yTickFormat?: (v: number) => string;
+		/** Optional map of category → image URL, rendered below X-axis labels. */
+		icons?: Record<string, string>;
+		iconSize?: number;
 	}
 
 	let {
@@ -38,9 +41,15 @@
 		colors = categorical8,
 		height: chartHeight = 260,
 		yTickFormat,
+		icons,
+		iconSize = 20,
 	}: Props = $props();
 
-	const MARGIN = { top: 16, right: 24, bottom: 60, left: 60 };
+	const ICON_RATIO = 3 / 2;
+	const ICON_GAP = 4;
+	const iconW = $derived(iconSize * ICON_RATIO);
+	const iconExtra = $derived(icons ? iconSize + ICON_GAP : 0);
+	const MARGIN = $derived({ top: 16, right: 24, bottom: 60 + iconExtra, left: 60 });
 	const STROKE_W = 0.5;
 	const LEGEND_SPACING = 110;
 	const chartFont = typography.chartValueFontFamily;
@@ -145,10 +154,10 @@
 				width={xScale.bandwidth()}
 				height={yScale(segment[0]) - yScale(segment[1])}
 				{fill}
-				stroke={black}
-				strokeWidth={STROKE_W}
+				stroke="none"
+				strokeWidth={0}
 				shapeRendering="crispEdges"
-				rx={2}
+				rx={0}
 			/>
 		{/each}
 	{/each}
@@ -158,11 +167,26 @@
 		innerHeight={innerH}
 		innerWidth={innerW}
 		showLine={false}
-		rotate={-45}
 		color="#555555"
 		fontSize={9}
 		fontFamily={chartFont}
 	/>
+
+	{#if icons}
+		{#each processed as d (String(d[categoryKey]))}
+			{@const cat = String(d[categoryKey])}
+			{@const iconUrl = icons[cat]}
+			{#if iconUrl}
+				<image
+					href={iconUrl}
+					x={(xScale(cat) ?? 0) + xScale.bandwidth() / 2 - iconW / 2}
+					y={innerH + 18 + ICON_GAP}
+					width={iconW}
+					height={iconSize}
+				/>
+			{/if}
+		{/each}
+	{/if}
 
 	<YAxis
 		ticks={yTicks}
@@ -173,7 +197,7 @@
 		fontFamily={chartFont}
 	/>
 
-	<g transform="translate({legendCenterX}, {innerH + 40})">
+	<g transform="translate({legendCenterX}, {innerH + 40 + iconExtra})">
 		<Legend items={legendItems} spacing={LEGEND_SPACING} fontFamily={chartFont} />
 	</g>
 </ChartFrame>
