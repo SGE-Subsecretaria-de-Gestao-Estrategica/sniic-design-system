@@ -8,12 +8,16 @@ export { default as GradientLegend } from './components/atoms/GradientLegend.sve
 export { default as BarRect } from './components/atoms/BarRect.svelte';
 export { default as ReferenceLine } from './components/atoms/ReferenceLine.svelte';
 export { default as BubbleWithLabel } from './components/atoms/BubbleWithLabel.svelte';
+export { default as SegmentLabel } from './components/atoms/SegmentLabel.svelte';
 
 // Icons — territory
 export { default as IconFavela } from './components/atoms/icons/IconFavela.svelte';
 export { default as IconTerritorioIndigena } from './components/atoms/icons/IconTerritorioIndigena.svelte';
 export { default as IconTerritorioQuilombola } from './components/atoms/icons/IconTerritorioQuilombola.svelte';
 export { default as IconRural } from './components/atoms/icons/IconRural.svelte';
+export { default as IconCidade } from './components/atoms/icons/IconCidade.svelte';
+export { default as IconInterior } from './components/atoms/icons/IconInterior.svelte';
+export { default as IconPerson } from './components/atoms/icons/IconPerson.svelte';
 
 // Icons — state flags
 export { default as StateFlag } from './components/atoms/icons/StateFlag.svelte';
@@ -26,6 +30,8 @@ export { default as SimpleBox } from './components/molecules/SimpleBox.svelte';
 export { default as LegendBar } from './components/molecules/LegendBar.svelte';
 export { default as DataTable } from './components/molecules/DataTable.svelte';
 export type { TableColumn } from './components/molecules/DataTable.svelte';
+export { default as TooltipContainer } from './components/molecules/TooltipContainer.svelte';
+export type { TooltipHelpers } from './components/molecules/TooltipContainer.svelte';
 
 // Organisms — full chart components
 export { default as VerticalBarChart } from './components/VerticalBarChart.svelte';
@@ -92,6 +98,8 @@ export * from './utils/exportSvg.js';
 export * from './utils/labelHelpers.js';
 export * from './utils/colorMapHelpers.js';
 export * from './utils/tooltipState.js';
+export * from './utils/scaleHelpers.js';
+export * from './utils/stackHelpers.js';
 
 // Chart draw functions (for headless / custom-shell usage)
 export * from './charts/choroplethMap.js';
