@@ -16,7 +16,7 @@
     type = 'horizontal',
     positions,
     length,
-    color = '#e2e8f0',
+    color = 'var(--chart-grid, #e2e8f0)',
     dashed = false,
     strokeWidth = 1,
     opacity = 1,

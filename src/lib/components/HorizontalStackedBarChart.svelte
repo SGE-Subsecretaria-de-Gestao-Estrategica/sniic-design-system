@@ -4,11 +4,11 @@
 
 <script lang="ts">
 	import { scaleLinear, scaleBand, stack, max } from 'd3';
-	import { black, typography } from '../tokens.js';
-	import { getContrastColor } from '../utils/colorContrast.js';
+	import { typography } from '../tokens.js';
 	import { categorical8 } from '../palettes.js';
-	import { segmentLabelFontSize, labelFitsInBar } from '../utils/labelHelpers.js';
 	import { buildColorMap, buildLegendItems } from '../utils/colorMapHelpers.js';
+	import { gridPositions, xLinearTicks } from '../utils/scaleHelpers.js';
+	import { deriveEffectiveKeys, sortByTotal, rowTotal } from '../utils/stackHelpers.js';
 	import type { StackedDatum } from './VerticalStackedBarChart.svelte';
 	import ChartFrame from './molecules/ChartFrame.svelte';
 	import LegendBar from './molecules/LegendBar.svelte';
@@ -16,6 +16,7 @@
 	import YAxis from './atoms/YAxis.svelte';
 	import GridLines from './atoms/GridLines.svelte';
 	import BarRect from './atoms/BarRect.svelte';
+	import SegmentLabel from './atoms/SegmentLabel.svelte';
 
 	interface Props {
 		data?: StackedDatum[];
@@ -26,7 +27,6 @@
 		colors?: readonly string[];
 		rowHeight?: number;
 		showTotalLabel?: boolean;
-		/** Optional map of category → image URL, rendered next to Y-axis labels. */
 		icons?: Record<string, string>;
 		iconSize?: number;
 	}
@@ -49,8 +49,6 @@
 	const X_AXIS_LABEL_RESERVE = 22;
 	const LEGEND_BAR_H = 34;
 	const STROKE_W = 0.5;
-	const SEGMENT_LABEL_PAD = 6;
-	const LABEL_FONT_WEIGHT = 700;
 	const ICON_RATIO = 3 / 2;
 	const ICON_GAP = 6;
 	const iconW = $derived(iconSize * ICON_RATIO);
@@ -64,32 +62,18 @@
 
 	let innerW = $state(0);
 
-	const effectiveKeys = $derived(
-		keys.length > 0
-			? keys
-			: data.length > 0
-				? Object.keys(data[0]).filter(
-						(k) => k !== categoryKey && typeof data[0][k] === 'number',
-					)
-				: [],
-	);
+	const effectiveKeys = $derived(deriveEffectiveKeys(data, keys, categoryKey));
 
 	const colorMap = $derived(buildColorMap(effectiveKeys, colors));
 	const legendItems = $derived(buildLegendItems(effectiveKeys, colorMap, labels));
 
-	const sorted = $derived(
-		[...data].sort((a, b) => {
-			const totalA = effectiveKeys.reduce((s, k) => s + (Number(a[k]) || 0), 0);
-			const totalB = effectiveKeys.reduce((s, k) => s + (Number(b[k]) || 0), 0);
-			return totalB - totalA;
-		}),
-	);
+	const sorted = $derived(sortByTotal(data, effectiveKeys));
 
 	const barAreaH = $derived(sorted.length * rowHeight);
 	const height = $derived(FRAME_MARGIN.top + barAreaH + FRAME_MARGIN.bottom);
 
 	const xMax = $derived(
-		max(sorted, (d) => effectiveKeys.reduce((s, k) => s + (Number(d[k]) || 0), 0)) ?? 1,
+		max(sorted, (d) => rowTotal(d, effectiveKeys)) ?? 1,
 	);
 
 	const xScale = $derived(scaleLinear().domain([0, xMax]).range([0, innerW]).nice());
@@ -105,9 +89,8 @@
 		stack<Record<string, string | number>>().keys(effectiveKeys)(sorted),
 	);
 
-	const xTickValues = $derived(xScale.ticks(5));
-	const xTicks = $derived(xTickValues.map((v) => ({ value: format(v), x: xScale(v) })));
-	const xGridPositions = $derived(xTickValues.map((v) => xScale(v)));
+	const xTicks = $derived(xLinearTicks(xScale, 5, format));
+	const xGridPositions = $derived(gridPositions(xScale, 5));
 
 	const legendBarY = $derived(barAreaH + X_AXIS_LABEL_RESERVE);
 
@@ -117,10 +100,6 @@
 			y: (yScale(String(d[categoryKey])) ?? 0) + yScale.bandwidth() / 2,
 		})),
 	);
-
-	function rowTotal(d: StackedDatum): number {
-		return effectiveKeys.reduce((s, k) => s + (Number(d[k]) || 0), 0);
-	}
 </script>
 
 <ChartFrame responsive {height} margin={FRAME_MARGIN} bind:innerWidth={innerW}>
@@ -128,8 +107,7 @@
 		type="vertical"
 		positions={xGridPositions}
 		length={barAreaH}
-		color={black}
-		opacity={0.15}
+		color="var(--chart-grid, #e2e8f0)"
 		dashed
 	/>
 
@@ -141,8 +119,6 @@
 			{@const segY = yScale(String(segment.data[categoryKey])) ?? 0}
 			{@const band = yScale.bandwidth()}
 			{@const amount = Number(segment.data[layer.key]) || 0}
-			{@const labelFs = segmentLabelFontSize(band)}
-			{@const labelText = format(amount)}
 			<BarRect
 				x={segX}
 				y={segY}
@@ -153,17 +129,16 @@
 				strokeWidth={0}
 				shapeRendering="crispEdges"
 			/>
-			{#if amount > 0 && labelFitsInBar(labelText, labelFs, segW)}
-				<text
-					x={segX + SEGMENT_LABEL_PAD}
+			{#if amount > 0}
+				<SegmentLabel
+					text={format(amount)}
+					x={segX + 6}
 					y={segY + band / 2}
-					dy="0.35em"
-					fill={getContrastColor(fill)}
-					font-size={labelFs}
-					font-weight={LABEL_FONT_WEIGHT}
-					font-family={chartFont}
-					pointer-events="none"
-				>{labelText}</text>
+					availableWidth={segW}
+					bandHeight={band}
+					{fill}
+					fontFamily={chartFont}
+				/>
 			{/if}
 		{/each}
 	{/each}
@@ -171,14 +146,14 @@
 	{#if showTotalLabel}
 		{#each sorted as d (String(d[categoryKey]))}
 			<text
-				x={xScale(rowTotal(d)) + 6}
+				x={xScale(rowTotal(d, effectiveKeys)) + 6}
 				y={(yScale(String(d[categoryKey])) ?? 0) + yScale.bandwidth() / 2}
 				dy="0.35em"
 				font-size={10}
 				font-weight="500"
 				font-family={chartFont}
-				fill={black}
-			>{format(rowTotal(d))}</text>
+				fill="var(--chart-fg-strong, #000000)"
+			>{format(rowTotal(d, effectiveKeys))}</text>
 		{/each}
 	{/if}
 
@@ -186,7 +161,6 @@
 		ticks={yTicks}
 		innerHeight={barAreaH}
 		showLine={false}
-		color="#a0a0a0"
 		fontSize={11}
 		tickOffset={-8}
 		fontFamily={chartFont}
@@ -213,12 +187,10 @@
 		innerHeight={barAreaH}
 		innerWidth={innerW}
 		showLine={false}
-		color="#555555"
 		fontSize={10}
 		fontFamily={chartFont}
 	/>
 
-	<!-- Legend bar -->
 	<LegendBar
 		items={legendItems}
 		y={legendBarY}

@@ -17,11 +17,11 @@
 	import { typography, type Margin } from '../tokens.js';
 	import { categorical8 } from '../palettes.js';
 	import { buildColorMap, buildLegendItems } from '../utils/colorMapHelpers.js';
+	import { deriveEffectiveKeys } from '../utils/stackHelpers.js';
 	import ChartFrame from './molecules/ChartFrame.svelte';
 	import XAxis from './atoms/XAxis.svelte';
 	import Legend from './atoms/Legend.svelte';
-	import Tooltip from './molecules/Tooltip.svelte';
-	import { relativePos } from '../utils/tooltipState.js';
+	import TooltipContainer from './molecules/TooltipContainer.svelte';
 
 	interface Props {
 		data?: StreamDatum[];
@@ -45,20 +45,10 @@
 		format = (v: number) => v.toLocaleString(),
 	}: Props = $props();
 
-	let wrapperEl: HTMLDivElement | undefined = $state();
 	let innerW = $state(0);
 	let innerH = $state(0);
-	let tooltip = $state({ visible: false, x: 0, y: 0, html: '' });
 
-	const effectiveKeys = $derived(
-		keys.length > 0
-			? keys
-			: data.length > 0
-				? Object.keys(data[0]).filter(
-						(k) => k !== categoryKey && typeof data[0][k] === 'number',
-					)
-				: [],
-	);
+	const effectiveKeys = $derived(deriveEffectiveKeys(data, keys, categoryKey));
 
 	const colorMap = $derived(buildColorMap(effectiveKeys, colors));
 	const legendItems = $derived(buildLegendItems(effectiveKeys, colorMap, labels));
@@ -109,53 +99,40 @@
 	);
 </script>
 
-<div bind:this={wrapperEl} class="stream-wrapper">
-	<ChartFrame responsive {height} {margin} bind:innerWidth={innerW} bind:innerHeight={innerH} ariaLabel="Stream graph">
-		{#each stackLayout as layer (layer.key)}
-			{@const fill = colorMap[layer.key] ?? '#999'}
-			<path
-				d={areaGen(layer as unknown as [number, number][]) ?? ''}
-				{fill}
-				opacity={0.85}
-				stroke={fill}
-				stroke-width={0.5}
-				role="img"
-				aria-label={labels[layer.key] ?? layer.key}
-				onmouseenter={(e) => {
-					const total = data.reduce((s, d) => s + (Number(d[layer.key]) || 0), 0);
-					const html = `<strong>${labels[layer.key] ?? layer.key}</strong><br/>Total: ${format(total)}`;
-					tooltip = { visible: true, ...relativePos(e, wrapperEl!), html };
-				}}
-				onmousemove={(e) => {
-					tooltip = { ...tooltip, ...relativePos(e, wrapperEl!) };
-				}}
-				onmouseleave={() => {
-					tooltip = { ...tooltip, visible: false };
-				}}
+<TooltipContainer>
+	{#snippet children({ show, move, hide })}
+		<ChartFrame responsive {height} {margin} bind:innerWidth={innerW} bind:innerHeight={innerH} ariaLabel="Stream graph">
+			{#each stackLayout as layer (layer.key)}
+				{@const fill = colorMap[layer.key] ?? '#999'}
+				<path
+					d={areaGen(layer as unknown as [number, number][]) ?? ''}
+					{fill}
+					opacity={0.85}
+					stroke={fill}
+					stroke-width={0.5}
+					role="img"
+					aria-label={labels[layer.key] ?? layer.key}
+					onmouseenter={(e) => {
+						const total = data.reduce((s, d) => s + (Number(d[layer.key]) || 0), 0);
+						show(e, `<strong>${labels[layer.key] ?? layer.key}</strong><br/>Total: ${format(total)}`);
+					}}
+					onmousemove={move}
+					onmouseleave={hide}
+				/>
+			{/each}
+
+			<XAxis
+				ticks={xTicks}
+				innerHeight={innerH}
+				innerWidth={innerW}
+				showLine={false}
+				fontSize={10}
+				fontFamily={typography.chartValueFontFamily}
 			/>
-		{/each}
 
-		<XAxis
-			ticks={xTicks}
-			innerHeight={innerH}
-			innerWidth={innerW}
-			showLine={false}
-			color="#555555"
-			fontSize={10}
-			fontFamily={typography.chartValueFontFamily}
-		/>
-
-		<g transform="translate(0, {-margin.top + 4})">
-			<Legend items={legendItems} spacing={100} />
-		</g>
-	</ChartFrame>
-
-	<Tooltip {...tooltip} offsetX={12} offsetY={-28} />
-</div>
-
-<style>
-	.stream-wrapper {
-		position: relative;
-		width: 100%;
-	}
-</style>
+			<g transform="translate(0, {-margin.top + 4})">
+				<Legend items={legendItems} spacing={100} />
+			</g>
+		</ChartFrame>
+	{/snippet}
+</TooltipContainer>

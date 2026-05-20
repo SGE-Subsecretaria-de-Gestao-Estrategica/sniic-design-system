@@ -3,6 +3,8 @@
 	import IconTerritorioIndigena from '../lib/components/atoms/icons/IconTerritorioIndigena.svelte';
 	import IconTerritorioQuilombola from '../lib/components/atoms/icons/IconTerritorioQuilombola.svelte';
 	import IconRural from '../lib/components/atoms/icons/IconRural.svelte';
+	import IconCidade from '../lib/components/atoms/icons/IconCidade.svelte';
+	import IconInterior from '../lib/components/atoms/icons/IconInterior.svelte';
 
 	interface Props {
 		size?: number;
@@ -28,6 +30,14 @@
 	<div class="icon-card">
 		<IconRural {size} {color} />
 		<span class="label">Área rural</span>
+	</div>
+	<div class="icon-card">
+		<IconCidade {size} {color} />
+		<span class="label">Cidade</span>
+	</div>
+	<div class="icon-card">
+		<IconInterior {size} {color} />
+		<span class="label">Interior</span>
 	</div>
 </div>
 

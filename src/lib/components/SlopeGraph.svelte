@@ -66,7 +66,7 @@
   <!-- Vertical axis lines -->
   {#each labels as _, ci (ci)}
     {@const x = xScale(ci) ?? 0}
-    <line x1={x} y1={0} x2={x} y2={innerHeight} stroke="#e2e8f0" stroke-width="1" />
+    <line x1={x} y1={0} x2={x} y2={innerHeight} stroke="var(--chart-grid, #e2e8f0)" stroke-width="1" />
   {/each}
 
   <!-- Column headers -->
@@ -78,7 +78,7 @@
       text-anchor="middle"
       font-size={fontSize}
       font-family={typography.fontFamily}
-      fill="#64748b"
+      fill="var(--chart-fg, #64748b)"
       font-weight="600"
     >{label}</text>
   {/each}
@@ -112,7 +112,7 @@
     {#each item.values as val, ci (ci)}
       {@const x = xScale(ci) ?? 0}
       {@const y = yScale(val)}
-      <circle cx={x} cy={y} r={dotRadius} fill={color} stroke="white" stroke-width="1.5" />
+      <circle cx={x} cy={y} r={dotRadius} fill={color} stroke="var(--chart-bg, white)" stroke-width="1.5" />
       <!-- Value labels on intermediate columns -->
       {#if showValues && ci > 0 && ci < item.values.length - 1}
         <text
@@ -121,7 +121,7 @@
           text-anchor="middle"
           font-size={typography.sizes.sm}
           font-family={typography.fontFamily}
-          fill="#64748b"
+          fill="var(--chart-fg, #64748b)"
         >{format(val)}</text>
       {/if}
     {/each}
@@ -138,7 +138,7 @@
       fill={color}
       font-weight="500"
     >
-      {item.name}{#if showValues} <tspan fill="#64748b">{format(item.values[0])}</tspan>{/if}
+      {item.name}{#if showValues} <tspan fill="var(--chart-fg, #64748b)">{format(item.values[0])}</tspan>{/if}
     </text>
 
     <!-- Right label -->
@@ -153,7 +153,7 @@
       fill={color}
       font-weight="500"
     >
-      {item.name}{#if showValues} <tspan fill="#64748b">{format(item.values[item.values.length - 1])}</tspan>{/if}
+      {item.name}{#if showValues} <tspan fill="var(--chart-fg, #64748b)">{format(item.values[item.values.length - 1])}</tspan>{/if}
     </text>
   {/each}
 </ChartFrame>

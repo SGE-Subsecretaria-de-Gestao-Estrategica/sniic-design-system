@@ -1,6 +1,6 @@
 <script lang="ts">
   import { scaleLinear } from 'd3';
-  import { black, typography } from '../tokens.js';
+  import { typography } from '../tokens.js';
   import { categorical8 } from '../palettes.js';
   import Legend from './atoms/Legend.svelte';
   import type { Component } from 'svelte';
@@ -171,8 +171,8 @@
       <polygon
         {points}
         fill="none"
-        stroke={black}
-        stroke-opacity="0.12"
+        stroke="var(--chart-grid, #e2e8f0)"
+        stroke-opacity="0.5"
         stroke-width="1"
         stroke-dasharray="3,3"
       />
@@ -185,8 +185,8 @@
         y1={cy}
         x2={ep.x2}
         y2={ep.y2}
-        stroke={black}
-        stroke-opacity="0.15"
+        stroke="var(--chart-grid, #e2e8f0)"
+        stroke-opacity="0.5"
         stroke-width="1"
       />
     {/each}
@@ -198,7 +198,7 @@
           x={levelLabelX + 3}
           y={levelLabelY(r)}
           font-size={typography.sizes.xs}
-          fill="#64748b"
+          fill="var(--chart-fg, #64748b)"
           text-anchor="start"
           dominant-baseline="auto"
         >{format(levelValues[li])}</text>
@@ -216,7 +216,7 @@
           height={iconSize}
         >
           <div xmlns="http://www.w3.org/1999/xhtml" class="icon-wrapper">
-            <IconComponent size={iconSize} color={black} title={al.label} />
+            <IconComponent size={iconSize} color="var(--chart-fg-strong, #000000)" title={al.label} />
           </div>
         </foreignObject>
       {:else}
@@ -224,7 +224,7 @@
           x={al.x}
           y={al.y}
           font-size={typography.sizes.sm}
-          fill={black}
+          fill="var(--chart-fg-strong, #000000)"
           text-anchor={al.anchor}
           dominant-baseline="middle"
           font-weight="600"
@@ -252,7 +252,7 @@
             cy={pt.y}
             r={dotRadius}
             fill={shape.color}
-            stroke="white"
+            stroke="var(--chart-bg, white)"
             stroke-width="1.5"
           >
             <title>{axes[pi]}: {format(pt.value)}</title>

@@ -8,15 +8,13 @@
 
 <script lang="ts">
 	import { scaleLinear, scaleBand, max } from 'd3';
-	import { black, typography, type Margin } from '../tokens.js';
+	import { typography, type Margin } from '../tokens.js';
 	import { colorPairs, type ColorPair } from '../palettes.js';
-	import { getContrastColor } from '../utils/colorContrast.js';
-	import { segmentLabelFontSize, labelFitsInBar } from '../utils/labelHelpers.js';
 	import ChartFrame from './molecules/ChartFrame.svelte';
 	import BarRect from './atoms/BarRect.svelte';
+	import SegmentLabel from './atoms/SegmentLabel.svelte';
 	import LegendBar from './molecules/LegendBar.svelte';
-	import Tooltip from './molecules/Tooltip.svelte';
-	import { relativePos } from '../utils/tooltipState.js';
+	import TooltipContainer from './molecules/TooltipContainer.svelte';
 
 	interface Props {
 		data?: PyramidTier[];
@@ -26,7 +24,6 @@
 		margin?: Margin;
 		colors?: ColorPair;
 		format?: (v: number) => string;
-		/** Gap between the two sides in pixels. */
 		centerGap?: number;
 	}
 
@@ -46,10 +43,8 @@
 	const LEGEND_BAR_H = 34;
 	const LABEL_PAD = 4;
 
-	let wrapperEl: HTMLDivElement | undefined = $state();
 	let innerW = $state(0);
 	let innerH = $state(0);
-	let tooltip = $state({ visible: false, x: 0, y: 0, html: '' });
 
 	const barAreaH = $derived(innerH - LEGEND_BAR_H - 18);
 	const halfW = $derived((innerW - centerGap) / 2);
@@ -82,146 +77,123 @@
 	const legendBarY = $derived(barAreaH + 18);
 </script>
 
-<div bind:this={wrapperEl} class="pyramid-wrapper">
-	<ChartFrame responsive {height} {margin} bind:innerWidth={innerW} bind:innerHeight={innerH} ariaLabel="Population pyramid">
-		{#each data as d (d.label)}
-			{@const yPos = yScale(d.label) ?? 0}
-			{@const band = yScale.bandwidth()}
-			{@const leftW = xScaleLeft(d.left)}
-			{@const rightW = xScaleRight(d.right)}
-			{@const leftX = centerX - centerGap / 2 - leftW}
-			{@const rightX = centerX + centerGap / 2}
-			{@const labelFs = segmentLabelFontSize(band)}
+<TooltipContainer>
+	{#snippet children({ show, move, hide })}
+		<ChartFrame responsive {height} {margin} bind:innerWidth={innerW} bind:innerHeight={innerH} ariaLabel="Population pyramid">
+			{#each data as d (d.label)}
+				{@const yPos = yScale(d.label) ?? 0}
+				{@const band = yScale.bandwidth()}
+				{@const leftW = xScaleLeft(d.left)}
+				{@const rightW = xScaleRight(d.right)}
+				{@const leftX = centerX - centerGap / 2 - leftW}
+				{@const rightX = centerX + centerGap / 2}
+				{@const tooltipHtml = `<strong>${d.label}</strong><br/>${leftLabel}: ${format(d.left)}<br/>${rightLabel}: ${format(d.right)}`}
 
-			<!-- Left bar -->
-			<g
-				role="img"
-				aria-label="{d.label} {leftLabel}: {format(d.left)}"
-				onmouseenter={(e) => {
-					const html = `<strong>${d.label}</strong><br/>${leftLabel}: ${format(d.left)}<br/>${rightLabel}: ${format(d.right)}`;
-					tooltip = { visible: true, ...relativePos(e, wrapperEl!), html };
-				}}
-				onmousemove={(e) => {
-					tooltip = { ...tooltip, ...relativePos(e, wrapperEl!) };
-				}}
-				onmouseleave={() => {
-					tooltip = { ...tooltip, visible: false };
-				}}
-			>
-				<BarRect
-					x={leftX}
-					y={yPos}
-					width={leftW}
-					height={band}
-					fill={colors[0]}
-					stroke={black}
-					strokeWidth={STROKE_W}
-					shapeRendering="crispEdges"
-				/>
-				{#if labelFitsInBar(format(d.left), labelFs, leftW, LABEL_PAD, LABEL_PAD)}
-					<text
+				<!-- Left bar -->
+				<g
+					role="img"
+					aria-label="{d.label} {leftLabel}: {format(d.left)}"
+					onmouseenter={(e) => show(e, tooltipHtml)}
+					onmousemove={move}
+					onmouseleave={hide}
+				>
+					<BarRect
+						x={leftX}
+						y={yPos}
+						width={leftW}
+						height={band}
+						fill={colors[0]}
+						stroke="var(--chart-fg-strong, #000000)"
+						strokeWidth={STROKE_W}
+						shapeRendering="crispEdges"
+					/>
+					<SegmentLabel
+						text={format(d.left)}
 						x={leftX + LABEL_PAD}
 						y={yPos + band / 2}
-						dy="0.35em"
-						font-size={labelFs}
-						font-weight={700}
-						font-family={chartFont}
-						fill={getContrastColor(colors[0])}
-						pointer-events="none"
-					>{format(d.left)}</text>
-				{/if}
-			</g>
+						availableWidth={leftW}
+						bandHeight={band}
+						fill={colors[0]}
+						padding={LABEL_PAD}
+						rightMargin={LABEL_PAD}
+						fontFamily={chartFont}
+					/>
+				</g>
 
-			<!-- Right bar -->
-			<g
-				role="img"
-				aria-label="{d.label} {rightLabel}: {format(d.right)}"
-				onmouseenter={(e) => {
-					const html = `<strong>${d.label}</strong><br/>${leftLabel}: ${format(d.left)}<br/>${rightLabel}: ${format(d.right)}`;
-					tooltip = { visible: true, ...relativePos(e, wrapperEl!), html };
-				}}
-				onmousemove={(e) => {
-					tooltip = { ...tooltip, ...relativePos(e, wrapperEl!) };
-				}}
-				onmouseleave={() => {
-					tooltip = { ...tooltip, visible: false };
-				}}
-			>
-				<BarRect
-					x={rightX}
-					y={yPos}
-					width={rightW}
-					height={band}
-					fill={colors[1]}
-					stroke={black}
-					strokeWidth={STROKE_W}
-					shapeRendering="crispEdges"
-				/>
-				{#if labelFitsInBar(format(d.right), labelFs, rightW, LABEL_PAD, LABEL_PAD)}
-					<text
+				<!-- Right bar -->
+				<g
+					role="img"
+					aria-label="{d.label} {rightLabel}: {format(d.right)}"
+					onmouseenter={(e) => show(e, tooltipHtml)}
+					onmousemove={move}
+					onmouseleave={hide}
+				>
+					<BarRect
+						x={rightX}
+						y={yPos}
+						width={rightW}
+						height={band}
+						fill={colors[1]}
+						stroke="var(--chart-fg-strong, #000000)"
+						strokeWidth={STROKE_W}
+						shapeRendering="crispEdges"
+					/>
+					<SegmentLabel
+						text={format(d.right)}
 						x={rightX + rightW - LABEL_PAD}
 						y={yPos + band / 2}
-						dy="0.35em"
-						text-anchor="end"
-						font-size={labelFs}
-						font-weight={700}
-						font-family={chartFont}
-						fill={getContrastColor(colors[1])}
-						pointer-events="none"
-					>{format(d.right)}</text>
-				{/if}
-			</g>
+						availableWidth={rightW}
+						bandHeight={band}
+						fill={colors[1]}
+						textAnchor="end"
+						padding={LABEL_PAD}
+						rightMargin={LABEL_PAD}
+						fontFamily={chartFont}
+					/>
+				</g>
 
-			<!-- Center age label -->
-			<text
-				x={centerX}
-				y={yPos + band / 2}
-				dy="0.35em"
-				text-anchor="middle"
-				font-size={Math.min(11, band * 0.55)}
-				font-weight={600}
-				font-family={chartFont}
-				fill={black}
-			>{d.label}</text>
-		{/each}
+				<!-- Center age label -->
+				<text
+					x={centerX}
+					y={yPos + band / 2}
+					dy="0.35em"
+					text-anchor="middle"
+					font-size={Math.min(11, band * 0.55)}
+					font-weight={600}
+					font-family={chartFont}
+					fill="var(--chart-fg-strong, #000000)"
+				>{d.label}</text>
+			{/each}
 
-		<!-- Center axis line -->
-		<line
-			x1={centerX - centerGap / 2}
-			x2={centerX - centerGap / 2}
-			y1={0}
-			y2={barAreaH}
-			stroke={black}
-			stroke-width={STROKE_W}
-			stroke-opacity={0.3}
-		/>
-		<line
-			x1={centerX + centerGap / 2}
-			x2={centerX + centerGap / 2}
-			y1={0}
-			y2={barAreaH}
-			stroke={black}
-			stroke-width={STROKE_W}
-			stroke-opacity={0.3}
-		/>
+			<!-- Center axis lines -->
+			<line
+				x1={centerX - centerGap / 2}
+				x2={centerX - centerGap / 2}
+				y1={0}
+				y2={barAreaH}
+				stroke="var(--chart-fg-strong, #000000)"
+				stroke-width={STROKE_W}
+				stroke-opacity={0.3}
+			/>
+			<line
+				x1={centerX + centerGap / 2}
+				x2={centerX + centerGap / 2}
+				y1={0}
+				y2={barAreaH}
+				stroke="var(--chart-fg-strong, #000000)"
+				stroke-width={STROKE_W}
+				stroke-opacity={0.3}
+			/>
 
-		<LegendBar
-			items={legendItems}
-			y={legendBarY}
-			width={innerW}
-			height={LEGEND_BAR_H}
-			strokeWidth={STROKE_W}
-			fontFamily={chartFont}
-			centered
-		/>
-	</ChartFrame>
-
-	<Tooltip {...tooltip} offsetX={12} offsetY={-28} />
-</div>
-
-<style>
-	.pyramid-wrapper {
-		position: relative;
-		width: 100%;
-	}
-</style>
+			<LegendBar
+				items={legendItems}
+				y={legendBarY}
+				width={innerW}
+				height={LEGEND_BAR_H}
+				strokeWidth={STROKE_W}
+				fontFamily={chartFont}
+				centered
+			/>
+		</ChartFrame>
+	{/snippet}
+</TooltipContainer>

@@ -24,7 +24,7 @@
     ticks,
     innerHeight,
     label = '',
-    color = '#64748b',
+    color = 'var(--chart-fg, #64748b)',
     fontSize = typography.sizes.sm,
     fontFamily = typography.fontFamily,
     labelOffset = 36,

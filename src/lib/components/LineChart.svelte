@@ -2,6 +2,7 @@
   import { scaleLinear, scalePoint, line, curveMonotoneX, curveLinear, extent, type ScalePoint, type ScaleLinear } from 'd3';
   import { defaultMargin, type Margin } from '../tokens.js';
   import { categorical8 } from '../palettes.js';
+  import { gridPositions, yLinearTicks } from '../utils/scaleHelpers.js';
   import ChartFrame from './molecules/ChartFrame.svelte';
   import XAxis from './atoms/XAxis.svelte';
   import YAxis from './atoms/YAxis.svelte';
@@ -34,8 +35,6 @@
     yLabel?: string;
     showDots?: boolean;
     smooth?: boolean;
-    /** Snippet rendered inside the chart's inner <g>, after the lines.
-     *  Receives { xScale, yScale } so annotations can be placed in data space. */
     annotations?: Snippet<[AnnotationContext]>;
     colors?: readonly string[];
   }
@@ -77,11 +76,9 @@
       .range([innerHeight, 0])
   );
 
-  const yTickValues = $derived(yScale.ticks(5));
-
   const xTicks = $derived(labels.map(l => ({ value: l, x: xScale(l) ?? 0 })));
-  const yTicks = $derived(yTickValues.map(v => ({ value: v, y: yScale(v) })));
-  const gridPositions = $derived(yTickValues.map(v => yScale(v)));
+  const yTicks = $derived(yLinearTicks(yScale, 5));
+  const yGridPositions = $derived(gridPositions(yScale, 5));
 
   const lineGen = $derived(
     line<DataPoint>()
@@ -101,7 +98,7 @@
 </script>
 
 <ChartFrame {width} {height} {margin} bind:innerWidth bind:innerHeight ariaLabel="Line chart">
-  <GridLines positions={gridPositions} length={innerWidth} />
+  <GridLines positions={yGridPositions} length={innerWidth} />
 
   {#each series as s, i (s.name)}
     {@const seriesColor = s.color ?? defaultColors[i % defaultColors.length]}
@@ -120,7 +117,7 @@
           cy={yScale(d.value)}
           r="4"
           fill={seriesColor}
-          stroke="white"
+          stroke="var(--chart-bg, white)"
           stroke-width="2"
         >
           <title>{s.name} — {d.label}: {d.value}</title>

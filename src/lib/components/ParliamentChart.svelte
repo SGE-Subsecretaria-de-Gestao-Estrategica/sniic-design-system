@@ -7,19 +7,15 @@
 </script>
 
 <script lang="ts">
-	import { typography } from '../tokens.js';
 	import { categorical8 } from '../palettes.js';
 	import ChartFrame from './molecules/ChartFrame.svelte';
 	import Legend from './atoms/Legend.svelte';
-	import Tooltip from './molecules/Tooltip.svelte';
-	import { relativePos } from '../utils/tooltipState.js';
+	import TooltipContainer from './molecules/TooltipContainer.svelte';
 
 	interface Props {
 		data?: ParliamentDatum[];
 		height?: number;
-		/** Number of concentric rows of seats. */
 		rows?: number;
-		/** Gap between seats as a fraction of seat radius (0–1). */
 		seatGap?: number;
 		colors?: readonly string[];
 		showLegend?: boolean;
@@ -38,10 +34,8 @@
 	const LEGEND_H = 28;
 	const LEGEND_GAP = 12;
 
-	let wrapperEl: HTMLDivElement | undefined = $state();
 	let innerW = $state(0);
 	let innerH = $state(0);
-	let tooltip = $state({ visible: false, x: 0, y: 0, html: '' });
 
 	const totalSeats = $derived(data.reduce((s, d) => s + d.seats, 0));
 
@@ -49,7 +43,6 @@
 		return d.color ?? colors[i % colors.length];
 	}
 
-	/** Build the flat array of seats with party assignment. */
 	const seatList = $derived.by(() => {
 		const list: { partyIndex: number; label: string; color: string }[] = [];
 		data.forEach((d, i) => {
@@ -61,24 +54,16 @@
 		return list;
 	});
 
-	/**
-	 * Distribute seats in concentric semicircular arcs.
-	 * Returns array of { cx, cy, r } for each seat dot.
-	 */
 	const seatPositions = $derived.by(() => {
 		if (totalSeats === 0 || innerW === 0 || innerH === 0) return [];
 
 		const availH = innerH - (showLegend ? LEGEND_H + LEGEND_GAP : 0);
-		// The semicircle occupies the top half of the area.
-		// Radius of outermost arc:
 		const maxR = Math.min(innerW / 2, availH) * 0.92;
 		const minR = maxR * 0.35;
 
-		// Determine seat radius from row count and available radial space.
 		const radialStep = (maxR - minR) / rows;
 		const seatR = (radialStep / (2 + seatGap)) * 0.9;
 
-		// Distribute seats per row proportionally to arc length.
 		const rowRadii: number[] = [];
 		let totalArcLen = 0;
 		for (let r = 0; r < rows; r++) {
@@ -105,7 +90,6 @@
 			if (n <= 0) continue;
 			const radius = rowRadii[row];
 			for (let s = 0; s < n; s++) {
-				// Angle from PI (left) to 0 (right)
 				const angle = Math.PI - (Math.PI * (s + 0.5)) / n;
 				positions.push({
 					cx: originX + radius * Math.cos(angle),
@@ -126,50 +110,33 @@
 	);
 </script>
 
-<div bind:this={wrapperEl} class="parliament-wrapper">
-	<ChartFrame responsive {height} margin={MARGIN} bind:innerWidth={innerW} bind:innerHeight={innerH} ariaLabel="Parliament chart">
-		{#each seatPositions as pos, i (i)}
-			{@const seat = seatList[i]}
-			{#if seat}
-				<circle
-					cx={pos.cx}
-					cy={pos.cy}
-					r={pos.r}
-					fill={seat.color}
-					stroke="white"
-					stroke-width={Math.max(0.5, pos.r * 0.15)}
-					role="img"
-					aria-label="{seat.label}"
-					onmouseenter={(e) => {
-						tooltip = {
-							visible: true,
-							...relativePos(e, wrapperEl!),
-							html: `<strong>${seat.label}</strong><br/>${data[seat.partyIndex].seats} seats`,
-						};
-					}}
-					onmousemove={(e) => {
-						tooltip = { ...tooltip, ...relativePos(e, wrapperEl!) };
-					}}
-					onmouseleave={() => {
-						tooltip = { ...tooltip, visible: false };
-					}}
-				/>
+<TooltipContainer>
+	{#snippet children({ show, move, hide })}
+		<ChartFrame responsive {height} margin={MARGIN} bind:innerWidth={innerW} bind:innerHeight={innerH} ariaLabel="Parliament chart">
+			{#each seatPositions as pos, i (i)}
+				{@const seat = seatList[i]}
+				{#if seat}
+					<circle
+						cx={pos.cx}
+						cy={pos.cy}
+						r={pos.r}
+						fill={seat.color}
+						stroke="var(--chart-bg, white)"
+						stroke-width={Math.max(0.5, pos.r * 0.15)}
+						role="img"
+						aria-label="{seat.label}"
+						onmouseenter={(e) => show(e, `<strong>${seat.label}</strong><br/>${data[seat.partyIndex].seats} seats`)}
+						onmousemove={move}
+						onmouseleave={hide}
+					/>
+				{/if}
+			{/each}
+
+			{#if showLegend && legendItems.length > 0}
+				<g transform="translate(0, {innerH - LEGEND_H})">
+					<Legend items={legendItems} spacing={Math.min(140, innerW / legendItems.length)} />
+				</g>
 			{/if}
-		{/each}
-
-		{#if showLegend && legendItems.length > 0}
-			<g transform="translate(0, {innerH - LEGEND_H})">
-				<Legend items={legendItems} spacing={Math.min(140, innerW / legendItems.length)} />
-			</g>
-		{/if}
-	</ChartFrame>
-
-	<Tooltip {...tooltip} offsetX={12} offsetY={-28} />
-</div>
-
-<style>
-	.parliament-wrapper {
-		position: relative;
-		width: 100%;
-	}
-</style>
+		</ChartFrame>
+	{/snippet}
+</TooltipContainer>

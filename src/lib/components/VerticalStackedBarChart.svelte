@@ -4,9 +4,11 @@
 
 <script lang="ts">
 	import { scaleBand, scaleLinear, stack, max } from 'd3';
-	import { typography, black } from '../tokens.js';
+	import { typography } from '../tokens.js';
 	import { categorical8 } from '../palettes.js';
 	import { buildColorMap, buildLegendItems } from '../utils/colorMapHelpers.js';
+	import { gridPositions, yLinearTicks } from '../utils/scaleHelpers.js';
+	import { deriveEffectiveKeys, processStackedRows, rowTotal } from '../utils/stackHelpers.js';
 	import ChartFrame from './molecules/ChartFrame.svelte';
 	import XAxis from './atoms/XAxis.svelte';
 	import YAxis from './atoms/YAxis.svelte';
@@ -25,7 +27,6 @@
 		colors?: readonly string[];
 		height?: number;
 		yTickFormat?: (v: number) => string;
-		/** Optional map of category → image URL, rendered below X-axis labels. */
 		icons?: Record<string, string>;
 		iconSize?: number;
 	}
@@ -50,48 +51,24 @@
 	const iconW = $derived(iconSize * ICON_RATIO);
 	const iconExtra = $derived(icons ? iconSize + ICON_GAP : 0);
 	const MARGIN = $derived({ top: 16, right: 24, bottom: 60 + iconExtra, left: 60 });
-	const STROKE_W = 0.5;
 	const LEGEND_SPACING = 110;
 	const chartFont = typography.chartValueFontFamily;
 
 	let innerW = $state(0);
 	let innerH = $state(0);
 
-	const effectiveKeys = $derived(
-		keys.length > 0
-			? keys
-			: data.length > 0
-				? Object.keys(data[0]).filter(
-						(k) => k !== categoryKey && typeof data[0][k] === 'number',
-					)
-				: [],
-	);
+	const effectiveKeys = $derived(deriveEffectiveKeys(data, keys, categoryKey));
 
 	const colorMap = $derived(buildColorMap(effectiveKeys, colors));
 	const legendItems = $derived(buildLegendItems(effectiveKeys, colorMap, labels));
 
-	const processed = $derived.by(() => {
-		let rows = data.map((d) => {
-			const row: Record<string, string | number> = { [categoryKey]: d[categoryKey] };
-			if (normalize) {
-				const total =
-					effectiveKeys.reduce((sum, k) => sum + (Number(d[k]) || 0), 0) || 1;
-				for (const k of effectiveKeys) row[k] = ((Number(d[k]) || 0) / total) * 100;
-			} else {
-				for (const k of effectiveKeys) row[k] = Number(d[k]) || 0;
-			}
-			return row;
-		});
-
-		const sortKey = sortBy ?? effectiveKeys[0];
-		if (sortKey) {
-			rows = rows.sort((a, b) => {
-				const diff = (Number(b[sortKey]) || 0) - (Number(a[sortKey]) || 0);
-				return sortDirection === 'asc' ? -diff : diff;
-			});
-		}
-		return rows;
-	});
+	const processed = $derived(
+		processStackedRows(data, effectiveKeys, categoryKey, {
+			normalize,
+			sortBy: sortBy ?? effectiveKeys[0],
+			sortDirection,
+		}),
+	);
 
 	const stackLayout = $derived(
 		stack<Record<string, string | number>>().keys(effectiveKeys)(processed),
@@ -107,14 +84,10 @@
 	const yMax = $derived(
 		normalize
 			? 100
-			: (max(processed, (d) =>
-					effectiveKeys.reduce((s, k) => s + (Number(d[k]) || 0), 0),
-				) ?? 1),
+			: (max(processed, (d) => rowTotal(d, effectiveKeys)) ?? 1),
 	);
 
 	const yScale = $derived(scaleLinear().domain([0, yMax]).range([innerH, 0]).nice());
-
-	const yTickValues = $derived(yScale.ticks(4));
 
 	const defaultFormat = $derived(
 		normalize ? (v: number) => `${v}%` : (v: number) => String(v),
@@ -128,8 +101,8 @@
 		})),
 	);
 
-	const yTicks = $derived(yTickValues.map((v) => ({ value: formatTick(v), y: yScale(v) })));
-	const gridPositions = $derived(yTickValues.map((v) => yScale(v)));
+	const yTicks = $derived(yLinearTicks(yScale, 4, formatTick));
+	const yGridPositions = $derived(gridPositions(yScale, 4));
 
 	const legendCenterX = $derived(
 		innerW / 2 - ((legendItems.length - 1) * LEGEND_SPACING) / 2,
@@ -143,7 +116,7 @@
 	bind:innerWidth={innerW}
 	bind:innerHeight={innerH}
 >
-	<GridLines positions={gridPositions} length={innerW} color={black} opacity={0.15} dashed />
+	<GridLines positions={yGridPositions} length={innerW} color="var(--chart-grid, #e2e8f0)" dashed />
 
 	{#each stackLayout as layer (layer.key)}
 		{@const fill = colorMap[layer.key] ?? '#999'}
@@ -167,7 +140,6 @@
 		innerHeight={innerH}
 		innerWidth={innerW}
 		showLine={false}
-		color="#555555"
 		fontSize={9}
 		fontFamily={chartFont}
 	/>
@@ -192,7 +164,6 @@
 		ticks={yTicks}
 		innerHeight={innerH}
 		showLine={false}
-		color="#555555"
 		fontSize={10}
 		fontFamily={chartFont}
 	/>

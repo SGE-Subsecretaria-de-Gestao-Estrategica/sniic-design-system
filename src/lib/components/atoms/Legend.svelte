@@ -25,7 +25,7 @@
     direction = 'row',
     spacing = 100,
     fontSize = typography.sizes.sm,
-    color = '#64748b',
+    color = 'var(--chart-fg, #64748b)',
     fontFamily = typography.fontFamily,
   }: Props = $props();
 </script>

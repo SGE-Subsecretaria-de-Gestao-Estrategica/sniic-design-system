@@ -6,17 +6,18 @@
 
 <script lang="ts">
 	import { scaleBand, scaleLinear, max } from 'd3';
-	import { black, typography, type Margin } from '../tokens.js';
+	import { typography, type Margin } from '../tokens.js';
 	import { categorical8 } from '../palettes.js';
 	import { buildColorMap, buildLegendItems } from '../utils/colorMapHelpers.js';
+	import { gridPositions, yLinearTicks } from '../utils/scaleHelpers.js';
+	import { deriveEffectiveKeys } from '../utils/stackHelpers.js';
 	import ChartFrame from './molecules/ChartFrame.svelte';
 	import XAxis from './atoms/XAxis.svelte';
 	import YAxis from './atoms/YAxis.svelte';
 	import GridLines from './atoms/GridLines.svelte';
 	import BarRect from './atoms/BarRect.svelte';
 	import LegendBar from './molecules/LegendBar.svelte';
-	import Tooltip from './molecules/Tooltip.svelte';
-	import { relativePos } from '../utils/tooltipState.js';
+	import TooltipContainer from './molecules/TooltipContainer.svelte';
 
 	interface Props {
 		data?: GroupedDatum[];
@@ -44,20 +45,10 @@
 	const STROKE_W = 0.5;
 	const LEGEND_BAR_H = 34;
 
-	let wrapperEl: HTMLDivElement | undefined = $state();
 	let innerW = $state(0);
 	let innerH = $state(0);
-	let tooltip = $state({ visible: false, x: 0, y: 0, html: '' });
 
-	const effectiveKeys = $derived(
-		keys.length > 0
-			? keys
-			: data.length > 0
-				? Object.keys(data[0]).filter(
-						(k) => k !== categoryKey && typeof data[0][k] === 'number',
-					)
-				: [],
-	);
+	const effectiveKeys = $derived(deriveEffectiveKeys(data, keys, categoryKey));
 
 	const colorMap = $derived(buildColorMap(effectiveKeys, colors));
 	const legendItems = $derived(buildLegendItems(effectiveKeys, colorMap, labels));
@@ -87,9 +78,8 @@
 		scaleLinear().domain([0, yMax]).nice().range([barAreaH, 0]),
 	);
 
-	const yTickValues = $derived(yScale.ticks(5));
-	const yTicks = $derived(yTickValues.map((v) => ({ value: format(v), y: yScale(v) })));
-	const yGridPositions = $derived(yTickValues.map((v) => yScale(v)));
+	const yTicks = $derived(yLinearTicks(yScale, 5, format));
+	const yGridPositions = $derived(gridPositions(yScale, 5));
 
 	const xTicks = $derived(
 		data.map((d) => ({
@@ -101,87 +91,70 @@
 	const legendBarY = $derived(barAreaH + 18);
 </script>
 
-<div bind:this={wrapperEl} class="grouped-wrapper">
-	<ChartFrame responsive {height} {margin} bind:innerWidth={innerW} bind:innerHeight={innerH} ariaLabel="Grouped column chart">
-		<GridLines
-			positions={yGridPositions}
-			length={innerW}
-			color={black}
-			opacity={0.15}
-			dashed
-		/>
+<TooltipContainer>
+	{#snippet children({ show, move, hide })}
+		<ChartFrame responsive {height} {margin} bind:innerWidth={innerW} bind:innerHeight={innerH} ariaLabel="Grouped column chart">
+			<GridLines
+				positions={yGridPositions}
+				length={innerW}
+				color="var(--chart-grid, #e2e8f0)"
+				dashed
+			/>
 
-		{#each data as d (String(d[categoryKey]))}
-			{@const groupX = xScale(String(d[categoryKey])) ?? 0}
-			{#each effectiveKeys as key (key)}
-				{@const value = Number(d[key]) || 0}
-				{@const fill = colorMap[key] ?? '#999'}
-				{@const barX = groupX + (xSubScale(key) ?? 0)}
-				{@const barW = xSubScale.bandwidth()}
-				{@const barH = barAreaH - yScale(value)}
-				{@const barY = yScale(value)}
-				<g
-					role="img"
-					aria-label="{String(d[categoryKey])} - {labels[key] ?? key}: {format(value)}"
-					onmouseenter={(e) => {
-						const html = `<strong>${String(d[categoryKey])}</strong><br/>${labels[key] ?? key}: ${format(value)}`;
-						tooltip = { visible: true, ...relativePos(e, wrapperEl!), html };
-					}}
-					onmousemove={(e) => {
-						tooltip = { ...tooltip, ...relativePos(e, wrapperEl!) };
-					}}
-					onmouseleave={() => {
-						tooltip = { ...tooltip, visible: false };
-					}}
-				>
-					<BarRect
-						x={barX}
-						y={barY}
-						width={barW}
-						height={barH}
-						{fill}
-						stroke={black}
-						strokeWidth={STROKE_W}
-						shapeRendering="crispEdges"
-					/>
-				</g>
+			{#each data as d (String(d[categoryKey]))}
+				{@const groupX = xScale(String(d[categoryKey])) ?? 0}
+				{#each effectiveKeys as key (key)}
+					{@const value = Number(d[key]) || 0}
+					{@const fill = colorMap[key] ?? '#999'}
+					{@const barX = groupX + (xSubScale(key) ?? 0)}
+					{@const barW = xSubScale.bandwidth()}
+					{@const barH = barAreaH - yScale(value)}
+					{@const barY = yScale(value)}
+					<g
+						role="img"
+						aria-label="{String(d[categoryKey])} - {labels[key] ?? key}: {format(value)}"
+						onmouseenter={(e) => show(e, `<strong>${String(d[categoryKey])}</strong><br/>${labels[key] ?? key}: ${format(value)}`)}
+						onmousemove={move}
+						onmouseleave={hide}
+					>
+						<BarRect
+							x={barX}
+							y={barY}
+							width={barW}
+							height={barH}
+							{fill}
+							stroke="var(--chart-fg-strong, #000000)"
+							strokeWidth={STROKE_W}
+							shapeRendering="crispEdges"
+						/>
+					</g>
+				{/each}
 			{/each}
-		{/each}
 
-		<XAxis
-			ticks={xTicks}
-			innerHeight={barAreaH}
-			innerWidth={innerW}
-			showLine={false}
-			color="#555555"
-			fontSize={10}
-			fontFamily={chartFont}
-		/>
-		<YAxis
-			ticks={yTicks}
-			innerHeight={barAreaH}
-			showLine={false}
-			color="#555555"
-			fontSize={10}
-			fontFamily={chartFont}
-		/>
+			<XAxis
+				ticks={xTicks}
+				innerHeight={barAreaH}
+				innerWidth={innerW}
+				showLine={false}
+				fontSize={10}
+				fontFamily={chartFont}
+			/>
+			<YAxis
+				ticks={yTicks}
+				innerHeight={barAreaH}
+				showLine={false}
+				fontSize={10}
+				fontFamily={chartFont}
+			/>
 
-		<LegendBar
-			items={legendItems}
-			y={legendBarY}
-			width={innerW}
-			height={LEGEND_BAR_H}
-			strokeWidth={STROKE_W}
-			fontFamily={chartFont}
-		/>
-	</ChartFrame>
-
-	<Tooltip {...tooltip} offsetX={12} offsetY={-28} />
-</div>
-
-<style>
-	.grouped-wrapper {
-		position: relative;
-		width: 100%;
-	}
-</style>
+			<LegendBar
+				items={legendItems}
+				y={legendBarY}
+				width={innerW}
+				height={LEGEND_BAR_H}
+				strokeWidth={STROKE_W}
+				fontFamily={chartFont}
+			/>
+		</ChartFrame>
+	{/snippet}
+</TooltipContainer>

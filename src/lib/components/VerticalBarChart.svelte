@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { scaleBand, scaleLinear, max } from 'd3';
-	import { black, colors, defaultMargin, typography, type Margin } from '../tokens.js';
+	import { colors, defaultMargin, typography, type Margin } from '../tokens.js';
+	import { gridPositions, yLinearTicks } from '../utils/scaleHelpers.js';
 
 	const STROKE_W = 0.5;
 	import ChartFrame from './molecules/ChartFrame.svelte';
@@ -51,8 +52,6 @@
 			.range([innerHeight, 0]),
 	);
 
-	const yTickValues = $derived(yScale.ticks(5));
-
 	const xTicks = $derived(
 		data.map((d) => ({
 			value: d.label,
@@ -60,12 +59,12 @@
 		})),
 	);
 
-	const yTicks = $derived(yTickValues.map((v) => ({ value: v, y: yScale(v) })));
-	const gridPositions = $derived(yTickValues.map((v) => yScale(v)));
+	const yTicks = $derived(yLinearTicks(yScale, 5));
+	const yGridPositions = $derived(gridPositions(yScale, 5));
 </script>
 
 <ChartFrame responsive {height} {margin} bind:innerWidth bind:innerHeight ariaLabel="Bar chart">
-	<GridLines positions={gridPositions} length={innerWidth} color={black} opacity={0.15} dashed />
+	<GridLines positions={yGridPositions} length={innerWidth} color="var(--chart-grid, #e2e8f0)" dashed />
 
 	{#each data as d (d.label)}
 		<BarRect
@@ -74,7 +73,7 @@
 			width={xScale.bandwidth()}
 			height={innerHeight - yScale(d.value)}
 			fill={color}
-			stroke={black}
+			stroke="var(--chart-fg-strong, #000000)"
 			strokeWidth={STROKE_W}
 			shapeRendering="crispEdges"
 			title="{d.label}: {d.value}"

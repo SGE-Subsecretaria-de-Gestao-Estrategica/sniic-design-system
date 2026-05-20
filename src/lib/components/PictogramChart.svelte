@@ -7,7 +7,7 @@
 </script>
 
 <script lang="ts">
-	import { typography, black } from '../tokens.js';
+	import { typography } from '../tokens.js';
 	import { categorical8 } from '../palettes.js';
 	import ChartFrame from './molecules/ChartFrame.svelte';
 
@@ -84,10 +84,10 @@
 				font-size={12}
 				font-weight={600}
 				font-family={chartFont}
-				fill={black}
+				fill="var(--chart-fg-strong, #000000)"
 			>
 				{section.label}
-				<tspan fill="#666" font-weight={400}> ({format(section.value)})</tspan>
+				<tspan fill="var(--chart-fg-muted, #555555)" font-weight={400}> ({format(section.value)})</tspan>
 			</text>
 		{/if}
 

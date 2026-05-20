@@ -140,7 +140,7 @@
         text-anchor="end"
         dominant-baseline="middle"
         font-size={typography.sizes.xs}
-        fill="#64748b"
+        fill="var(--chart-fg, #64748b)"
         font-family={chartFont}
       >{label}</text>
     {/if}
@@ -153,7 +153,7 @@
       y={-8}
       text-anchor="start"
       font-size={typography.sizes.xs}
-      fill="#64748b"
+      fill="var(--chart-fg, #64748b)"
       font-family={chartFont}
     >{month.label}</text>
   {/each}
