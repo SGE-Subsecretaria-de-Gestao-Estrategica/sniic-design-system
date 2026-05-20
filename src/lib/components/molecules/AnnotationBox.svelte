@@ -119,7 +119,7 @@
     x={boxX + pad}
     y={boxY + pad + titleHeight + 6 + i * lineHeight + subtitleSize}
     font-size={subtitleSize}
-    fill={black}
+    fill="var(--chart-fg-strong, {black})"
     opacity="0.55"
     font-family={fontFamily}
   >{line}</text>

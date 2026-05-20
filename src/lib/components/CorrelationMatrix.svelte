@@ -144,7 +144,7 @@
         dx="-0.5em"
         text-anchor="end"
         font-size={typography.sizes.sm}
-        fill="#64748b"
+        fill="var(--chart-fg, #64748b)"
         font-family={chartFont}
         transform="rotate({xRotate}, {tick.x}, 0)"
       >{tick.value}</text>
@@ -159,7 +159,7 @@
       text-anchor="end"
       dominant-baseline="middle"
       font-size={typography.sizes.sm}
-      fill="#64748b"
+      fill="var(--chart-fg, #64748b)"
       font-family={chartFont}
     >{tick.value}</text>
   {/each}

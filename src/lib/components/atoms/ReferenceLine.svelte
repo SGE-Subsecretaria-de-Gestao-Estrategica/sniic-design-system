@@ -21,7 +21,7 @@
 		position,
 		length,
 		direction = 'vertical',
-		color = '#000000',
+		color = 'var(--chart-fg-strong, #000000)',
 		strokeWidth = 0.5,
 		dashed = false,
 		dashArray,

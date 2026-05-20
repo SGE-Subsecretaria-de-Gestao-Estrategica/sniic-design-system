@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { scaleBand, scaleLinear, max } from 'd3';
-	import { black, colors, typography, type Margin } from '../tokens.js';
+	import { colors, typography, type Margin } from '../tokens.js';
+	import { gridPositions, xLinearTicks } from '../utils/scaleHelpers.js';
+	import { computeDynamicHeight } from '../utils/scaleHelpers.js';
 
 	const STROKE_W = 0.5;
 	import ChartFrame from './molecules/ChartFrame.svelte';
@@ -39,10 +41,10 @@
 	const chartFont = typography.chartValueFontFamily;
 
 	let innerWidth = $state(0);
-	const height = $derived(data.length * rowHeight + margin.top + margin.bottom);
-	const innerHeight = $derived(height - margin.top - margin.bottom);
 
 	const sorted = $derived([...data].sort((a, b) => b.value - a.value));
+
+	const { height, innerHeight } = $derived(computeDynamicHeight(sorted.length, rowHeight, margin));
 
 	const xScale = $derived(
 		scaleLinear()
@@ -58,8 +60,8 @@
 			.padding(0.25),
 	);
 
-	const xTickValues = $derived(xScale.ticks(5));
-	const xTicks = $derived(xTickValues.map((v) => ({ value: format(v), x: xScale(v) })));
+	const xTicks = $derived(xLinearTicks(xScale, 5, format));
+	const xGridPositions = $derived(gridPositions(xScale, 5));
 
 	const yTicks = $derived(
 		sorted.map((d) => ({
@@ -67,8 +69,6 @@
 			y: (yScale(d.label) ?? 0) + yScale.bandwidth() / 2,
 		})),
 	);
-
-	const gridPositions = $derived(xTickValues.map((v) => xScale(v)));
 </script>
 
 <ChartFrame
@@ -80,10 +80,9 @@
 >
 	<GridLines
 		type="vertical"
-		positions={gridPositions}
+		positions={xGridPositions}
 		length={innerHeight}
-		color={black}
-		opacity={0.15}
+		color="var(--chart-grid, #e2e8f0)"
 		dashed
 	/>
 
@@ -94,7 +93,7 @@
 			width={xScale(d.value)}
 			height={yScale.bandwidth()}
 			fill={color}
-			stroke={black}
+			stroke="var(--chart-fg-strong, #000000)"
 			strokeWidth={STROKE_W}
 			shapeRendering="crispEdges"
 			title="{d.label}: {d.value}"
@@ -110,7 +109,7 @@
 				font-size={10}
 				font-weight="500"
 				font-family={chartFont}
-				fill={black}
+				fill="var(--chart-fg-strong, #000000)"
 			>{format(d.value)}</text>
 		{/each}
 	{/if}
@@ -121,7 +120,6 @@
 		{innerWidth}
 		label={xLabel}
 		showLine={false}
-		color="#555555"
 		fontSize={10}
 		fontFamily={chartFont}
 	/>
@@ -131,7 +129,6 @@
 		{innerHeight}
 		label={yLabel}
 		showLine={false}
-		color="#a0a0a0"
 		fontSize={11}
 		tickOffset={-8}
 		fontFamily={chartFont}

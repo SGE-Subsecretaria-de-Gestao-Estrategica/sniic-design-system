@@ -43,7 +43,7 @@
   x={0}
   y={height + 12}
   font-size={typography.sizes.sm}
-  fill="#000000"
+  fill="var(--chart-fg-strong, #000000)"
   font-family={typography.chartValueFontFamily}
 >{format(min)}</text>
 <text
@@ -51,6 +51,6 @@
   y={height + 12}
   text-anchor="end"
   font-size={typography.sizes.sm}
-  fill="#000000"
+  fill="var(--chart-fg-strong, #000000)"
   font-family={typography.chartValueFontFamily}
 >{format(max)}</text>

@@ -10,7 +10,6 @@
 
 <script lang="ts">
 	import { scaleLog, scaleLinear, scaleSqrt, extent, max } from 'd3';
-	import { black } from '../tokens.js';
 	import { categorical8 } from '../palettes.js';
 	import ChartFrame from './molecules/ChartFrame.svelte';
 	import XAxis from './atoms/XAxis.svelte';
@@ -18,8 +17,7 @@
 	import GridLines from './atoms/GridLines.svelte';
 	import Legend from './atoms/Legend.svelte';
 	import BubbleWithLabel from './atoms/BubbleWithLabel.svelte';
-	import Tooltip from './molecules/Tooltip.svelte';
-	import { relativePos } from '../utils/tooltipState.js';
+	import TooltipContainer from './molecules/TooltipContainer.svelte';
 
 	interface Props {
 		data?: BubbleDatum[];
@@ -75,10 +73,8 @@
 		return colors[0] ?? '#a0a0a0';
 	}
 
-	let wrapperEl: HTMLDivElement | undefined = $state();
 	let measuredWidth = $state(0);
 	let innerW = $state(0);
-	let tooltip = $state({ visible: false, x: 0, y: 0, html: '' });
 
 	const height = $derived(Math.max(380, measuredWidth * 0.5));
 	const innerH = $derived(height - MARGIN.top - MARGIN.bottom);
@@ -128,106 +124,90 @@
 	);
 </script>
 
-<div bind:this={wrapperEl} class="bubble-wrapper">
-	<ChartFrame
-		responsive
-		bind:measuredWidth
-		{height}
-		margin={MARGIN}
-		bind:innerWidth={innerW}
-	>
-		<GridLines
-			type="horizontal"
-			positions={yGridPositions}
-			length={innerW}
-			color={black}
-			dashed
-		/>
-		<GridLines
-			type="vertical"
-			positions={xGridPositions}
-			length={innerH}
-			color={black}
-			dashed
-		/>
+<TooltipContainer>
+	{#snippet children({ show, move, hide })}
+		<ChartFrame
+			responsive
+			bind:measuredWidth
+			{height}
+			margin={MARGIN}
+			bind:innerWidth={innerW}
+		>
+			<GridLines
+				type="horizontal"
+				positions={yGridPositions}
+				length={innerW}
+				color="var(--chart-grid, #e2e8f0)"
+				dashed
+			/>
+			<GridLines
+				type="vertical"
+				positions={xGridPositions}
+				length={innerH}
+				color="var(--chart-grid, #e2e8f0)"
+				dashed
+			/>
 
-		{#each rows as d (d.label)}
-			{@const color = bubbleColor(d)}
-			<g
-				transform="translate({xScale(d.x)},{yScale(d.y)})"
-				style="cursor: pointer"
-				role="img"
-				aria-label={d.label}
-				onmouseenter={(e) => {
-					const html = tooltipFormat ? tooltipFormat(d) : defaultTooltipHtml(d);
-					tooltip = { visible: true, ...relativePos(e, wrapperEl!), html };
-				}}
-				onmousemove={(e) => {
-					tooltip = { ...tooltip, ...relativePos(e, wrapperEl!) };
-				}}
-				onmouseleave={() => {
-					tooltip = { ...tooltip, visible: false };
-				}}
-			>
-				<BubbleWithLabel
-					r={rScale(d.size)}
-					fill={color}
-					opacity={0.75}
-					stroke={color}
-					strokeWidth={1}
-					label={d.label.substring(0, 2).toUpperCase()}
-					labelFontSize={9}
-				/>
-			</g>
-		{/each}
+			{#each rows as d (d.label)}
+				{@const color = bubbleColor(d)}
+				<g
+					transform="translate({xScale(d.x)},{yScale(d.y)})"
+					style="cursor: pointer"
+					role="img"
+					aria-label={d.label}
+					onmouseenter={(e) => show(e, tooltipFormat ? tooltipFormat(d) : defaultTooltipHtml(d))}
+					onmousemove={move}
+					onmouseleave={hide}
+				>
+					<BubbleWithLabel
+						r={rScale(d.size)}
+						fill={color}
+						opacity={0.75}
+						stroke={color}
+						strokeWidth={1}
+						label={d.label.substring(0, 2).toUpperCase()}
+						labelFontSize={9}
+					/>
+				</g>
+			{/each}
 
-		<XAxis
-			ticks={xTicks}
-			innerHeight={innerH}
-			innerWidth={innerW}
-			label={xLabel}
-			showLine={false}
-			color="#555555"
-			fontSize={10}
-		/>
-		<YAxis
-			ticks={yTicks}
-			innerHeight={innerH}
-			label={yLabel}
-			showLine={false}
-			color="#555555"
-			fontSize={10}
-			labelOffset={56}
-		/>
+			<XAxis
+				ticks={xTicks}
+				innerHeight={innerH}
+				innerWidth={innerW}
+				label={xLabel}
+				showLine={false}
+				fontSize={10}
+			/>
+			<YAxis
+				ticks={yTicks}
+				innerHeight={innerH}
+				label={yLabel}
+				showLine={false}
+				fontSize={10}
+				labelOffset={56}
+			/>
 
-		{#if hasGroups}
-			<g transform="translate({innerW - 140}, 8)">
-				<Legend
-					items={regionLegendItems}
-					swatch="circle"
-					direction="col"
-					spacing={18}
-					fontSize={10}
-				/>
-			</g>
-		{/if}
+			{#if hasGroups}
+				<g transform="translate({innerW - 140}, 8)">
+					<Legend
+						items={regionLegendItems}
+						swatch="circle"
+						direction="col"
+						spacing={18}
+						fontSize={10}
+					/>
+				</g>
+			{/if}
 
-		{#if sizeLabel}
-			<text
-				x={0}
-				y={innerH + MARGIN.bottom - 6}
-				font-size={10}
-				fill="#555555"
-			>{sizeLabel}</text>
-		{/if}
-	</ChartFrame>
-
-	<Tooltip {...tooltip} offsetX={12} offsetY={-28} />
-</div>
-
-<style>
-	.bubble-wrapper {
-		position: relative;
-		width: 100%;
-	}
-</style>
+			{#if sizeLabel}
+				<text
+					x={0}
+					y={innerH + MARGIN.bottom - 6}
+					font-size={10}
+					fill="var(--chart-fg-muted, #555555)"
+				>{sizeLabel}</text>
+			{/if}
+		</ChartFrame>
+	{/snippet}
+</TooltipContainer>

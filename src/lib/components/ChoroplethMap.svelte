@@ -269,16 +269,16 @@
             <polyline
               points="{sl.cx},{sl.cy} {sl.elbowX},{sl.cy} {sl.elbowX},{sl.labelY} {sl.labelX},{sl.labelY}"
               fill="none"
-              stroke="#555"
+              stroke="var(--chart-fg-muted, #555555)"
               stroke-width={0.7}
             />
-            <circle cx={sl.cx} cy={sl.cy} r={2} fill="#555" />
+            <circle cx={sl.cx} cy={sl.cy} r={2} fill="var(--chart-fg-muted, #555555)" />
             <text
               x={sl.labelX} y={sl.labelY}
               text-anchor={sl.anchor}
               font-size={12}
               font-family="'Space Grotesk', system-ui, sans-serif"
-              fill={black}
+              fill="var(--chart-fg-strong, #000000)"
               pointer-events="none"
             >
               <tspan x={sl.labelX} dy="-0.5em" font-weight={700}>{sl.sigla}</tspan>
@@ -320,21 +320,21 @@
 
         <!-- Bubble size + exec colour legend (bottom-right) -->
         <g transform="translate({width - 120},{height - 100})">
-          <text x={0} y={-8} font-size={10} font-family="'Space Grotesk', system-ui, sans-serif" fill="#000000">Tamanho = valor recebido</text>
+          <text x={0} y={-8} font-size={10} font-family="'Space Grotesk', system-ui, sans-serif" fill="var(--chart-fg-strong, #000000)">Tamanho = valor recebido</text>
           {#each [0.25, 1] as frac, i (frac)}
             {@const bval = maxBubbleVal * frac}
             {@const br   = bubbleR(bval)}
             {@const cx   = 20 + i * 56}
-            <circle {cx} cy={0} r={br} fill="none" stroke="#555555" stroke-width={1} />
-            <text x={cx} y={br + 12} text-anchor="middle" font-size={10} font-family="'Space Grotesk', system-ui, sans-serif" fill="#000000">
+            <circle {cx} cy={0} r={br} fill="none" stroke="var(--chart-fg-muted, #555555)" stroke-width={1} />
+            <text x={cx} y={br + 12} text-anchor="middle" font-size={10} font-family="'Space Grotesk', system-ui, sans-serif" fill="var(--chart-fg-strong, #000000)">
               {BRLFull.format(bval)}
             </text>
           {/each}
-          <text x={0} y={52} font-size={10} font-family="'Space Grotesk', system-ui, sans-serif" fill="#000000">Cor = execução (%)</text>
+          <text x={0} y={52} font-size={10} font-family="'Space Grotesk', system-ui, sans-serif" fill="var(--chart-fg-strong, #000000)">Cor = execução (%)</text>
           {#each [['< 90%', '#d2301d'], ['~95%', '#ecb42d'], ['≥ 100%', '#4f8c4e']] as [lbl, clr], i (lbl)}
             <g transform="translate(0,{60 + i * 16})">
               <circle r={4} cx={4} fill={clr} opacity={0.85} />
-              <text x={12} y={4} font-size={10} font-family="'Space Grotesk', system-ui, sans-serif" fill="#000000">{lbl}</text>
+              <text x={12} y={4} font-size={10} font-family="'Space Grotesk', system-ui, sans-serif" fill="var(--chart-fg-strong, #000000)">{lbl}</text>
             </g>
           {/each}
         </g>

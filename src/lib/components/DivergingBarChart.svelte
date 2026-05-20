@@ -7,10 +7,9 @@
 
 <script lang="ts">
 	import { scaleLinear, scaleBand } from 'd3';
-	import { amber, black, typography } from '../tokens.js';
-	import { getContrastColor } from '../utils/colorContrast.js';
+	import { amber, typography } from '../tokens.js';
 	import { colorPairs, type ColorPair } from '../palettes.js';
-	import { segmentLabelFontSize, labelFitsInBar } from '../utils/labelHelpers.js';
+	import { gridPositions, xLinearTicks } from '../utils/scaleHelpers.js';
 	import ChartFrame from './molecules/ChartFrame.svelte';
 	import LegendBar from './molecules/LegendBar.svelte';
 	import XAxis from './atoms/XAxis.svelte';
@@ -18,6 +17,7 @@
 	import GridLines from './atoms/GridLines.svelte';
 	import BarRect from './atoms/BarRect.svelte';
 	import ReferenceLine from './atoms/ReferenceLine.svelte';
+	import SegmentLabel from './atoms/SegmentLabel.svelte';
 
 	interface Props {
 		data?: DivergingDatum[];
@@ -49,7 +49,6 @@
 	const LEGEND_BAR_H = 34;
 	const STROKE_W = 0.5;
 	const SEGMENT_LABEL_PAD = 6;
-	const LABEL_FONT_WEIGHT = 700;
 	const FRAME_MARGIN = {
 		top: 28,
 		right: 28,
@@ -80,9 +79,8 @@
 			.padding(0.28),
 	);
 
-	const xTickValues = $derived(xScale.ticks(5));
-	const xTicks = $derived(xTickValues.map((v) => ({ value: `${v}%`, x: xScale(v) })));
-	const xGridPositions = $derived(xTickValues.map((v) => xScale(v)));
+	const xTicks = $derived(xLinearTicks(xScale, 5, (v) => `${v}%`));
+	const xGridPositions = $derived(gridPositions(xScale, 5));
 
 	const yTicks = $derived(
 		sorted.map((d) => ({
@@ -104,7 +102,7 @@
 		type="vertical"
 		positions={xGridPositions}
 		length={barAreaH}
-		color={black}
+		color="var(--chart-grid, #e2e8f0)"
 		dashed
 	/>
 
@@ -112,7 +110,7 @@
 	<ReferenceLine
 		position={xScale(50)}
 		length={barAreaH}
-		color={black}
+		color="var(--chart-fg-strong, #000000)"
 		strokeWidth={STROKE_W}
 	/>
 
@@ -138,7 +136,7 @@
 			width={xScale(d.leftPct)}
 			height={yScale.bandwidth()}
 			fill={COLORS.left}
-			stroke={black}
+			stroke="var(--chart-fg-strong, #000000)"
 			strokeWidth={STROKE_W}
 			shapeRendering="crispEdges"
 		/>
@@ -148,7 +146,7 @@
 			width={xScale(100 - d.leftPct)}
 			height={yScale.bandwidth()}
 			fill={COLORS.right}
-			stroke={black}
+			stroke="var(--chart-fg-strong, #000000)"
 			strokeWidth={STROKE_W}
 			shapeRendering="crispEdges"
 		/>
@@ -157,37 +155,36 @@
 	<!-- Segment labels -->
 	{#each sorted as d (d.label)}
 		{@const band = yScale.bandwidth()}
-		{@const labelFs = segmentLabelFontSize(band)}
 		{@const yMid = (yScale(d.label) ?? 0) + band / 2}
 		{@const segLeft = xScale(d.leftPct)}
 		{@const segRight = xScale(100 - d.leftPct)}
-		{@const txtLeft = `${d.leftPct.toFixed(0)}%`}
-		{@const txtRight = `${(100 - d.leftPct).toFixed(0)}%`}
-		{#if d.leftPct > 0 && labelFitsInBar(txtLeft, labelFs, segLeft)}
-			<text
+		{#if d.leftPct > 0}
+			<SegmentLabel
+				text={`${d.leftPct.toFixed(0)}%`}
 				x={xScale(d.leftPct) - SEGMENT_LABEL_PAD}
 				y={yMid}
-				dy="0.35em"
-				text-anchor="end"
-				font-size={labelFs}
-				font-weight={LABEL_FONT_WEIGHT}
-				font-family={chartFont}
-				fill={getContrastColor(COLORS.left)}
-				pointer-events="none"
-			>{txtLeft}</text>
+				availableWidth={segLeft}
+				bandHeight={band}
+				fill={COLORS.left}
+				textAnchor="end"
+				padding={SEGMENT_LABEL_PAD}
+				rightMargin={SEGMENT_LABEL_PAD}
+				fontFamily={chartFont}
+			/>
 		{/if}
-		{#if 100 - d.leftPct > 0 && labelFitsInBar(txtRight, labelFs, segRight)}
-			<text
+		{#if 100 - d.leftPct > 0}
+			<SegmentLabel
+				text={`${(100 - d.leftPct).toFixed(0)}%`}
 				x={xScale(d.leftPct) + SEGMENT_LABEL_PAD}
 				y={yMid}
-				dy="0.35em"
-				text-anchor="start"
-				font-size={labelFs}
-				font-weight={LABEL_FONT_WEIGHT}
-				font-family={chartFont}
-				fill={getContrastColor(COLORS.right)}
-				pointer-events="none"
-			>{txtRight}</text>
+				availableWidth={segRight}
+				bandHeight={band}
+				fill={COLORS.right}
+				textAnchor="start"
+				padding={SEGMENT_LABEL_PAD}
+				rightMargin={SEGMENT_LABEL_PAD}
+				fontFamily={chartFont}
+			/>
 		{/if}
 	{/each}
 
@@ -196,7 +193,6 @@
 		innerHeight={barAreaH}
 		innerWidth={innerW}
 		showLine={false}
-		color="#555555"
 		fontSize={10}
 		fontFamily={chartFont}
 	/>
@@ -204,13 +200,11 @@
 		ticks={yTicks}
 		innerHeight={barAreaH}
 		showLine={false}
-		color="#a0a0a0"
 		fontSize={11}
 		tickOffset={-8}
 		fontFamily={chartFont}
 	/>
 
-	<!-- Legend bar -->
 	<LegendBar
 		items={legendItems}
 		y={legendBarY}

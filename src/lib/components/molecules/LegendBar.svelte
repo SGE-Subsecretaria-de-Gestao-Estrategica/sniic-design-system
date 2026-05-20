@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { black, typography } from '../../tokens.js';
+	import { typography } from '../../tokens.js';
 	import { getContrastColor } from '../../utils/colorContrast.js';
 	import { measureTextWidth } from '../../utils/labelHelpers.js';
 	import BarRect from '../atoms/BarRect.svelte';
@@ -66,7 +66,7 @@
 		font-size={fontSize}
 		font-weight={fontWeight}
 		font-family={fontFamily}
-		fill={contrastLabels ? getContrastColor(item.color) : black}
+		fill={contrastLabels ? getContrastColor(item.color) : 'var(--chart-fg-strong, #000000)'}
 	>{item.label}</text>
 {/each}
 
@@ -77,7 +77,7 @@
 		y1={y}
 		x2={(i + 1) * segW}
 		y2={y + height}
-		stroke={black}
+		stroke="var(--chart-fg-strong, #000000)"
 		stroke-width={strokeWidth}
 		shape-rendering="crispEdges"
 	/>
@@ -90,7 +90,7 @@
 	width={totalW}
 	{height}
 	fill="none"
-	stroke={black}
+	stroke="var(--chart-fg-strong, #000000)"
 	stroke-width={strokeWidth}
 	shape-rendering="crispEdges"
 />

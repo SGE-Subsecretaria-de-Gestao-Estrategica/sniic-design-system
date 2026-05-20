@@ -9,16 +9,15 @@
 </script>
 
 <script lang="ts">
-	import { black, typography, type Margin } from '../tokens.js';
+	import { typography, type Margin } from '../tokens.js';
 	import { categorical8 } from '../palettes.js';
-	import { getContrastColor } from '../utils/colorContrast.js';
 	import { buildColorMap, buildLegendItems } from '../utils/colorMapHelpers.js';
-	import { segmentLabelFontSize, labelFitsInBar } from '../utils/labelHelpers.js';
+	import { deriveEffectiveKeys } from '../utils/stackHelpers.js';
 	import ChartFrame from './molecules/ChartFrame.svelte';
 	import LegendBar from './molecules/LegendBar.svelte';
 	import BarRect from './atoms/BarRect.svelte';
-	import Tooltip from './molecules/Tooltip.svelte';
-	import { relativePos } from '../utils/tooltipState.js';
+	import SegmentLabel from './atoms/SegmentLabel.svelte';
+	import TooltipContainer from './molecules/TooltipContainer.svelte';
 
 	interface Props {
 		data?: MekkoDatum[];
@@ -45,30 +44,18 @@
 	}: Props = $props();
 
 	const chartFont = typography.chartValueFontFamily;
-	const STROKE_W = 0.5;
 	const LEGEND_BAR_H = 34;
 
-	let wrapperEl: HTMLDivElement | undefined = $state();
 	let innerW = $state(0);
 	let innerH = $state(0);
-	let tooltip = $state({ visible: false, x: 0, y: 0, html: '' });
 
-	const effectiveKeys = $derived(
-		keys.length > 0
-			? keys
-			: data.length > 0
-				? Object.keys(data[0]).filter(
-						(k) => k !== 'label' && k !== 'total' && typeof data[0][k] === 'number',
-					)
-				: [],
-	);
+	const effectiveKeys = $derived(deriveEffectiveKeys(data, keys, 'label', ['total']));
 
 	const colorMap = $derived(buildColorMap(effectiveKeys, colors));
 	const legendItems = $derived(buildLegendItems(effectiveKeys, colorMap, labels));
 
 	const totalWidth = $derived(data.reduce((s, d) => s + d.total, 0));
 
-	/** Compute column x-positions and widths. */
 	const columns = $derived.by(() => {
 		const cols: Array<{ datum: MekkoDatum; x: number; w: number }> = [];
 		let cumX = 0;
@@ -84,7 +71,6 @@
 		return cols;
 	});
 
-	/** Compute stacked segments for each column. */
 	const columnSegments = $derived.by(() => {
 		return columns.map(({ datum, x, w }) => {
 			const segTotal = effectiveKeys.reduce((s, k) => s + (Number(datum[k]) || 0), 0);
@@ -119,83 +105,70 @@
 	const legendBarY = $derived(innerH + 18);
 </script>
 
-<div bind:this={wrapperEl} class="mekko-wrapper">
-	<ChartFrame responsive {height} {margin} bind:innerWidth={innerW} bind:innerHeight={innerH} ariaLabel="Marimekko chart">
-		{#each columnSegments as col (col.datum.label)}
-			{#each col.segments as seg (seg.key)}
-				{@const labelFs = segmentLabelFontSize(seg.h)}
-				<g
-					role="img"
-					aria-label="{labels[seg.key] ?? seg.key}: {format(seg.value)}"
-					onmouseenter={(e) => {
-						const html = [
-							`<strong>${col.datum.label}</strong>`,
-							`${labels[seg.key] ?? seg.key}: ${format(seg.value)}`,
-							`${pctFormat(seg.pct)}`,
-							`Total: ${format(col.datum.total)}`,
-						].join('<br/>');
-						tooltip = { visible: true, ...relativePos(e, wrapperEl!), html };
-					}}
-					onmousemove={(e) => {
-						tooltip = { ...tooltip, ...relativePos(e, wrapperEl!) };
-					}}
-					onmouseleave={() => {
-						tooltip = { ...tooltip, visible: false };
-					}}
-				>
-					<BarRect
-						x={col.x}
-						y={seg.y}
-						width={col.w}
-						height={seg.h}
-						fill={seg.fill}
-						stroke="none"
-						strokeWidth={0}
-						shapeRendering="crispEdges"
-					/>
-					{#if seg.h > 16 && labelFitsInBar(pctFormat(seg.pct), labelFs, col.w)}
-						<text
-							x={col.x + col.w / 2}
-							y={seg.y + seg.h / 2}
-							dy="0.35em"
-							text-anchor="middle"
-							font-size={labelFs}
-							font-weight={700}
-							font-family={chartFont}
-							fill={getContrastColor(seg.fill)}
-							pointer-events="none"
-						>{pctFormat(seg.pct)}</text>
-					{/if}
-				</g>
+<TooltipContainer>
+	{#snippet children({ show, move, hide })}
+		<ChartFrame responsive {height} {margin} bind:innerWidth={innerW} bind:innerHeight={innerH} ariaLabel="Marimekko chart">
+			{#each columnSegments as col (col.datum.label)}
+				{#each col.segments as seg (seg.key)}
+					<g
+						role="img"
+						aria-label="{labels[seg.key] ?? seg.key}: {format(seg.value)}"
+						onmouseenter={(e) => {
+							const html = [
+								`<strong>${col.datum.label}</strong>`,
+								`${labels[seg.key] ?? seg.key}: ${format(seg.value)}`,
+								`${pctFormat(seg.pct)}`,
+								`Total: ${format(col.datum.total)}`,
+							].join('<br/>');
+							show(e, html);
+						}}
+						onmousemove={move}
+						onmouseleave={hide}
+					>
+						<BarRect
+							x={col.x}
+							y={seg.y}
+							width={col.w}
+							height={seg.h}
+							fill={seg.fill}
+							stroke="none"
+							strokeWidth={0}
+							shapeRendering="crispEdges"
+						/>
+						{#if seg.h > 16}
+							<SegmentLabel
+								text={pctFormat(seg.pct)}
+								x={col.x + col.w / 2}
+								y={seg.y + seg.h / 2}
+								availableWidth={col.w}
+								bandHeight={seg.h}
+								fill={seg.fill}
+								textAnchor="middle"
+								fontFamily={chartFont}
+							/>
+						{/if}
+					</g>
+				{/each}
+
+				<!-- Column label -->
+				<text
+					x={col.x + col.w / 2}
+					y={innerH + 14}
+					text-anchor="middle"
+					font-size={10}
+					font-family={chartFont}
+					fill="var(--chart-fg-muted, #555555)"
+				>{col.datum.label}</text>
 			{/each}
 
-			<!-- Column label -->
-			<text
-				x={col.x + col.w / 2}
-				y={innerH + 14}
-				text-anchor="middle"
-				font-size={10}
-				font-family={chartFont}
-				fill="#555"
-			>{col.datum.label}</text>
-		{/each}
-
-		<LegendBar
-			items={legendItems}
-			y={legendBarY}
-			width={innerW}
-			height={LEGEND_BAR_H}
-			strokeWidth={0}
-			fontFamily={chartFont}
-		/>
-	</ChartFrame>
-
-	<Tooltip {...tooltip} offsetX={12} offsetY={-28} />
-</div>
-
-<style>
-	.mekko-wrapper {
-		position: relative;
-		width: 100%;
-	}
-</style>
+			<LegendBar
+				items={legendItems}
+				y={legendBarY}
+				width={innerW}
+				height={LEGEND_BAR_H}
+				strokeWidth={0}
+				fontFamily={chartFont}
+			/>
+		</ChartFrame>
+	{/snippet}
+</TooltipContainer>
