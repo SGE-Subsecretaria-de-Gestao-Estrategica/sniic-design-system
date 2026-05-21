@@ -7,7 +7,7 @@
 
 <script lang="ts">
 	import { scaleLinear, scaleBand } from 'd3';
-	import { amber, typography } from '../tokens.js';
+	import { typography } from '../tokens.js';
 	import { colorPairs, type ColorPair } from '../palettes.js';
 	import { gridPositions, xLinearTicks } from '../utils/scaleHelpers.js';
 	import ChartFrame from './molecules/ChartFrame.svelte';
@@ -37,7 +37,7 @@
 		rightLabel = 'Right',
 		referenceValue = 0,
 		referenceLabel = '',
-		referenceColor = amber,
+		referenceColor = 'var(--chart-fg-strong, #000000)',
 		colors = colorPairs.orangeTeal,
 		rowHeight = 52,
 		sortDirection = 'desc',
