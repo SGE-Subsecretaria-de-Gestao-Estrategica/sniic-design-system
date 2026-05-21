@@ -86,6 +86,9 @@ export { default as CalendarHeatmap } from './components/CalendarHeatmap.svelte'
 export type { CalendarDatum } from './components/CalendarHeatmap.svelte';
 export { default as ContourPlot } from './components/ContourPlot.svelte';
 export type { ContourPoint } from './components/ContourPlot.svelte';
+export { default as BoxPlotChart } from './components/BoxPlotChart.svelte';
+export type { BoxSeries, BoxStats } from './charts/boxplot.js';
+export { computeBoxStats } from './charts/boxplot.js';
 
 // Tokens
 export * from './tokens.js';
