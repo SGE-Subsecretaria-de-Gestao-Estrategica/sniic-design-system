@@ -9,13 +9,14 @@
 </script>
 
 <script lang="ts">
+	import type { Component } from 'svelte';
 	import { scaleLog, scaleLinear, scaleSqrt, extent, max } from 'd3';
 	import { categorical8 } from '../palettes.js';
+	import { typography } from '../tokens.js';
 	import ChartFrame from './molecules/ChartFrame.svelte';
 	import XAxis from './atoms/XAxis.svelte';
 	import YAxis from './atoms/YAxis.svelte';
 	import GridLines from './atoms/GridLines.svelte';
-	import Legend from './atoms/Legend.svelte';
 	import BubbleWithLabel from './atoms/BubbleWithLabel.svelte';
 	import TooltipContainer from './molecules/TooltipContainer.svelte';
 
@@ -33,6 +34,7 @@
 		colors?: readonly string[];
 		minRadius?: number;
 		maxRadius?: number;
+		icons?: Record<string, Component>;
 	}
 
 	let {
@@ -49,6 +51,7 @@
 		colors = categorical8,
 		minRadius = 4,
 		maxRadius = 24,
+		icons = {},
 	}: Props = $props();
 
 	const MARGIN = { top: 24, right: 24, bottom: 52, left: 72 };
@@ -190,13 +193,23 @@
 
 			{#if hasGroups}
 				<g transform="translate({innerW - 140}, 8)">
-					<Legend
-						items={regionLegendItems}
-						swatch="circle"
-						direction="col"
-						spacing={18}
-						fontSize={10}
-					/>
+					{#each regionLegendItems as item, i (item.label)}
+						{@const Icon = icons[item.label]}
+						<g transform="translate(0, {i * 18})">
+							{#if Icon}
+								<Icon size={10} color={item.color} />
+							{:else}
+								<circle r={5} cx={5} cy={5} fill={item.color} opacity={0.8} />
+							{/if}
+							<text
+								x={14}
+								y={9}
+								font-size={10}
+								fill="var(--chart-fg, #64748b)"
+								font-family={typography.fontFamily}
+							>{item.label}</text>
+						</g>
+					{/each}
 				</g>
 			{/if}
 

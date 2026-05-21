@@ -19,6 +19,12 @@ export { default as IconCidade } from './components/atoms/icons/IconCidade.svelt
 export { default as IconInterior } from './components/atoms/icons/IconInterior.svelte';
 export { default as IconPerson } from './components/atoms/icons/IconPerson.svelte';
 
+// Icons — municipality categories
+export { default as IconMunicipioPequenoI } from './components/atoms/icons/IconMunicipioPequenoI.svelte';
+export { default as IconMunicipioPequenoII } from './components/atoms/icons/IconMunicipioPequenoII.svelte';
+export { default as IconMunicipioMedio } from './components/atoms/icons/IconMunicipioMedio.svelte';
+export { default as IconMunicipioGrande } from './components/atoms/icons/IconMunicipioGrande.svelte';
+
 // Icons — state flags
 export { default as StateFlag } from './components/atoms/icons/StateFlag.svelte';
 

@@ -7,6 +7,7 @@
 </script>
 
 <script lang="ts">
+	import type { Component } from 'svelte';
 	import { treemap, hierarchy, treemapSquarify, type HierarchyRectangularNode } from 'd3';
 	import { typography, type Margin } from '../tokens.js';
 	import { categorical8 } from '../palettes.js';
@@ -23,6 +24,7 @@
 		format?: (v: number) => string;
 		padding?: number;
 		paddingOuter?: number;
+		icons?: Record<string, Component>;
 	}
 
 	let {
@@ -33,6 +35,7 @@
 		format = (v: number) => v.toLocaleString(),
 		padding = 2,
 		paddingOuter = 4,
+		icons = {},
 	}: Props = $props();
 
 	const chartFont = typography.chartValueFontFamily;
@@ -107,13 +110,22 @@
 						shapeRendering="crispEdges"
 					/>
 					{#if w >= MIN_LABEL_W && h >= MIN_LABEL_H}
+						{@const labelColor = getContrastColor(fill)}
+						{@const Icon = icons[leaf.data.name]}
+						{@const iconSize = Math.min(12, h - 6)}
+						{@const textX = leaf.x0 + 4 + (Icon ? iconSize + 3 : 0)}
+						{#if Icon}
+							<g transform="translate({leaf.x0 + 4}, {leaf.y0 + 2})">
+								<Icon size={iconSize} color={labelColor} />
+							</g>
+						{/if}
 						<text
-							x={leaf.x0 + 4}
+							x={textX}
 							y={leaf.y0 + 14}
 							font-size={Math.min(12, w * 0.12)}
 							font-weight={600}
 							font-family={chartFont}
-							fill={getContrastColor(fill)}
+							fill={labelColor}
 							pointer-events="none"
 						>
 							{leaf.data.name}
@@ -125,7 +137,7 @@
 								font-size={Math.min(10, w * 0.1)}
 								font-weight={400}
 								font-family={chartFont}
-								fill={getContrastColor(fill)}
+								fill={labelColor}
 								pointer-events="none"
 							>
 								{format(leaf.value ?? 0)}
