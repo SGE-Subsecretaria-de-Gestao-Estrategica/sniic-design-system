@@ -26,6 +26,7 @@
   import CorrelationMatrix from '../lib/components/CorrelationMatrix.svelte';
   import CalendarHeatmap from '../lib/components/CalendarHeatmap.svelte';
   import ContourPlot from '../lib/components/ContourPlot.svelte';
+  import BoxPlotChart from '../lib/components/BoxPlotChart.svelte';
   import AnnotationBox from '../lib/components/molecules/AnnotationBox.svelte';
   import SimpleBox from '../lib/components/molecules/SimpleBox.svelte';
   import DataTable from '../lib/components/molecules/DataTable.svelte';
@@ -737,6 +738,24 @@
 
   <!-- ═══════════════════════════════════════════════════════════════════ -->
   <h2 class="category-title">Distribuicao e divergencia</h2>
+
+  <div class="row">
+    <div class="cell span-2">
+      <span class="label">Grafico de Caixa (Box Plot)</span>
+      <BoxPlotChart
+        data={[
+          { label: 'Norte',        values: [12, 18, 22, 25, 28, 30, 35, 40, 42, 45, 48, 52, 55, 60, 65] },
+          { label: 'Nordeste',     values: [20, 28, 33, 38, 42, 45, 48, 50, 53, 58, 62, 65, 70, 72, 75] },
+          { label: 'Centro-Oeste', values: [35, 42, 48, 52, 55, 58, 60, 63, 67, 70, 74, 78, 82, 85, 90] },
+          { label: 'Sudeste',      values: [50, 58, 65, 70, 72, 75, 78, 80, 83, 86, 88, 90, 93, 95, 98] },
+          { label: 'Sul',          values: [45, 52, 58, 62, 65, 68, 70, 73, 76, 80, 83, 85, 88, 90, 92] },
+        ]}
+        height={280}
+        xLabel="Região"
+        yLabel="Score (%)"
+      />
+    </div>
+  </div>
 
   <div class="row">
     <div class="cell">
