@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { orange, teal, white, black, typography } from '../../tokens.js';
+  import { orange, teal, typography } from '../../tokens.js';
 
   /**
    * SVG molecule — place inside a chart's inner <g transform="translate(marginLeft, marginTop)">.
@@ -97,7 +97,7 @@
   y={boxY}
   width={boxWidth}
   height={boxHeight}
-  fill={white}
+  fill="var(--chart-bg, #ffffff)"
   stroke={teal}
   stroke-width="1"
   rx="2"
@@ -119,7 +119,7 @@
     x={boxX + pad}
     y={boxY + pad + titleHeight + 6 + i * lineHeight + subtitleSize}
     font-size={subtitleSize}
-    fill="var(--chart-fg-strong, {black})"
+    fill="var(--chart-fg-strong, #000000)"
     opacity="0.55"
     font-family={fontFamily}
   >{line}</text>

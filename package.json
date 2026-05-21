@@ -1,6 +1,6 @@
 {
   "name": "sniic-design-system",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "A Svelte component library with chart components and design tokens based on the Brazilian Government Design System (Padrão Digital de Governo).",
   "author": "SNIIC",
   "license": "MIT",
@@ -8,7 +8,14 @@
     "type": "git",
     "url": "https://github.com/sniic/sniic-dsm.git"
   },
-  "keywords": ["svelte", "d3", "charts", "design-system", "data-visualization", "brazil"],
+  "keywords": [
+    "svelte",
+    "d3",
+    "charts",
+    "design-system",
+    "data-visualization",
+    "brazil"
+  ],
   "type": "module",
   "main": "./dist/sniic.umd.cjs",
   "module": "./dist/sniic.js",

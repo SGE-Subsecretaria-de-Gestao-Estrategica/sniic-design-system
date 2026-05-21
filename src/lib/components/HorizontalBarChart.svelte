@@ -16,6 +16,9 @@
 		value: number;
 	}
 
+	const FLAG_RATIO = 3 / 2;
+	const FLAG_GAP = 6;
+
 	interface Props {
 		data?: DataPoint[];
 		color?: string;
@@ -25,6 +28,9 @@
 		rowHeight?: number;
 		format?: (v: number) => string;
 		showValueLabels?: boolean;
+		showFlags?: boolean;
+		flagBasePath?: string;
+		flagSize?: number;
 	}
 
 	let {
@@ -36,7 +42,15 @@
 		rowHeight = 32,
 		format = (v: number) => String(v),
 		showValueLabels = true,
+		showFlags = false,
+		flagBasePath = '/flags/states',
+		flagSize = 20,
 	}: Props = $props();
+
+	const flagW = $derived(flagSize * FLAG_RATIO);
+	const effectiveMargin = $derived(
+		showFlags ? { ...margin, left: margin.left + flagW + FLAG_GAP } : margin,
+	);
 
 	const chartFont = typography.chartValueFontFamily;
 
@@ -74,7 +88,7 @@
 <ChartFrame
 	responsive
 	{height}
-	{margin}
+	margin={effectiveMargin}
 	bind:innerWidth
 	ariaLabel="Horizontal bar chart"
 >
@@ -123,6 +137,18 @@
 		fontSize={10}
 		fontFamily={chartFont}
 	/>
+
+	{#if showFlags}
+		{#each sorted as d (d.label)}
+			<image
+				href="{flagBasePath}/{d.label.toUpperCase()}.svg"
+				x={-(effectiveMargin.left - 4)}
+				y={(yScale(d.label) ?? 0) + yScale.bandwidth() / 2 - flagSize / 2}
+				width={flagW}
+				height={flagSize}
+			/>
+		{/each}
+	{/if}
 
 	<YAxis
 		ticks={yTicks}

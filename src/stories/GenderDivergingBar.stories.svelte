@@ -63,3 +63,15 @@
     referenceLabel: 'avg',
   }}
 />
+
+<Story
+  name="With State Flags"
+  args={{
+    data: fullData,
+    leftLabel: 'Feminino',
+    rightLabel: 'Masculino',
+    referenceValue: 51.5,
+    referenceLabel: 'média',
+    showFlags: true,
+  }}
+/>

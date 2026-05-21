@@ -29,6 +29,8 @@
 		showTotalLabel?: boolean;
 		icons?: Record<string, string>;
 		iconSize?: number;
+		showFlags?: boolean;
+		flagBasePath?: string;
 	}
 
 	let {
@@ -42,6 +44,8 @@
 		showTotalLabel = true,
 		icons,
 		iconSize = 20,
+		showFlags = false,
+		flagBasePath = '/flags/states',
 	}: Props = $props();
 
 	const chartFont = typography.chartValueFontFamily;
@@ -52,7 +56,7 @@
 	const ICON_RATIO = 3 / 2;
 	const ICON_GAP = 6;
 	const iconW = $derived(iconSize * ICON_RATIO);
-	const iconExtra = $derived(icons ? iconW + ICON_GAP : 0);
+	const iconExtra = $derived((icons != null || showFlags) ? iconW + ICON_GAP : 0);
 	const FRAME_MARGIN = $derived({
 		top: 16,
 		right: 28,
@@ -68,6 +72,18 @@
 	const legendItems = $derived(buildLegendItems(effectiveKeys, colorMap, labels));
 
 	const sorted = $derived(sortByTotal(data, effectiveKeys));
+
+	const effectiveIcons = $derived(
+		icons ??
+			(showFlags
+				? Object.fromEntries(
+						sorted.map((d) => {
+							const cat = String(d[categoryKey]);
+							return [cat, `${flagBasePath}/${cat.toUpperCase()}.svg`];
+						}),
+					)
+				: undefined),
+	);
 
 	const barAreaH = $derived(sorted.length * rowHeight);
 	const height = $derived(FRAME_MARGIN.top + barAreaH + FRAME_MARGIN.bottom);
@@ -166,10 +182,10 @@
 		fontFamily={chartFont}
 	/>
 
-	{#if icons}
+	{#if effectiveIcons}
 		{#each sorted as d (String(d[categoryKey]))}
 			{@const cat = String(d[categoryKey])}
-			{@const iconUrl = icons[cat]}
+			{@const iconUrl = effectiveIcons[cat]}
 			{#if iconUrl}
 				<image
 					href={iconUrl}

@@ -49,7 +49,7 @@
     bandwidth = 20,
     showPoints = false,
     pointRadius = 1.5,
-    pointColor = '#00000044',
+    pointColor = 'var(--chart-fg, #00000044)',
     showLegend = true,
     showGrid = true,
     format = (v: number) => v.toFixed(3),
