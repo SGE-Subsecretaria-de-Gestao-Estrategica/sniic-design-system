@@ -68,7 +68,7 @@
 
 		while (cells.length > totalCells) cells.pop();
 		while (cells.length < totalCells) {
-			cells.push({ catIndex: -1, color: '#e5e7eb', label: '' });
+			cells.push({ catIndex: -1, color: 'var(--chart-grid, #e5e7eb)', label: '' });
 		}
 		return cells;
 	});

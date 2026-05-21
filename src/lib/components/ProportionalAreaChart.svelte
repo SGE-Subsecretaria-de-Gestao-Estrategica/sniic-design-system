@@ -13,6 +13,7 @@
 	import ChartFrame from './molecules/ChartFrame.svelte';
 	import TooltipContainer from './molecules/TooltipContainer.svelte';
 	import { labelFitsInCircle } from '../utils/labelHelpers.js';
+	import { getContrastColor } from '../utils/colorContrast.js';
 
 	interface Props {
 		data?: ProportionalDatum[];
@@ -121,7 +122,7 @@
 							font-size={Math.min(12, r * 0.4)}
 							font-weight={600}
 							font-family={chartFont}
-							fill="white"
+							fill={getContrastColor(color)}
 							pointer-events="none"
 						>{d.label}</text>
 						<text
@@ -130,7 +131,7 @@
 							font-size={Math.min(10, r * 0.35)}
 							font-weight={500}
 							font-family={chartFont}
-							fill="white"
+							fill={getContrastColor(color)}
 							pointer-events="none"
 						>{format(d.value)}</text>
 					{/if}

@@ -19,6 +19,9 @@
 	import ReferenceLine from './atoms/ReferenceLine.svelte';
 	import SegmentLabel from './atoms/SegmentLabel.svelte';
 
+	const FLAG_RATIO = 3 / 2;
+	const FLAG_GAP = 6;
+
 	interface Props {
 		data?: DivergingDatum[];
 		leftLabel?: string;
@@ -29,6 +32,9 @@
 		colors?: ColorPair;
 		rowHeight?: number;
 		sortDirection?: 'asc' | 'desc';
+		showFlags?: boolean;
+		flagBasePath?: string;
+		flagSize?: number;
 	}
 
 	let {
@@ -41,6 +47,9 @@
 		colors = colorPairs.orangeTeal,
 		rowHeight = 52,
 		sortDirection = 'desc',
+		showFlags = false,
+		flagBasePath = '/flags/states',
+		flagSize = 20,
 	}: Props = $props();
 
 	const chartFont = typography.chartValueFontFamily;
@@ -49,12 +58,14 @@
 	const LEGEND_BAR_H = 34;
 	const STROKE_W = 0.5;
 	const SEGMENT_LABEL_PAD = 6;
-	const FRAME_MARGIN = {
+
+	const flagW = $derived(flagSize * FLAG_RATIO);
+	const FRAME_MARGIN = $derived({
 		top: 28,
 		right: 28,
 		bottom: 12 + X_AXIS_LABEL_RESERVE + LEGEND_BAR_H,
-		left: 130,
-	};
+		left: 130 + (showFlags ? flagW + FLAG_GAP : 0),
+	});
 
 	const COLORS = $derived({ left: colors[0], right: colors[1] });
 
@@ -196,6 +207,18 @@
 		fontSize={10}
 		fontFamily={chartFont}
 	/>
+	{#if showFlags}
+		{#each sorted as d (d.label)}
+			<image
+				href="{flagBasePath}/{d.label.toUpperCase()}.svg"
+				x={-(FRAME_MARGIN.left - 4)}
+				y={(yScale(d.label) ?? 0) + yScale.bandwidth() / 2 - flagSize / 2}
+				width={flagW}
+				height={flagSize}
+			/>
+		{/each}
+	{/if}
+
 	<YAxis
 		ticks={yTicks}
 		innerHeight={barAreaH}

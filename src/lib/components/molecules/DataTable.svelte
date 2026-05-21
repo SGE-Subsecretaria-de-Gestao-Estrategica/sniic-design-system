@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { teal, black, typography } from '../../tokens.js';
+  import { teal, typography } from '../../tokens.js';
 
   export interface TableColumn {
     key: string;
@@ -77,8 +77,8 @@
     minRowHeight = 32,
     cellPadY = 8,
     headerColor = teal,
-    lineColor = '#999999',
-    textColor = black,
+    lineColor = 'var(--chart-grid, #999999)',
+    textColor = 'var(--chart-fg-strong, #000000)',
     fontSize = typography.sizes.sm,
     headerFontSize = typography.sizes.sm,
     fontFamily = typography.fontFamily,

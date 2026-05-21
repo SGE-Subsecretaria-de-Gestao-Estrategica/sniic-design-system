@@ -222,7 +222,7 @@
                 fill={flat[feature.properties.name] > 0
                   ? colorResult.colorScale(flat[feature.properties.name])
                   : '#e8e0d8'}
-                stroke="#c8c0b8"
+                stroke="var(--chart-grid, #c8c0b8)"
                 stroke-width={0.5}
                 style="cursor: pointer; outline: none;"
                 role="button"
@@ -277,8 +277,8 @@
             </linearGradient>
           </defs>
           <rect width={legendW} height={6} rx={2} fill="url(#{legendGradId})" />
-          <text x={0} y={18} font-size={9} fill="#8a6d84" text-anchor="start">{format(colorResult.sharedMin)}</text>
-          <text x={legendW} y={18} font-size={9} fill="#8a6d84" text-anchor="end">{format(colorResult.sharedMax)}</text>
+          <text x={0} y={18} font-size={9} fill="var(--chart-fg-muted, #8a6d84)" text-anchor="start">{format(colorResult.sharedMin)}</text>
+          <text x={legendW} y={18} font-size={9} fill="var(--chart-fg-muted, #8a6d84)" text-anchor="end">{format(colorResult.sharedMax)}</text>
         </svg>
       </div>
     </div>
@@ -312,7 +312,7 @@
                 fill={hasMuniData && muniVal != null
                   ? colorResult.colorScale(muniVal)
                   : detailFill}
-                stroke="#ffffdeff"
+                stroke="var(--chart-bg, #ffffdeff)"
                 stroke-opacity="0.3"
                 stroke-width={0.5}
               />
@@ -326,7 +326,7 @@
               <polyline
                 points="{cl.cx},{cl.cy} {cl.elbowX},{cl.cy} {cl.elbowX},{cl.labelY} {cl.labelX},{cl.labelY}"
                 fill="none"
-                stroke="#8a6d84"
+                stroke="var(--chart-fg-muted, #8a6d84)"
                 stroke-width={0.7}
               />
 
@@ -334,7 +334,7 @@
               <rect
                 x={cl.cx - sq} y={cl.cy - sq}
                 width={sq * 2} height={sq * 2}
-                fill="#fffffe"
+                fill="var(--chart-bg, #fffffe)"
                 stroke={colorScales.purple[3]}
                 stroke-width={1.2}
               />
@@ -346,7 +346,7 @@
                 dominant-baseline="middle"
                 font-size={cl.isCapital ? 10 : 8.5}
                 font-weight={cl.isCapital ? '700' : '400'}
-                fill="#2f0f29"
+                fill="var(--chart-fg-strong, #2f0f29)"
                 pointer-events="none"
               >{cl.city.name}</text>
             {/each}
@@ -373,7 +373,7 @@
   }
 
   .panel {
-    border: 1px solid #e8e0d8;
+    border: 1px solid var(--chart-grid, #e8e0d8);
     border-radius: 10px;
     overflow: hidden;
     display: flex;
@@ -390,7 +390,7 @@
 
   .panel-header {
     padding: 10px 12px 6px;
-    border-bottom: 1px solid #e8e0d8;
+    border-bottom: 1px solid var(--chart-grid, #e8e0d8);
     flex-shrink: 0;
   }
 
@@ -398,17 +398,17 @@
     display: block;
     font-size: 0.82rem;
     font-weight: 700;
-    color: #2f0f29;
+    color: var(--chart-fg-strong, #2f0f29);
   }
 
   .sigla {
     font-weight: 400;
-    color: #8a6d84;
+    color: var(--chart-fg-muted, #8a6d84);
   }
 
   .panel-sub {
     font-size: 0.72rem;
-    color: #8a6d84;
+    color: var(--chart-fg-muted, #8a6d84);
   }
 
   .map-wrapper {
@@ -460,7 +460,7 @@
     align-items: center;
     justify-content: center;
     font-size: 0.78rem;
-    color: #8a6d84;
+    color: var(--chart-fg-muted, #8a6d84);
   }
 
   @media (max-width: 640px) {

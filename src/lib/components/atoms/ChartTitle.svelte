@@ -15,7 +15,7 @@
     x = 0,
     y = 0,
     fontSize = typography.sizes.md,
-    color = '#334155',
+    color = 'var(--chart-fg-strong, #334155)',
     anchor = 'start',
   }: Props = $props();
 </script>

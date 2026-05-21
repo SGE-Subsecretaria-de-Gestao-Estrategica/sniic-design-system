@@ -57,3 +57,25 @@
     rowHeight: 48,
   }}
 />
+
+<Story
+  name="With State Flags"
+  args={{
+    data: [
+      { label: 'SP', value: 4521 },
+      { label: 'RJ', value: 3108 },
+      { label: 'MG', value: 2874 },
+      { label: 'BA', value: 1963 },
+      { label: 'PR', value: 1745 },
+      { label: 'RS', value: 1632 },
+      { label: 'PE', value: 1418 },
+      { label: 'CE', value: 1290 },
+      { label: 'GO', value: 987 },
+      { label: 'PA', value: 854 },
+    ],
+    color: colors.primary[0],
+    format: (v) => v.toLocaleString('pt-BR'),
+    xLabel: 'Registros',
+    showFlags: true,
+  }}
+/>

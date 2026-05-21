@@ -54,3 +54,13 @@
     icons: stateFlags,
   }}
 />
+
+<Story
+  name="With State Flags (showFlags)"
+  args={{
+    data: flagData,
+    keys,
+    labels,
+    showFlags: true,
+  }}
+/>

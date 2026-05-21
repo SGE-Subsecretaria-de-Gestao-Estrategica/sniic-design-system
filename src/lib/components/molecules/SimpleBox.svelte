@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { teal, white, black, typography } from '../../tokens.js';
+  import { teal, typography } from '../../tokens.js';
 
   import type { Snippet } from 'svelte';
 
@@ -44,7 +44,7 @@
     boxWidth = 180,
     boxHeight: boxHeightProp,
     color = teal,
-    valueColor = black,
+    valueColor = 'var(--chart-fg-strong, #000000)',
     valueSize = 32,
     fontFamily = typography.chartValueFontFamily,
     children,
@@ -83,7 +83,7 @@
   y={y}
   width={boxWidth}
   height={boxHeight}
-  fill={white}
+  fill="var(--chart-bg, #ffffff)"
   stroke={color}
   stroke-width="1"
   rx="2"
