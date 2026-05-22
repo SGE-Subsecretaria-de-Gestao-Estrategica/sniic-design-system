@@ -30,6 +30,7 @@
 		referenceLabel?: string;
 		referenceColor?: string;
 		colors?: ColorPair;
+		marginLeft?: number;
 		rowHeight?: number;
 		sortDirection?: 'asc' | 'desc';
 		showFlags?: boolean;
@@ -45,6 +46,7 @@
 		referenceLabel = '',
 		referenceColor = 'var(--chart-fg-strong, #000000)',
 		colors = colorPairs.orangeTeal,
+		marginLeft = 130,
 		rowHeight = 52,
 		sortDirection = 'desc',
 		showFlags = false,
@@ -64,7 +66,7 @@
 		top: 28,
 		right: 28,
 		bottom: 12 + X_AXIS_LABEL_RESERVE + LEGEND_BAR_H,
-		left: 130 + (showFlags ? flagW + FLAG_GAP : 0),
+		left: marginLeft + (showFlags ? flagW + FLAG_GAP : 0),
 	});
 
 	const COLORS = $derived({ left: colors[0], right: colors[1] });
