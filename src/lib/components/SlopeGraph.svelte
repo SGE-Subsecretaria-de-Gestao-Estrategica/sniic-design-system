@@ -13,7 +13,6 @@
   interface Props {
     items?: Item[];
     labels?: string[];
-    width?: number;
     height?: number;
     margin?: Margin;
     format?: (v: number) => string;
@@ -27,7 +26,6 @@
   let {
     items = [],
     labels = [],
-    width = 700,
     height = 450,
     margin = { top: 40, right: 160, bottom: 40, left: 160 },
     format = (v: number) => String(v),
@@ -62,7 +60,7 @@
   const labelPad = 12;
 </script>
 
-<ChartFrame {width} {height} {margin} bind:innerWidth bind:innerHeight ariaLabel="Slope graph">
+<ChartFrame responsive {height} {margin} bind:innerWidth bind:innerHeight ariaLabel="Slope graph">
   <!-- Vertical axis lines -->
   {#each labels as _, ci (ci)}
     {@const x = xScale(ci) ?? 0}
