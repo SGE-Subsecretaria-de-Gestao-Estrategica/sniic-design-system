@@ -1,6 +1,8 @@
 <script module>
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 	import ProportionalAreaChart from '../lib/components/ProportionalAreaChart.svelte';
+	import RegionSilhouetteChart from '../lib/components/RegionSilhouetteChart.svelte';
+	import StatesSilhouetteChart from '../lib/components/StatesSilhouetteChart.svelte';
 
 	const { Story } = defineMeta({
 		title: 'Charts/ProportionalAreaChart',
@@ -58,3 +60,38 @@
 		maxRadius: 40,
 	}}
 />
+
+<Story name="Region Silhouette">
+	{#snippet template()}
+		<RegionSilhouetteChart
+			data={[
+				{ region: 'Sudeste',     value: 4200 },
+				{ region: 'Nordeste',    value: 2800 },
+				{ region: 'Sul',         value: 1500 },
+				{ region: 'CentroOeste', value: 900 },
+				{ region: 'Norte',       value: 600 },
+			]}
+			maxSize={90}
+			format={(v) => v.toLocaleString('pt-BR')}
+		/>
+	{/snippet}
+</Story>
+
+<Story name="State Silhouette">
+	{#snippet template()}
+		<StatesSilhouetteChart
+			data={[
+				{ state: 'SP', value: 4200 },
+				{ state: 'MG', value: 2800 },
+				{ state: 'RJ', value: 2100 },
+				{ state: 'BA', value: 1500 },
+				{ state: 'RS', value: 1200 },
+				{ state: 'PR', value: 1000 },
+				{ state: 'PE', value: 900 },
+				{ state: 'CE', value: 800 },
+			]}
+			maxSize={80}
+			format={(v) => v.toLocaleString('pt-BR')}
+		/>
+	{/snippet}
+</Story>
