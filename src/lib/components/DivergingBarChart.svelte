@@ -1,11 +1,5 @@
-<script lang="ts" module>
-	export interface DivergingDatum {
-		label: string;
-		leftPct: number;
-	}
-</script>
-
 <script lang="ts">
+	import type { DivergingDatum } from '../types.js';
 	import { scaleLinear, scaleBand } from 'd3';
 	import { typography } from '../tokens.js';
 	import { colorPairs, type ColorPair } from '../palettes.js';

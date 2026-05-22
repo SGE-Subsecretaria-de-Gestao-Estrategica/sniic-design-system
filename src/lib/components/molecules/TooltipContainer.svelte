@@ -2,13 +2,7 @@
 	import type { Snippet } from 'svelte';
 	import Tooltip from './Tooltip.svelte';
 	import { relativePos, TOOLTIP_INITIAL, type TooltipState } from '../../utils/tooltipState.js';
-
-	export interface TooltipHelpers {
-		show: (e: MouseEvent, html: string) => void;
-		move: (e: MouseEvent) => void;
-		hide: () => void;
-		wrapperEl: HTMLDivElement | undefined;
-	}
+	import type { TooltipHelpers } from '../../types.js';
 
 	interface Props {
 		offsetX?: number;

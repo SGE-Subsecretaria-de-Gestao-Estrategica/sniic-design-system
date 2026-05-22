@@ -1,12 +1,5 @@
-<script lang="ts" module>
-	export interface ParliamentDatum {
-		label: string;
-		seats: number;
-		color?: string;
-	}
-</script>
-
 <script lang="ts">
+	import type { ParliamentDatum } from '../types.js';
 	import { categorical8 } from '../palettes.js';
 	import ChartFrame from './molecules/ChartFrame.svelte';
 	import Legend from './atoms/Legend.svelte';

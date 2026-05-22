@@ -1,12 +1,5 @@
-<script lang="ts" module>
-	export interface ProportionalDatum {
-		label: string;
-		value: number;
-		color?: string;
-	}
-</script>
-
 <script lang="ts">
+	import type { ProportionalDatum } from '../types.js';
 	import { scaleSqrt, max } from 'd3';
 	import { typography } from '../tokens.js';
 	import { categorical8 } from '../palettes.js';

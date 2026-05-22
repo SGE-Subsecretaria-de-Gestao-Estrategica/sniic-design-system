@@ -1,10 +1,5 @@
-<script lang="ts" module>
-	export interface GroupedDatum {
-		[key: string]: string | number;
-	}
-</script>
-
 <script lang="ts">
+	import type { GroupedDatum } from '../types.js';
 	import { scaleBand, scaleLinear, max } from 'd3';
 	import { typography, type Margin } from '../tokens.js';
 	import { categorical8 } from '../palettes.js';

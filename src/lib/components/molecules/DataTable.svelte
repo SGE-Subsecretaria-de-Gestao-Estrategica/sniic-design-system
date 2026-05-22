@@ -1,12 +1,6 @@
 <script lang="ts">
   import { teal, typography } from '../../tokens.js';
-
-  export interface TableColumn {
-    key: string;
-    label: string;
-    align?: 'left' | 'center' | 'right';
-    width?: number;
-  }
+  import type { TableColumn } from '../../types.js';
 
   interface Props {
     /** Column definitions. */

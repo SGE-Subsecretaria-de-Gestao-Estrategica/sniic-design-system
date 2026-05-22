@@ -5,7 +5,7 @@ import dts from 'vite-plugin-dts';
 export default defineConfig({
   plugins: [
     svelte(),
-    dts({ include: ['src/lib'], insertTypesEntry: true }),
+    dts({ include: ['src/lib'], insertTypesEntry: true, compilerOptions: { rootDir: 'src/lib' } }),
   ],
   build: {
     lib: {
