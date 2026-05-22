@@ -89,6 +89,9 @@ export type { ContourPoint } from './components/ContourPlot.svelte';
 export { default as BoxPlotChart } from './components/BoxPlotChart.svelte';
 export type { BoxSeries, BoxStats } from './charts/boxplot.js';
 export { computeBoxStats } from './charts/boxplot.js';
+export { default as RegionSilhouetteChart } from './components/RegionSilhouetteChart.svelte';
+export type { RegionDatum } from './charts/brazilRegions.js';
+export { BRAZIL_REGION_PATHS, BRAZIL_REGION_LABELS, type BrazilRegion } from './charts/brazilRegions.js';
 
 // Tokens
 export * from './tokens.js';
