@@ -92,6 +92,9 @@ export { computeBoxStats } from './charts/boxplot.js';
 export { default as RegionSilhouetteChart } from './components/RegionSilhouetteChart.svelte';
 export type { RegionDatum } from './charts/brazilRegions.js';
 export { BRAZIL_REGION_PATHS, BRAZIL_REGION_LABELS, type BrazilRegion } from './charts/brazilRegions.js';
+export { default as StatesSilhouetteChart } from './components/StatesSilhouetteChart.svelte';
+export type { StateDatum } from './charts/brazilStates.js';
+export { BRAZIL_STATE_PATHS, BRAZIL_STATE_LABELS, type BrazilState } from './charts/brazilStates.js';
 
 // Tokens
 export * from './tokens.js';

@@ -28,6 +28,7 @@
   import ContourPlot from '../lib/components/ContourPlot.svelte';
   import BoxPlotChart from '../lib/components/BoxPlotChart.svelte';
   import RegionSilhouetteChart from '../lib/components/RegionSilhouetteChart.svelte';
+  import StatesSilhouetteChart from '../lib/components/StatesSilhouetteChart.svelte';
   import AnnotationBox from '../lib/components/molecules/AnnotationBox.svelte';
   import SimpleBox from '../lib/components/molecules/SimpleBox.svelte';
   import DataTable from '../lib/components/molecules/DataTable.svelte';
@@ -746,6 +747,26 @@
           value: d.value,
         }))}
         maxSize={80}
+        format={(v) => v.toLocaleString('pt-BR')}
+      />
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="cell span-2">
+      <span class="label">Area Proporcional por Silhueta de Estado</span>
+      <StatesSilhouetteChart
+        data={[
+          { state: 'SP', value: 4200 },
+          { state: 'MG', value: 2800 },
+          { state: 'RJ', value: 2100 },
+          { state: 'BA', value: 1500 },
+          { state: 'RS', value: 1200 },
+          { state: 'PR', value: 1000 },
+          { state: 'PE', value: 900 },
+          { state: 'CE', value: 800 },
+        ]}
+        maxSize={70}
         format={(v) => v.toLocaleString('pt-BR')}
       />
     </div>
