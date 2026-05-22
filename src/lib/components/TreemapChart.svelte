@@ -1,12 +1,5 @@
-<script lang="ts" module>
-	export interface TreemapNode {
-		name: string;
-		value?: number;
-		children?: TreemapNode[];
-	}
-</script>
-
 <script lang="ts">
+	import type { TreemapNode } from '../types.js';
 	import type { Component } from 'svelte';
 	import { treemap, hierarchy, treemapSquarify, type HierarchyRectangularNode } from 'd3';
 	import { typography, type Margin } from '../tokens.js';

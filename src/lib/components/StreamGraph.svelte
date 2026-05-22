@@ -1,10 +1,5 @@
-<script lang="ts" module>
-	export interface StreamDatum {
-		[key: string]: string | number;
-	}
-</script>
-
 <script lang="ts">
+	import type { StreamDatum } from '../types.js';
 	import {
 		scaleLinear,
 		scalePoint,

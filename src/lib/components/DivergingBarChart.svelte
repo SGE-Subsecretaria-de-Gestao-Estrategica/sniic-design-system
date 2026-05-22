@@ -1,11 +1,5 @@
-<script lang="ts" module>
-	export interface DivergingDatum {
-		label: string;
-		leftPct: number;
-	}
-</script>
-
 <script lang="ts">
+	import type { DivergingDatum } from '../types.js';
 	import { scaleLinear, scaleBand } from 'd3';
 	import { typography } from '../tokens.js';
 	import { colorPairs, type ColorPair } from '../palettes.js';
@@ -30,6 +24,7 @@
 		referenceLabel?: string;
 		referenceColor?: string;
 		colors?: ColorPair;
+		marginLeft?: number;
 		rowHeight?: number;
 		sortDirection?: 'asc' | 'desc';
 		showFlags?: boolean;
@@ -45,6 +40,7 @@
 		referenceLabel = '',
 		referenceColor = 'var(--chart-fg-strong, #000000)',
 		colors = colorPairs.orangeTeal,
+		marginLeft = 130,
 		rowHeight = 52,
 		sortDirection = 'desc',
 		showFlags = false,
@@ -64,7 +60,7 @@
 		top: 28,
 		right: 28,
 		bottom: 12 + X_AXIS_LABEL_RESERVE + LEGEND_BAR_H,
-		left: 130 + (showFlags ? flagW + FLAG_GAP : 0),
+		left: marginLeft + (showFlags ? flagW + FLAG_GAP : 0),
 	});
 
 	const COLORS = $derived({ left: colors[0], right: colors[1] });

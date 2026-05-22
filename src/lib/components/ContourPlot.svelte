@@ -10,11 +10,7 @@
   import YAxis from './atoms/YAxis.svelte';
   import GridLines from './atoms/GridLines.svelte';
   import GradientLegend from './atoms/GradientLegend.svelte';
-
-  export interface ContourPoint {
-    x: number;
-    y: number;
-  }
+  import type { ContourPoint } from '../types.js';
 
   interface Props {
     data?: ContourPoint[];

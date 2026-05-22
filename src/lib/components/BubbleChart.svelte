@@ -1,14 +1,5 @@
-<script lang="ts" module>
-	export interface BubbleDatum {
-		label: string;
-		x: number;
-		y: number;
-		size: number;
-		group?: string;
-	}
-</script>
-
 <script lang="ts">
+	import type { BubbleDatum } from '../types.js';
 	import type { Component } from 'svelte';
 	import { scaleLog, scaleLinear, scaleSqrt, extent, max } from 'd3';
 	import { categorical8 } from '../palettes.js';

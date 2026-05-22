@@ -1,12 +1,5 @@
-<script lang="ts" module>
-	export interface PictogramDatum {
-		label: string;
-		value: number;
-		color?: string;
-	}
-</script>
-
 <script lang="ts">
+	import type { PictogramDatum } from '../types.js';
 	import { typography } from '../tokens.js';
 	import { categorical8 } from '../palettes.js';
 	import ChartFrame from './molecules/ChartFrame.svelte';

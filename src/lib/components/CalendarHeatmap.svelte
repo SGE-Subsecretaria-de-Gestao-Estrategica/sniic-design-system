@@ -3,11 +3,7 @@
   import { colorScales, typography, type Margin } from '../tokens.js';
   import ChartFrame from './molecules/ChartFrame.svelte';
   import GradientLegend from './atoms/GradientLegend.svelte';
-
-  export interface CalendarDatum {
-    date: string;
-    value: number;
-  }
+  import type { CalendarDatum } from '../types.js';
 
   interface Props {
     data?: CalendarDatum[];

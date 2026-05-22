@@ -1,12 +1,5 @@
-<script lang="ts" module>
-	export interface PyramidTier {
-		label: string;
-		left: number;
-		right: number;
-	}
-</script>
-
 <script lang="ts">
+	import type { PyramidTier } from '../types.js';
 	import { scaleLinear, scaleBand, max } from 'd3';
 	import { typography, type Margin } from '../tokens.js';
 	import { colorPairs, type ColorPair } from '../palettes.js';

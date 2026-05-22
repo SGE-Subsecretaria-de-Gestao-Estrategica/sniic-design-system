@@ -1,8 +1,5 @@
-<script lang="ts" module>
-	export type StackedDatum = Record<string, string | number>;
-</script>
-
 <script lang="ts">
+	import type { StackedDatum } from '../types.js';
 	import { scaleBand, scaleLinear, stack, max } from 'd3';
 	import { typography } from '../tokens.js';
 	import { categorical8 } from '../palettes.js';

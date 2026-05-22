@@ -1,14 +1,5 @@
-<script lang="ts" module>
-	export interface MekkoDatum {
-		label: string;
-		/** Total width value (e.g. market size). Determines column width. */
-		total: number;
-		/** Breakdown values per segment key. Determines vertical proportions. */
-		[key: string]: string | number;
-	}
-</script>
-
 <script lang="ts">
+	import type { MekkoDatum } from '../types.js';
 	import { typography, type Margin } from '../tokens.js';
 	import { categorical8 } from '../palettes.js';
 	import { buildColorMap, buildLegendItems } from '../utils/colorMapHelpers.js';

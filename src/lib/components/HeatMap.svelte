@@ -6,12 +6,7 @@
   import XAxis from './atoms/XAxis.svelte';
   import YAxis from './atoms/YAxis.svelte';
   import GradientLegend from './atoms/GradientLegend.svelte';
-
-  export interface HeatMapCell {
-    x: string;
-    y: string;
-    value: number;
-  }
+  import type { HeatMapCell } from '../types.js';
 
   interface Props {
     data?: HeatMapCell[];

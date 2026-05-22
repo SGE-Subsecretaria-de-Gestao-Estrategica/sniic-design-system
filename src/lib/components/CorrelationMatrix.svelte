@@ -4,12 +4,7 @@
   import { getContrastColor } from '../utils/colorContrast.js';
   import ChartFrame from './molecules/ChartFrame.svelte';
   import GradientLegend from './atoms/GradientLegend.svelte';
-
-  export interface CorrelationDatum {
-    x: string;
-    y: string;
-    value: number;
-  }
+  import type { CorrelationDatum } from '../types.js';
 
   interface Props {
     data?: CorrelationDatum[];
