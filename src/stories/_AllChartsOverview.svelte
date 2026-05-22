@@ -27,6 +27,7 @@
   import CalendarHeatmap from '../lib/components/CalendarHeatmap.svelte';
   import ContourPlot from '../lib/components/ContourPlot.svelte';
   import BoxPlotChart from '../lib/components/BoxPlotChart.svelte';
+  import RegionSilhouetteChart from '../lib/components/RegionSilhouetteChart.svelte';
   import AnnotationBox from '../lib/components/molecules/AnnotationBox.svelte';
   import SimpleBox from '../lib/components/molecules/SimpleBox.svelte';
   import DataTable from '../lib/components/molecules/DataTable.svelte';
@@ -733,6 +734,20 @@
     <div class="cell">
       <span class="label">Pictograma</span>
       <PictogramChart data={pictogramData} columns={10} iconSize={18} />
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="cell span-2">
+      <span class="label">Area Proporcional por Silhueta de Regiao</span>
+      <RegionSilhouetteChart
+        data={proportionalData.map((d) => ({
+          region: d.label === 'Centro-Oeste' ? 'CentroOeste' : d.label,
+          value: d.value,
+        }))}
+        maxSize={80}
+        format={(v) => v.toLocaleString('pt-BR')}
+      />
     </div>
   </div>
 
