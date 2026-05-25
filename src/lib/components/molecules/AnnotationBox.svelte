@@ -16,6 +16,7 @@
     boxX: number;
     boxY: number;
     title: string;
+    showTitle?: boolean;
     subtitle?: string;
     /** Color of the connector line and point circle. */
     color?: string;
@@ -36,6 +37,7 @@
     boxX,
     boxY,
     title,
+    showTitle = true,
     subtitle = '',
     color = orange,
     boxWidth = 220,
@@ -55,7 +57,7 @@
   // Split subtitle into lines to support manual wrapping (\n or passed as array)
   const subtitleLines = $derived(subtitle ? subtitle.split('\n') : []);
   const autoBoxHeight = $derived(
-    pad * 2 + titleHeight + (subtitleLines.length > 0 ? subtitleLines.length * lineHeight + 6 : 0)
+    pad * 2 + (showTitle ? titleHeight : 0) + (subtitleLines.length > 0 ? subtitleLines.length * lineHeight + 6 : 0)
   );
   const boxHeight = $derived(boxHeightProp ?? autoBoxHeight);
 
@@ -104,20 +106,22 @@
 />
 
 <!-- Title -->
-<text
-  x={boxX + pad}
-  y={boxY + pad + titleSize}
-  font-size={titleSize}
-  font-weight="700"
-  fill={teal}
-  font-family={fontFamily}
->{title}</text>
+{#if showTitle}
+  <text
+    x={boxX + pad}
+    y={boxY + pad + titleSize}
+    font-size={titleSize}
+    font-weight="700"
+    fill={teal}
+    font-family={fontFamily}
+  >{title}</text>
+{/if}
 
 <!-- Subtitle lines -->
 {#each subtitleLines as line, i (i)}
   <text
     x={boxX + pad}
-    y={boxY + pad + titleHeight + 6 + i * lineHeight + subtitleSize}
+    y={boxY + pad + (showTitle ? titleHeight + 6 : 0) + i * lineHeight + subtitleSize}
     font-size={subtitleSize}
     fill="var(--chart-fg-strong, #000000)"
     opacity="0.55"
@@ -128,7 +132,7 @@
 {#if children}
   <foreignObject
     x={boxX}
-    y={boxY + pad + titleHeight + (subtitleLines.length > 0 ? subtitleLines.length * lineHeight + 6 : 0)}
+    y={boxY + pad + (showTitle ? titleHeight : 0) + (subtitleLines.length > 0 ? subtitleLines.length * lineHeight + 6 : 0)}
     width={boxWidth}
     height={boxHeight - pad - titleHeight - (subtitleLines.length > 0 ? subtitleLines.length * lineHeight + 6 : 0)}
   >

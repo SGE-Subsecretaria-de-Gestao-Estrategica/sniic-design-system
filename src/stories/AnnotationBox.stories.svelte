@@ -11,6 +11,7 @@
       boxWidth:      { control: { type: 'range', min: 120, max: 300, step: 10 } },
       circleRadius:  { control: { type: 'range', min: 8, max: 30, step: 1 } },
       color:         { control: 'color' },
+      showTitle:     { control: 'boolean' },
     },
   });
 </script>
