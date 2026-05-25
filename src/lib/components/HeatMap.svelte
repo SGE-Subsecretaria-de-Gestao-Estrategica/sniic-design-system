@@ -39,10 +39,8 @@
   }: Props = $props();
 
   const chartFont = typography.chartValueFontFamily;
-  const legendHeight = 28;
-  const legendWidth = 160;
 
-  const legendReserve = $derived(showLegend ? legendHeight + 12 : 0);
+  const legendReserve = $derived(showLegend ? 60 : 0);
   const totalHeight = $derived(height + legendReserve);
   const frameMargin = $derived({
     ...margin,
@@ -95,7 +93,7 @@
     showValues && yScale.bandwidth() >= minCellForLabel && xScale.bandwidth() >= minCellForLabel
   );
 
-  const legendBarY = $derived(innerHeight + margin.bottom - legendReserve + 28);
+  const legendBarY = $derived(innerHeight + margin.bottom + 12);
 </script>
 
 <ChartFrame
@@ -160,7 +158,7 @@
         colorRange={[...colorRange]}
         min={valueExtent[0]}
         max={valueExtent[1]}
-        width={legendWidth}
+        width={innerWidth}
         {format}
       />
     </g>

@@ -8,6 +8,7 @@
     boxX?: number;
     boxY?: number;
     title?: string;
+    showTitle?: boolean;
     subtitle?: string;
     color?: string;
     boxWidth?: number;
@@ -20,6 +21,7 @@
     boxX = 160,
     boxY = 100,
     title = 'Title',
+    showTitle = true,
     subtitle = '',
     color = orange,
     boxWidth = 220,
@@ -35,6 +37,7 @@
     {boxX}
     {boxY}
     {title}
+    {showTitle}
     {subtitle}
     {color}
     {boxWidth}

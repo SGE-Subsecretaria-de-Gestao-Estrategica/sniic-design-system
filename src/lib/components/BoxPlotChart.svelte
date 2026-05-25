@@ -19,11 +19,13 @@
 		format?: (v: number) => string;
 	}
 
+	const boxPlotMargin = { ...defaultMargin, left: 108 };
+
 	let {
 		data = [],
 		height = 400,
 		color = colors.primary[0],
-		margin = defaultMargin,
+		margin = boxPlotMargin,
 		xLabel = '',
 		yLabel = '',
 		showOutliers = true,
@@ -152,5 +154,5 @@
 	{/each}
 
 	<XAxis ticks={xTicks} {innerHeight} {innerWidth} label={xLabel} fontFamily={chartFont} />
-	<YAxis ticks={yTicks} {innerHeight} label={yLabel} fontFamily={chartFont} />
+	<YAxis ticks={yTicks} {innerHeight} label={yLabel} fontFamily={chartFont} labelOffset={90} />
 </ChartFrame>
