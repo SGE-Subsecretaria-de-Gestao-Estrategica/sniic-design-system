@@ -51,6 +51,7 @@ export { default as SlopeGraph } from './components/SlopeGraph.svelte';
 export { default as RadialChart } from './components/RadialChart.svelte';
 export { default as PyramidChart } from './components/PyramidChart.svelte';
 export { default as BigNumber } from './components/BigNumber.svelte';
+export { default as EqualSign } from './components/EqualSign.svelte';
 export { default as HeatMap } from './components/HeatMap.svelte';
 export { default as ColorPalette } from './components/ColorPalette.svelte';
 export { default as StreamGraph } from './components/StreamGraph.svelte';

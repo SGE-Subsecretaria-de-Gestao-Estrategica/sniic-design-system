@@ -20,8 +20,12 @@
     subtitle?: string;
     /** Color of the connector line and point circle. */
     color?: string;
-    /** Width of the annotation box in px. */
+    /** Width of the annotation box in px. Ignored when fullWidth is true. */
     boxWidth?: number;
+    /** When true, the box stretches from boxX to the right edge of the inner chart area. Requires innerWidth. */
+    fullWidth?: boolean;
+    /** Total inner chart width (required when fullWidth is true). */
+    innerWidth?: number;
     /** Height override for the annotation box (required when using children). */
     boxHeight?: number;
     /** Radius of the highlight ring drawn around the data point. */
@@ -41,6 +45,8 @@
     subtitle = '',
     color = orange,
     boxWidth = 220,
+    fullWidth = false,
+    innerWidth,
     boxHeight: boxHeightProp,
     circleRadius = 16,
     fontFamily = typography.chartValueFontFamily,
@@ -61,12 +67,15 @@
   );
   const boxHeight = $derived(boxHeightProp ?? autoBoxHeight);
 
+  // Effective box width: full inner width (from boxX to right edge) or fixed px value
+  const effectiveBoxWidth = $derived(fullWidth && innerWidth != null ? innerWidth - boxX : boxWidth);
+
   // Box center
-  const boxCX = $derived(boxX + boxWidth / 2);
+  const boxCX = $derived(boxX + effectiveBoxWidth / 2);
   const boxCY = $derived(boxY + boxHeight / 2);
 
   // Connector anchor: center of the nearest horizontal side
-  const anchorX = $derived(pointX >= boxCX ? boxX + boxWidth : boxX);
+  const anchorX = $derived(pointX >= boxCX ? boxX + effectiveBoxWidth : boxX);
   const anchorY = $derived(boxCY);
 
   // Elbow bend: go horizontally from anchor, then angle toward point
@@ -97,7 +106,7 @@
 <rect
   x={boxX}
   y={boxY}
-  width={boxWidth}
+  width={effectiveBoxWidth}
   height={boxHeight}
   fill="var(--chart-bg, #ffffff)"
   stroke={teal}
@@ -133,7 +142,7 @@
   <foreignObject
     x={boxX}
     y={boxY + pad + (showTitle ? titleHeight : 0) + (subtitleLines.length > 0 ? subtitleLines.length * lineHeight + 6 : 0)}
-    width={boxWidth}
+    width={effectiveBoxWidth}
     height={boxHeight - pad - titleHeight - (subtitleLines.length > 0 ? subtitleLines.length * lineHeight + 6 : 0)}
   >
     <div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;">
