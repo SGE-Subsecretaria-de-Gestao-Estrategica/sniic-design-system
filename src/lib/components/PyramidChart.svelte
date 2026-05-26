@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PyramidTier } from '../types.js';
-	import { type Margin } from '../tokens.js';
+	import { typography, type Margin } from '../tokens.js';
 	import { colorPairs, type ColorPair } from '../palettes.js';
 	import TooltipContainer from './molecules/TooltipContainer.svelte';
 
@@ -26,6 +26,7 @@
 		centerGap = 48,
 	}: Props = $props();
 
+	const chartFont = typography.chartValueFontFamily;
 	const FONT_PAD = 4;
 	const STROKE_W = 0.5;
 	const PLOT_BOTTOM_RESERVE = 52;
@@ -75,7 +76,7 @@
 					width={containerWidth}
 					{height}
 					aria-label="Population pyramid"
-					style="overflow: visible; font-family: var(--chart-value-font-family, monospace);"
+					style="overflow: visible; font-family: {chartFont};"
 				>
 					<g transform="translate({margin.left}, {margin.top})">
 						{#each rows as row (row.label)}
