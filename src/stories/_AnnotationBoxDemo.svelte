@@ -27,9 +27,11 @@
     boxWidth = 220,
     circleRadius = 16,
   }: Props = $props();
+
+  const svgWidth = 700;
 </script>
 
-<svg width={700} height={350}>
+<svg width={svgWidth} height={350}>
   <circle cx={pointX} cy={pointY} r="4" fill={teal} />
   <AnnotationBox
     {pointX}
@@ -42,5 +44,6 @@
     {color}
     {boxWidth}
     {circleRadius}
+    innerWidth={svgWidth}
   />
 </svg>
