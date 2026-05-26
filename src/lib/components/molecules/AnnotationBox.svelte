@@ -1,5 +1,6 @@
 <script lang="ts">
   import { orange, teal, typography } from '../../tokens.js';
+  import { measureTextWidth } from '../../utils/labelHelpers.js';
 
   /**
    * SVG molecule — place inside a chart's inner <g transform="translate(marginLeft, marginTop)">.
@@ -22,9 +23,11 @@
     color?: string;
     /** Width of the annotation box in px. Ignored when fullWidth is true. */
     boxWidth?: number;
+    /** Caps the effective box width. Defaults to innerWidth/2 when innerWidth is provided. */
+    maxBoxWidth?: number;
     /** When true, the box stretches from boxX to the right edge of the inner chart area. Requires innerWidth. */
     fullWidth?: boolean;
-    /** Total inner chart width (required when fullWidth is true). */
+    /** Total inner chart width (required when fullWidth is true or to enable default maxBoxWidth). */
     innerWidth?: number;
     /** Height override for the annotation box (required when using children). */
     boxHeight?: number;
@@ -45,6 +48,7 @@
     subtitle = '',
     color = orange,
     boxWidth = 220,
+    maxBoxWidth,
     fullWidth = false,
     innerWidth,
     boxHeight: boxHeightProp,
@@ -60,15 +64,44 @@
   const lineHeight = subtitleSize * 1.5;
   const titleHeight = titleSize * 1.4;
 
-  // Split subtitle into lines to support manual wrapping (\n or passed as array)
-  const subtitleLines = $derived(subtitle ? subtitle.split('\n') : []);
+  // Word-wrap a single string to fit within maxWidth px, returns array of lines
+  function wrapText(text: string, maxWidth: number, fontSize: number, fontWeight = 400): string[] {
+    const words = text.split(' ');
+    const lines: string[] = [];
+    let current = '';
+    for (const word of words) {
+      const test = current ? `${current} ${word}` : word;
+      if (current && measureTextWidth(test, fontSize, fontFamily, fontWeight) > maxWidth) {
+        lines.push(current);
+        current = word;
+      } else {
+        current = test;
+      }
+    }
+    if (current) lines.push(current);
+    return lines.length > 0 ? lines : [''];
+  }
+
+  // Effective box width: respect fullWidth, boxWidth, and maxBoxWidth cap
+  const rawBoxWidth = $derived(fullWidth && innerWidth != null ? innerWidth - boxX : boxWidth);
+  const resolvedMaxBoxWidth = $derived(maxBoxWidth ?? (innerWidth != null ? innerWidth / 2 : undefined));
+  const effectiveBoxWidth = $derived(
+    resolvedMaxBoxWidth != null ? Math.min(rawBoxWidth, resolvedMaxBoxWidth) : rawBoxWidth
+  );
+
+  const textWidth = $derived(effectiveBoxWidth - pad * 2);
+
+  // Wrap title and subtitle to fit the box
+  const titleLines = $derived(showTitle ? wrapText(title, textWidth, titleSize, 700) : []);
+  const subtitleLines = $derived(
+    subtitle ? subtitle.split('\n').flatMap(line => wrapText(line, textWidth, subtitleSize)) : []
+  );
+
+  const titleBlockHeight = $derived(showTitle ? titleLines.length * titleHeight : 0);
   const autoBoxHeight = $derived(
-    pad * 2 + (showTitle ? titleHeight : 0) + (subtitleLines.length > 0 ? subtitleLines.length * lineHeight + 6 : 0)
+    pad * 2 + titleBlockHeight + (subtitleLines.length > 0 ? subtitleLines.length * lineHeight + 6 : 0)
   );
   const boxHeight = $derived(boxHeightProp ?? autoBoxHeight);
-
-  // Effective box width: full inner width (from boxX to right edge) or fixed px value
-  const effectiveBoxWidth = $derived(fullWidth && innerWidth != null ? innerWidth - boxX : boxWidth);
 
   // Box center
   const boxCX = $derived(boxX + effectiveBoxWidth / 2);
@@ -79,7 +112,7 @@
   const anchorY = $derived(boxCY);
 
   // Elbow bend: go horizontally from anchor, then angle toward point
-  const elbowX = $derived(pointX >= boxCX ? anchorX + (pointX - anchorX) * 0.4 : anchorX + (pointX - anchorX) * 0.4);
+  const elbowX = $derived(anchorX + (pointX - anchorX) * 0.4);
 </script>
 
 <!-- Connector line: two-segment elbow -->
@@ -114,23 +147,23 @@
   rx="2"
 />
 
-<!-- Title -->
-{#if showTitle}
+<!-- Title (may wrap to multiple lines) -->
+{#each titleLines as line, i (i)}
   <text
     x={boxX + pad}
-    y={boxY + pad + titleSize}
+    y={boxY + pad + titleSize + i * titleHeight}
     font-size={titleSize}
     font-weight="700"
     fill={teal}
     font-family={fontFamily}
-  >{title}</text>
-{/if}
+  >{line}</text>
+{/each}
 
 <!-- Subtitle lines -->
 {#each subtitleLines as line, i (i)}
   <text
     x={boxX + pad}
-    y={boxY + pad + (showTitle ? titleHeight + 6 : 0) + i * lineHeight + subtitleSize}
+    y={boxY + pad + titleBlockHeight + (showTitle ? 6 : 0) + i * lineHeight + subtitleSize}
     font-size={subtitleSize}
     fill="var(--chart-fg-strong, #000000)"
     opacity="0.55"
@@ -141,9 +174,9 @@
 {#if children}
   <foreignObject
     x={boxX}
-    y={boxY + pad + (showTitle ? titleHeight : 0) + (subtitleLines.length > 0 ? subtitleLines.length * lineHeight + 6 : 0)}
+    y={boxY + pad + titleBlockHeight + (showTitle && subtitleLines.length > 0 ? 6 : 0) + (subtitleLines.length > 0 ? subtitleLines.length * lineHeight : 0)}
     width={effectiveBoxWidth}
-    height={boxHeight - pad - titleHeight - (subtitleLines.length > 0 ? subtitleLines.length * lineHeight + 6 : 0)}
+    height={boxHeight - pad - titleBlockHeight - (subtitleLines.length > 0 ? subtitleLines.length * lineHeight + 6 : 0)}
   >
     <div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;">
       {@render children()}
