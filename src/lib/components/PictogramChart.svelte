@@ -59,9 +59,13 @@
 	});
 
 	const MARGIN = { top: 8, right: 8, bottom: 8, left: 8 };
+
+	let innerWidth = $state(0);
+	const gridWidth = $derived(columns * cellSize);
+	const xOffset = $derived(Math.max(0, (innerWidth - gridWidth) / 2));
 </script>
 
-<ChartFrame responsive height={totalHeight} margin={MARGIN} ariaLabel="Pictogram chart">
+<ChartFrame responsive height={totalHeight} margin={MARGIN} ariaLabel="Pictogram chart" bind:innerWidth>
 	{#each sections as section, si (section.label)}
 		{@const yOffset = sections
 			.slice(0, si)
@@ -72,7 +76,7 @@
 
 		{#if showLabels}
 			<text
-				x={0}
+				x={xOffset}
 				y={yOffset + 14}
 				font-size={12}
 				font-weight={600}
@@ -88,7 +92,7 @@
 		{#each { length: section.count } as _, iconIdx (iconIdx)}
 			{@const col = iconIdx % columns}
 			{@const row = Math.floor(iconIdx / columns)}
-			<g transform="translate({col * cellSize},{gridY + row * cellSize})">
+			<g transform="translate({xOffset + col * cellSize},{gridY + row * cellSize})">
 				<svg
 					width={iconSize}
 					height={iconSize}
