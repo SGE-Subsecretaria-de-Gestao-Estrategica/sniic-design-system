@@ -74,6 +74,9 @@
 			color: sliceColor(d, i),
 		})),
 	);
+
+	const legendSpacing = $derived(Math.min(120, innerW / Math.max(1, legendItems.length)));
+	const legendX = $derived(Math.max(0, (innerW - legendItems.length * legendSpacing) / 2));
 </script>
 
 <TooltipContainer>
@@ -115,8 +118,8 @@
 			</g>
 
 			{#if showLegend && legendItems.length > 0}
-				<g transform="translate(0, {innerH - LEGEND_H})">
-					<Legend items={legendItems} spacing={Math.min(120, innerW / legendItems.length)} />
+				<g transform="translate({legendX}, {innerH - LEGEND_H})">
+					<Legend items={legendItems} spacing={legendSpacing} />
 				</g>
 			{/if}
 		</ChartFrame>
