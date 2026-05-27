@@ -1,11 +1,11 @@
 <script module>
   import { defineMeta } from '@storybook/addon-svelte-csf';
-  import BodySilhouetteDemo from './_BodySilhouetteDemo.svelte';
+  import EnterpriseSilhouetteDemo from './_EnterpriseSilhouetteDemo.svelte';
   import { teal, black } from '../lib/tokens.js';
 
   const { Story } = defineMeta({
-    title: 'Molecules/BodySilhouette',
-    component: BodySilhouetteDemo,
+    title: 'Molecules/EnterpriseSilhouette',
+    component: EnterpriseSilhouetteDemo,
     tags: ['autodocs'],
     argTypes: {
       width:       { control: { type: 'range', min: 600, max: 1200, step: 50 } },

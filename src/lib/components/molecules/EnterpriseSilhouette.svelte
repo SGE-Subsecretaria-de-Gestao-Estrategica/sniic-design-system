@@ -41,70 +41,55 @@
   }: Props = $props();
 
   /**
-   * Head silhouette — circle approximated with cubic bezier curves.
-   * Derived from the original body path (center x=450) scaled 0.80×
-   * and shifted so the body is centered at x≈230 in a 900px viewport.
-   * Transform: x_new = x_orig × 0.80 − 130  |  y_new = y_orig × 0.80
+   * Classic stepped office building silhouette — positioned in the right portion
+   * of the SVG (x: 518–865, y: 88–548).
+   *
+   * Structure:
+   *   - Center tower:  x 638–748, y 88–548  (taller setback)
+   *   - Left wing:     x 518–638, y 135–548
+   *   - Right wing:    x 748–865, y 135–548
+   *   - Entrance arch: x 660–726, y 475–548  (recessed)
    */
-  const headPath = `
-    M 230,40
-    C 246,40 258,52 258,68
-    C 258,84 246,96 230,96
-    C 214,96 202,84 202,68
-    C 202,52 214,40 230,40
+  const buildingPath = `
+    M 638,88
+    L 638,135
+    L 518,135
+    L 518,548
+    L 660,548
+    L 660,475
+    L 726,475
+    L 726,548
+    L 865,548
+    L 865,135
+    L 748,135
+    L 748,88
     Z
   `;
 
-  /**
-   * Body silhouette — front-facing male figure.
-   * Clockwise from left neck top: left arm → left torso → both legs → right torso → right arm → right neck.
-   * The path is intentionally open at the neck so the head circle covers the join.
-   */
-  const bodyPath = `
-    M 220,96
-    L 220,116
-    L 154,140
-    C 142,144 134,156 132,168
-    L 110,248
-    C 108,254 112,260 118,260
-    L 134,260
-    C 140,260 145,254 147,248
-    L 166,188
-    L 178,168
-    L 178,304
-    L 170,400
-    L 166,432
-    L 158,528
-    C 156,536 162,542 170,542
-    L 202,542
-    C 208,542 212,538 212,532
-    L 218,432
-    L 226,344
-    L 234,432
-    L 240,532
-    C 240,538 244,542 250,542
-    L 282,542
-    C 290,542 296,536 294,528
-    L 286,432
-    L 282,400
-    L 274,304
-    L 274,168
-    L 286,188
-    L 305,248
-    C 307,254 312,260 318,260
-    L 334,260
-    C 340,260 344,254 342,248
-    L 320,168
-    C 318,156 310,144 298,140
-    L 240,116
-    L 240,96
-  `;
+  // Window geometry
+  const winW = 20;
+  const winH = 30;
+
+  function grid(cols: number[], rows: number[]): { x: number; y: number }[] {
+    return cols.flatMap(cx => rows.map(ry => ({ x: cx, y: ry })));
+  }
+
+  // Center tower: 3 cols × 8 rows (y stops before entrance zone)
+  const centerWindows = grid([652, 680, 708], [108, 150, 192, 234, 276, 318, 360, 402]);
+
+  // Left wing: 2 cols × 6 rows
+  const leftWindows = grid([536, 572], [158, 210, 262, 314, 366, 418]);
+
+  // Right wing: 2 cols × 6 rows
+  const rightWindows = grid([764, 800], [158, 210, 262, 314, 366, 418]);
+
+  const allWindows = [...centerWindows, ...leftWindows, ...rightWindows];
 </script>
 
 <svg {width} {height} viewBox="0 0 {width} {height}" style="font-family: {typography.chartValueFontFamily};">
-  <!-- Body (rendered first so head circle overlaps the neck join) -->
+  <!-- Building silhouette -->
   <path
-    d={bodyPath}
+    d={buildingPath}
     fill="var(--silhouette-fill, #dce8e5)"
     stroke={strokeColor}
     stroke-width={strokeWidth}
@@ -112,14 +97,28 @@
     stroke-linecap="round"
   />
 
-  <!-- Head -->
-  <path
-    d={headPath}
-    fill="var(--silhouette-fill, #dce8e5)"
+  <!-- Windows -->
+  {#each allWindows as w (w.x + '-' + w.y)}
+    <rect
+      x={w.x}
+      y={w.y}
+      width={winW}
+      height={winH}
+      fill="var(--window-fill, #b0cfc9)"
+      stroke={strokeColor}
+      stroke-width="0.8"
+      rx="2"
+    />
+  {/each}
+
+  <!-- Ground line -->
+  <line
+    x1={518}
+    y1={548}
+    x2={865}
+    y2={548}
     stroke={strokeColor}
     stroke-width={strokeWidth}
-    stroke-linejoin="round"
-    stroke-linecap="round"
   />
 
   <!-- Annotation boxes -->

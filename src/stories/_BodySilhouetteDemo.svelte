@@ -1,6 +1,6 @@
 <script lang="ts">
   import BodySilhouette from '../lib/components/molecules/BodySilhouette.svelte';
-  import { orange, blue, red, teal, purple, lime } from '../lib/tokens.js';
+  import { orange, blue, teal, purple, lime } from '../lib/tokens.js';
 
   interface Props {
     width?: number;
@@ -11,101 +11,69 @@
 
   let {
     width = 900,
-    height = 720,
+    height = 600,
     strokeColor = teal,
     strokeWidth = 2,
   }: Props = $props();
 
+  // Body landmarks are in the transformed coordinate space used by BodySilhouette.svelte
+  // (original 900×720 figure scaled 0.80× and shifted so body center ≈ x:230).
+  // All annotation boxes are placed on the right side of the SVG (x=445).
   const annotations = [
-    // Left side annotations
-    {
-      side: 'left' as const,
-      pointX: 415,
-      pointY: 85,
-      boxX: 30,
-      boxY: 30,
-      title: 'Cabeca',
-      subtitle: 'Capacete obrigatorio\nem areas de risco',
-      color: orange,
-      circleRadius: 40,
-    },
-    {
-      side: 'left' as const,
-      pointX: 355,
-      pointY: 190,
-      boxX: 30,
-      boxY: 170,
-      title: 'Ombros',
-      subtitle: 'Protetor de ombros',
-      color: blue,
-      circleRadius: 14,
-    },
-    {
-      side: 'left' as const,
-      pointX: 310,
-      pointY: 310,
-      boxX: 30,
-      boxY: 300,
-      title: 'Maos',
-      subtitle: 'Luvas de protecao\nresistentes a corte',
-      color: purple,
-      circleRadius: 14,
-    },
-    {
-      side: 'left' as const,
-      pointX: 385,
-      pointY: 500,
-      boxX: 30,
-      boxY: 450,
-      title: 'Joelhos',
-      subtitle: 'Joelheiras acolchoadas',
-      color: lime,
-      circleRadius: 14,
-    },
-    // Right side annotations
     {
       side: 'right' as const,
-      pointX: 505,
-      pointY: 250,
-      boxX: 640,
-      boxY: 50,
-      title: 'Torso',
-      subtitle: 'Colete de protecao\nresistente a impactos',
-      color: red,
-      circleRadius: 14,
-    },
-    {
-      side: 'right' as const,
-      pointX: 535,
-      pointY: 175,
-      boxX: 640,
-      boxY: 200,
-      title: 'Bracos',
-      subtitle: 'Manga longa reforçada',
+      pointX: 230,
+      pointY: 68,
+      boxX: 445,
+      boxY: 28,
+      title: 'Cabeça',
+      subtitle: 'Capacete obrigatório\nem áreas de risco',
       color: teal,
-      circleRadius: 14,
+      circleRadius: 16,
     },
     {
       side: 'right' as const,
-      pointX: 520,
-      pointY: 540,
-      boxX: 640,
-      boxY: 400,
-      title: 'Pernas',
-      subtitle: 'Calca de seguranca\ncom faixas refletivas',
-      color: orange,
-      circleRadius: 14,
-    },
-    {
-      side: 'right' as const,
-      pointX: 490,
-      pointY: 670,
-      boxX: 640,
-      boxY: 560,
-      title: 'Pes',
-      subtitle: 'Botas com biqueira\nde aco',
+      pointX: 298,
+      pointY: 140,
+      boxX: 445,
+      boxY: 152,
+      title: 'Ombros',
+      subtitle: 'Protetor de ombros\ncontra impactos',
       color: blue,
-      circleRadius: 14,
+      circleRadius: 12,
+    },
+    {
+      side: 'right' as const,
+      pointX: 334,
+      pointY: 260,
+      boxX: 445,
+      boxY: 270,
+      title: 'Maos',
+      subtitle: 'Luvas resistentes\na corte e abrasão',
+      color: orange,
+      circleRadius: 12,
+    },
+    {
+      side: 'right' as const,
+      pointX: 284,
+      pointY: 416,
+      boxX: 445,
+      boxY: 378,
+      title: 'Joelhos',
+      subtitle: 'Joelheiras\nacolchoadas',
+      color: purple,
+      circleRadius: 12,
+    },
+    {
+      side: 'right' as const,
+      pointX: 286,
+      pointY: 532,
+      boxX: 445,
+      boxY: 468,
+      title: 'Pes',
+      subtitle: 'Botas com biqueira\nde aço',
+      color: lime,
+      circleRadius: 12,
     },
   ];
 </script>
