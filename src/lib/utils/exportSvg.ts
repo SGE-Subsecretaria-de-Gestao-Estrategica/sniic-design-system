@@ -35,17 +35,22 @@ export function serializeSvg(svgEl: SVGSVGElement): string {
 
 /**
  * Triggers a browser file download of the SVG element as a `.svg` file.
+ * Uses window.top when available to bypass iframe sandbox restrictions (e.g. Storybook).
  */
 export function downloadSvg(svgEl: SVGSVGElement, filename = 'chart.svg'): void {
   const svgString = serializeSvg(svgEl);
   const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
   const url  = URL.createObjectURL(blob);
 
-  const a    = document.createElement('a');
-  a.href     = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  try {
+    const doc = (window.top ?? window).document;
+    const a   = doc.createElement('a');
+    a.href     = url;
+    a.download = filename;
+    doc.body.appendChild(a);
+    a.click();
+    doc.body.removeChild(a);
+  } finally {
+    URL.revokeObjectURL(url);
+  }
 }

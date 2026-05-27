@@ -32,6 +32,8 @@ export { default as StateFlag } from './components/atoms/icons/StateFlag.svelte'
 export { default as ChartFrame } from './components/molecules/ChartFrame.svelte';
 export { default as Tooltip } from './components/molecules/Tooltip.svelte';
 export { default as AnnotationBox } from './components/molecules/AnnotationBox.svelte';
+export { default as BodySilhouette } from './components/molecules/BodySilhouette.svelte';
+export { default as EnterpriseSilhouette } from './components/molecules/EnterpriseSilhouette.svelte';
 export { default as SimpleBox } from './components/molecules/SimpleBox.svelte';
 export { default as LegendBar } from './components/molecules/LegendBar.svelte';
 export { default as DataTable } from './components/molecules/DataTable.svelte';
@@ -124,3 +126,6 @@ export * from './utils/stackHelpers.js';
 // Chart draw functions (for headless / custom-shell usage)
 export * from './charts/choroplethMap.js';
 export * from './charts/tierSmallMultiples.js';
+
+// Storybook utilities
+export { default as SvgExportDecorator } from './storybook/SvgExportDecorator.svelte';

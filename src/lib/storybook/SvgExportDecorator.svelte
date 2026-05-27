@@ -1,6 +1,8 @@
 <script lang="ts">
   import { downloadSvg } from '../utils/exportSvg.js';
+  import type { Snippet } from 'svelte';
 
+  let { children }: { children: Snippet } = $props();
   let containerEl: HTMLDivElement | undefined = $state();
 
   function handleExport() {
@@ -10,7 +12,7 @@
 </script>
 
 <div bind:this={containerEl}>
-  <slot />
+  {@render children()}
 </div>
 
 <div class="export-bar">
