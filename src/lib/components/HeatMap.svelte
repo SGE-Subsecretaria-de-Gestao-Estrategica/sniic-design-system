@@ -152,7 +152,7 @@
   />
 
   <!-- Gradient legend -->
-  {#if showLegend}
+  {#if showLegend && innerWidth > 0}
     <g transform="translate(0,{legendBarY})">
       <GradientLegend
         colorRange={[...colorRange]}
