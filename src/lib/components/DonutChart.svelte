@@ -34,18 +34,33 @@
 
 	const chartFont = typography.chartValueFontFamily;
 	const MARGIN = { top: 16, right: 16, bottom: 16, left: 16 };
-	const LEGEND_H = 28;
+	const LEGEND_ROW_H = 28;
+	const LEGEND_ITEM_H = 20;
 
 	let innerW = $state(0);
 	let innerH = $state(0);
 
 	const total = $derived(data.reduce((s, d) => s + d.value, 0));
 
+	const legendItems = $derived(
+		data.map((d, i) => ({
+			label: d.label,
+			color: sliceColor(d, i),
+		})),
+	);
+
+	const legendDirection = $derived<'row' | 'col'>(legendItems.length > 3 ? 'col' : 'row');
+	const legendH = $derived(
+		legendDirection === 'col'
+			? legendItems.length * LEGEND_ITEM_H + 4
+			: LEGEND_ROW_H,
+	);
+
 	const outerR = $derived(Math.min(innerW, innerH) * radiusFraction);
 	const innerR = $derived(outerR * innerRadiusFraction);
 
 	const cx = $derived(innerW / 2);
-	const cy = $derived((innerH - (showLegend ? LEGEND_H : 0)) / 2);
+	const cy = $derived((innerH - (showLegend ? legendH : 0)) / 2);
 
 	const pieLayout = $derived(
 		pie<DonutDatum>()
@@ -71,15 +86,16 @@
 		return d.color ?? colors[i % colors.length];
 	}
 
-	const legendItems = $derived(
-		data.map((d, i) => ({
-			label: d.label,
-			color: sliceColor(d, i),
-		})),
+	const legendSpacing = $derived(
+		legendDirection === 'col'
+			? LEGEND_ITEM_H
+			: Math.min(120, innerW / Math.max(1, legendItems.length)),
 	);
-
-	const legendSpacing = $derived(Math.min(120, innerW / Math.max(1, legendItems.length)));
-	const legendX = $derived(Math.max(0, (innerW - legendItems.length * legendSpacing) / 2));
+	const legendX = $derived(
+		legendDirection === 'col'
+			? 0
+			: Math.max(0, (innerW - legendItems.length * legendSpacing) / 2),
+	);
 </script>
 
 <TooltipContainer>
@@ -144,8 +160,8 @@
 			</g>
 
 			{#if showLegend && legendItems.length > 0}
-				<g transform="translate({legendX}, {innerH - LEGEND_H})">
-					<Legend items={legendItems} spacing={legendSpacing} />
+				<g transform="translate({legendX}, {innerH - legendH})">
+					<Legend items={legendItems} spacing={legendSpacing} direction={legendDirection} />
 				</g>
 			{/if}
 		</ChartFrame>
