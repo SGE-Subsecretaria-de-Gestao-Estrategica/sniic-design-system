@@ -37,7 +37,7 @@
     padding: 8px 12px;
     border-radius: 8px;
     font-size: 12px;
-    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-family: 'Rawline', 'Raleway', system-ui, sans-serif;
     pointer-events: none;
     line-height: 1.6;
     max-width: 220px;
