@@ -58,25 +58,12 @@
   const fontFamily = typography.chartValueFontFamily;
 </script>
 
-<svelte:head>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700&display=swap"
-    rel="stylesheet"
-  />
-</svelte:head>
-
 <svg
   {width}
   height={svgHeight}
   viewBox="0 0 {width} {svgHeight}"
   xmlns="http://www.w3.org/2000/svg"
 >
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700&display=swap');
-  </style>
-
   <!-- Block shadow layers (painted bottom-up so largest offset is furthest back) -->
   {#each Array.from({ length: shadowDepth }, (_, i) => shadowDepth - i) as step (step)}
     <text

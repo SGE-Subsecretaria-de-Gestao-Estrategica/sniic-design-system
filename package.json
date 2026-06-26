@@ -1,6 +1,6 @@
 {
   "name": "sniic-design-system",
-  "version": "1.0.23",
+  "version": "1.0.24",
   "description": "A Svelte component library with chart components and design tokens based on the Brazilian Government Design System (Padrão Digital de Governo).",
   "author": "SNIIC",
   "license": "MIT",
