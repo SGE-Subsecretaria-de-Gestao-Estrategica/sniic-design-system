@@ -1,6 +1,8 @@
 import SvgExportDecorator from '../src/lib/storybook/SvgExportDecorator.svelte';
 import ThemeDecorator from '../src/lib/storybook/ThemeDecorator.svelte';
 
+import "../src/app.css"
+
 /** @type { import('@storybook/svelte-vite').Preview } */
 const preview = {
   parameters: {
