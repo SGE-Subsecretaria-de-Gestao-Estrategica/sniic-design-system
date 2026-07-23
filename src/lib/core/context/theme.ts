@@ -1,0 +1,50 @@
+import { getContext, setContext } from 'svelte';
+import type { ChartTheme } from '$lib/types/Theme';
+
+const KEY = Symbol('chart-theme');
+
+export function setChartTheme(theme: ChartTheme) {
+  setContext(KEY, theme);
+}
+
+export function getChartTheme(): ChartTheme | undefined {
+  return getContext(KEY);
+}
+
+export function resolveThemeStyle<T, K extends keyof T>(
+  propValue: T[K] | undefined,
+  themeValue: T[K] | undefined,
+  defaultValue: T[K]
+): T[K] {
+  const isObject = typeof defaultValue === 'object' &&
+    defaultValue !== null &&
+    !Array.isArray(defaultValue)
+
+  if (isObject) {
+    return {
+      ...defaultValue,
+      ...themeValue,
+      ...propValue,
+    }
+  }
+  return propValue ?? themeValue ?? defaultValue;
+}
+
+export function resolveThemeStyles<T extends Record<string, any>>(
+  props: Partial<T>,
+  theme: Partial<T> | undefined,
+  defaults: T
+): T {
+  const result = { ...defaults };
+
+  const styleNames = Object.keys(defaults) as (keyof T)[];
+  for (const styleName of styleNames) {
+    const propVal = props[styleName];
+    const themeVal = theme?.[styleName];
+    const defVal = defaults[styleName];
+
+    result[styleName] = resolveThemeStyle(propVal, themeVal, defVal);
+  }
+
+  return result;
+}

@@ -1,0 +1,33 @@
+[
+  { "id": "AC", "x": 0, "y": 3, "macro": "N" },
+  { "id": "RR", "x": 1, "y": 0, "macro": "N" },
+  { "id": "AM", "x": 1, "y": 2, "macro": "N" },
+  { "id": "RO", "x": 1, "y": 4, "macro": "N" },
+  { "id": "PA", "x": 2, "y": 1, "macro": "N" },
+  { "id": "TO", "x": 2, "y": 3, "macro": "N" },
+  { "id": "AP", "x": 3, "y": 0, "macro": "N" },
+
+  { "id": "MA", "x": 3, "y": 2, "macro": "NE" },
+  { "id": "CE", "x": 4, "y": 3, "macro": "NE" },
+  { "id": "PI", "x": 4, "y": 5, "macro": "NE" },
+  { "id": "RN", "x": 5, "y": 2, "macro": "NE" },
+  { "id": "PE", "x": 5, "y": 4, "macro": "NE" },
+  { "id": "BA", "x": 5, "y": 6, "macro": "NE" },
+  { "id": "PB", "x": 6, "y": 3, "macro": "NE" },
+  { "id": "SE", "x": 6, "y": 5, "macro": "NE" },
+  { "id": "AL", "x": 7, "y": 4, "macro": "NE" },
+
+  { "id": "MT", "x": 2, "y": 5, "macro": "CO" },
+  { "id": "DF", "x": 3, "y": 4, "macro": "CO" },
+  { "id": "GO", "x": 3, "y": 6, "macro": "CO" },
+  { "id": "MS", "x": 3, "y": 8, "macro": "CO" },
+
+  { "id": "MG", "x": 4, "y": 7, "macro": "SE" },
+  { "id": "SP", "x": 4, "y": 9, "macro": "SE" },
+  { "id": "RJ", "x": 5, "y": 8, "macro": "SE" },
+  { "id": "ES", "x": 6, "y": 7, "macro": "SE" },
+
+  { "id": "RS", "x": 3, "y": 12, "macro": "S" },
+  { "id": "SC", "x": 4, "y": 11, "macro": "S" },
+  { "id": "PR", "x": 5, "y": 10, "macro": "S" }
+]
