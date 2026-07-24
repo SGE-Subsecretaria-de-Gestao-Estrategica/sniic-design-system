@@ -5,7 +5,7 @@
   import Line from "../shape/Line.svelte";
   import Ticks from "./Ticks.svelte";
   import Text from "../Text.svelte";
-  import getLabelTransform from "$lib/utils/getLabelTransform";
+  import getLabelTransform from "$lib/core/utils/getLabelTransform";
 
   const defaultTextProps: Partial<TextProps> = {
     textAnchor: "middle",

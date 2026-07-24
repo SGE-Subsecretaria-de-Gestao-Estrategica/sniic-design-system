@@ -1,5 +1,5 @@
 import type { TextProps, WordsWithWidth } from "$lib/types/Text";
-import getStringWidth from "$lib/utils/getStringWidth";
+import getStringWidth from "$lib/core/utils/getStringWidth";
 import reduceCSSCalc from 'reduce-css-calc';
 
 function isNumber(val: unknown): val is number {

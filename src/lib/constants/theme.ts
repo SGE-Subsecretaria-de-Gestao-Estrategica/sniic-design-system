@@ -1,4 +1,5 @@
-import type { AxisTheme, ChartTheme } from "$lib/types/Theme";
+import * as d3 from "d3"
+import type { ChartTheme, AxisTheme, LineTheme } from "$lib/types/Theme";
 
 export const DEFAULT_AXIS_THEME: AxisTheme = {
   hideAxisLine: true,
@@ -13,6 +14,15 @@ export const DEFAULT_AXIS_THEME: AxisTheme = {
   }
 }
 
+export const DEFAULT_LINE_THEME: LineTheme = {
+  stroke: "#B3B2A9",
+  strokeWidth: 10,
+  fill: 'transparent',
+  defined: () => true,
+  curve: d3.curveCatmullRom.alpha(.5)
+}
+
 export const DEFAULT_THEME: ChartTheme = {
-  axis: DEFAULT_AXIS_THEME
+  axis: DEFAULT_AXIS_THEME,
+  line: DEFAULT_LINE_THEME
 }

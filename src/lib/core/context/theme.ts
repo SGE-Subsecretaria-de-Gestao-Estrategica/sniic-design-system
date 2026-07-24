@@ -14,8 +14,8 @@ export function getChartTheme(): ChartTheme | undefined {
 export function resolveThemeStyle<T, K extends keyof T>(
   propValue: T[K] | undefined,
   themeValue: T[K] | undefined,
-  defaultValue: T[K]
-): T[K] {
+  defaultValue: T[K] | undefined
+): T[K] | undefined {
   const isObject = typeof defaultValue === 'object' &&
     defaultValue !== null &&
     !Array.isArray(defaultValue)
@@ -31,20 +31,20 @@ export function resolveThemeStyle<T, K extends keyof T>(
 }
 
 export function resolveThemeStyles<T extends Record<string, any>>(
-  props: Partial<T>,
+  props: T,
   theme: Partial<T> | undefined,
-  defaults: T
+  defaults: Partial<T>
 ): T {
   const result = { ...defaults };
 
-  const styleNames = Object.keys(defaults) as (keyof T)[];
+  const styleNames = Object.keys(props) as (keyof T)[];
   for (const styleName of styleNames) {
     const propVal = props[styleName];
     const themeVal = theme?.[styleName];
-    const defVal = defaults[styleName];
+    const defVal = defaults?.[styleName];
 
-    result[styleName] = resolveThemeStyle(propVal, themeVal, defVal);
+    result[styleName] = resolveThemeStyle(propVal, themeVal, defVal) as T[typeof styleName];
   }
 
-  return result;
+  return result as T;
 }

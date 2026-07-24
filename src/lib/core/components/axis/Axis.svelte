@@ -65,9 +65,6 @@
     useAxis({
       ...restProps,
       ...style,
-      hideAxisLine,
-      hideTicks,
-      hideZero,
       numTicks,
       orientation,
       rangePadding,

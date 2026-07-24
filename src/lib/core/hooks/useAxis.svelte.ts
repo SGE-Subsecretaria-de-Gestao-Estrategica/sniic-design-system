@@ -2,7 +2,7 @@ import Orientation, { type OrientationType } from "$lib/constants/orientation";
 import Point from "$lib/entities/Point";
 import type { AxisRendererProps, AxisScale, AxisScaleOutput, CommonProps, SharedAxisProps, TickFormatter } from "$lib/types/Axis";
 import type { AnyD3Scale, ScaleInput } from "$lib/types/Scale";
-import coerceNumber from "$lib/utils/coerceNumber";
+import coerceNumber from "$lib/core/utils/coerceNumber";
 
 const DEF_AXIS_RANGE_PADDING = 0;
 
