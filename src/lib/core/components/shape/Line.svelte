@@ -8,6 +8,10 @@
     fill = "transparent",
     class: className,
     innerRef = $bindable(null),
+    stroke,
+    strokeWidth,
+    strokeDasharray,
+    strokeOpacity,
     ...restProps
   }: AddSVGProps<LineProps, SVGLineElement> = $props();
 
@@ -16,6 +20,10 @@
 
 <line
   {...restProps}
+  {stroke}
+  stroke-width={strokeWidth}
+  stroke-dasharray={strokeDasharray}
+  stroke-opacity={strokeOpacity}
   bind:this={innerRef}
   class={["line", className]}
   x1={from.x}

@@ -1,5 +1,5 @@
 <script lang="ts" generics="Scale extends AxisScale">
-  import Orientation from "$lib/constants/orientation";
+  import Orientation from "$lib/core/constants/orientation";
   import type { AxisRendererProps, AxisScale } from "$lib/types/Axis";
   import type { TextProps } from "$lib/types/Text";
   import Line from "../shape/Line.svelte";

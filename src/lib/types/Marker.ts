@@ -15,3 +15,14 @@ export interface MarkerBaseProps {
 
 export type MarkerProps = MarkerBaseProps & Omit<SVGAttributes<SVGMarkerElement>, keyof MarkerBaseProps>;
 export type MarkerComponentProps = Omit<MarkerProps, 'children'>;
+
+export type CommonShapeProps = {
+  x: number;
+  y: number;
+  size?: number;
+  fill?: string;
+  fillOpacity?: number;
+  stroke?: string;
+  strokeOpacity?: number;
+  strokeWidth?: number;
+};

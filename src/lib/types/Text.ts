@@ -20,6 +20,7 @@ type OwnProps = {
   capHeight?: SVGTSpanProps['cap-height'];
   fontSize?: string | number;
   fontFamily?: string;
+  fontWeight?: string | number;
   fill?: string;
   width?: number;
   text?: string;

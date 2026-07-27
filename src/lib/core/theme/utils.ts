@@ -1,16 +1,3 @@
-import { getContext, setContext } from 'svelte';
-import type { ChartTheme } from '$lib/types/Theme';
-
-const KEY = Symbol('chart-theme');
-
-export function setChartTheme(theme: ChartTheme) {
-  setContext(KEY, theme);
-}
-
-export function getChartTheme(): ChartTheme | undefined {
-  return getContext(KEY);
-}
-
 export function resolveThemeStyle<T, K extends keyof T>(
   propValue: T[K] | undefined,
   themeValue: T[K] | undefined,

@@ -15,6 +15,10 @@ export type LineProps = {
   fill?: string;
   from?: Point;
   to?: Point;
+  stroke?: string;
+  strokeWidth?: PathProps["stroke-width"];
+  strokeDasharray?: PathProps["stroke-dasharray"];
+  strokeOpacity?: PathProps["stroke-opacity"];
 };
 
 export type LinePathConfig<Datum> = {

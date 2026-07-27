@@ -1,6 +1,11 @@
 <script lang="ts">
-  import type { TextProps } from "$lib/types/Text";
   import useText from "../hooks/useText.svelte";
+  import type { TextProps } from "$lib/types/Text";
+  import {
+    DefaultTheme,
+    getChartTheme,
+    resolveThemeStyles,
+  } from "$lib/core/theme";
 
   let {
     dx = 0,
@@ -11,14 +16,32 @@
     verticalAnchor,
     angle,
     lineHeight = "1em",
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     scaleToFit = false,
     capHeight,
     width,
+    fill,
+    fontFamily,
+    fontSize,
+    fontWeight,
     ...textProps
   }: TextProps = $props();
 
-  let { x = 0, fontSize } = $derived(textProps);
+  const theme = getChartTheme();
+
+  let style = $derived(
+    resolveThemeStyles(
+      {
+        fill,
+        fontFamily,
+        fontSize,
+        fontWeight,
+      },
+      theme?.text,
+      DefaultTheme.text,
+    ),
+  );
+
+  let { x = 0 } = $derived(textProps);
 
   let txt = $derived(
     useText({
@@ -42,7 +65,10 @@
   bind:this={innerRef}
   x={dx}
   y={dy}
-  font-size={fontSize}
+  font-size={style.fontSize}
+  font-family={style.fontFamily}
+  font-weight={style.fontWeight}
+  fill={style.fill}
   style:overflow="visible"
 >
   {#if txt.wordsByLines.length > 0}

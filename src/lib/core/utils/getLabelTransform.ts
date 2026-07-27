@@ -1,7 +1,7 @@
 import type { AxisScaleOutput } from '$lib/types/Axis';
 import type { TextProps } from '$lib/types/Text';
-import type { OrientationType } from '$lib/constants/orientation';
-import Orientation from '$lib/constants/orientation';
+import type { OrientationType } from '$lib/core/constants/orientation';
+import Orientation from '$lib/core/constants/orientation';
 
 export interface TransformArgs {
   labelOffset: number;

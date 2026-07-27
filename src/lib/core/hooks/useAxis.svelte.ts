@@ -1,4 +1,4 @@
-import Orientation, { type OrientationType } from "$lib/constants/orientation";
+import Orientation, { type OrientationType } from "$lib/core/constants/orientation";
 import Point from "$lib/entities/Point";
 import type { AxisRendererProps, AxisScale, AxisScaleOutput, CommonProps, SharedAxisProps, TickFormatter } from "$lib/types/Axis";
 import type { AnyD3Scale, ScaleInput } from "$lib/types/Scale";

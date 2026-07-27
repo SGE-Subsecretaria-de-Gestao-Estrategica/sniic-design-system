@@ -1,6 +1,6 @@
 <script lang="ts" generics="Scale extends AxisScale">
   import type { AxisScale, TicksRendererProps } from "$lib/types/Axis";
-  import Orientation from "$lib/constants/orientation";
+  import Orientation from "$lib/core/constants/orientation";
   import Group from "../Group.svelte";
   import Line from "../shape/Line.svelte";
   import Text from "../Text.svelte";
@@ -37,7 +37,7 @@
         {from}
         {to}
         stroke={tickStroke}
-        stroke-width={strokeWidth}
+        {strokeWidth}
         stroke-linecap="square"
         {...tickLineProps}
       />

@@ -2,8 +2,11 @@
   import type { AddSVGProps } from "$lib/types/Base";
   import type { LinePathProps } from "$lib/types/Line";
   import { line } from "$lib/core/utils/shapeFactory";
-  import { getChartTheme, resolveThemeStyles } from "$lib/core/context/theme";
-  import { DEFAULT_LINE_THEME } from "$lib/constants/theme";
+  import {
+    DefaultTheme,
+    getChartTheme,
+    resolveThemeStyles,
+  } from "$lib/core/theme";
 
   let {
     children,
@@ -14,7 +17,7 @@
     innerRef = $bindable(null),
 
     curve,
-    defined,
+    defined = () => true,
     fill,
     stroke,
     fillOpacity,
@@ -29,7 +32,6 @@
     resolveThemeStyles(
       {
         curve,
-        defined,
         fill,
         stroke,
         fillOpacity,
@@ -37,12 +39,12 @@
         strokeOpacity,
       },
       theme?.line,
-      DEFAULT_LINE_THEME,
+      DefaultTheme.line,
     ),
   );
 
   let path = $derived(
-    line<Datum>({ x, y, defined: style.defined, curve: style.curve }),
+    line<Datum>({ x, y, defined: defined, curve: style.curve }),
   );
 </script>
 

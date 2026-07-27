@@ -1,9 +1,12 @@
 <script lang="ts" generics="Scale extends AxisScale">
-  import Orientation from "$lib/constants/orientation";
-  import type { OrientationType } from "$lib/constants/orientation";
-  import { DEFAULT_AXIS_THEME } from "$lib/constants/theme";
-  import { getChartTheme, resolveThemeStyles } from "$lib/core/context/theme";
+  import Orientation from "$lib/core/constants/orientation";
+  import type { OrientationType } from "$lib/core/constants/orientation";
   import useAxis from "$lib/core/hooks/useAxis.svelte";
+  import {
+    DefaultTheme,
+    getChartTheme,
+    resolveThemeStyles,
+  } from "$lib/core/theme";
   import type { AxisScale, SharedAxisProps } from "$lib/types/Axis";
   import Group from "../Group.svelte";
   import AxisRenderer from "./AxisRenderer.svelte";
@@ -57,7 +60,7 @@
         tickLineProps,
       },
       theme?.axis,
-      DEFAULT_AXIS_THEME,
+      DefaultTheme.axis,
     ),
   );
 

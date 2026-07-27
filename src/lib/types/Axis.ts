@@ -3,7 +3,7 @@ import type { NumberLike, ValueOf } from './Base';
 import type { D3Scale, ScaleInput } from './Scale';
 import type { TextProps } from './Text';
 import type { ClassValue } from 'svelte/elements';
-import type Orientation from '$lib/constants/orientation';
+import type Orientation from '$lib/core/constants/orientation';
 import type { LineProps } from './Line';
 
 

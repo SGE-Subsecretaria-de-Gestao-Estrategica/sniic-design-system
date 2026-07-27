@@ -3,8 +3,8 @@
   import * as d3 from "d3";
   import Svg from "$lib/core/components/Svg.svelte";
   import Axis from "$lib/core/components/axis/Axis.svelte";
-  import Orientation from "$lib/constants/orientation";
-  import { DEFAULT_AXIS_THEME } from "$lib/constants/theme";
+  import Orientation from "$lib/core/constants/orientation";
+  import { DefaultTheme } from "$lib/core/theme";
 
   const { Story } = defineMeta({
     title: "Core/Axis",
@@ -55,7 +55,7 @@
       top: 0,
       numTicks: 10,
       orientation: Orientation.bottom,
-      ...DEFAULT_AXIS_THEME,
+      ...DefaultTheme.axis,
     },
   });
 
