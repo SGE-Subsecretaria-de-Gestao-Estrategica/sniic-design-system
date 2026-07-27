@@ -66,5 +66,9 @@
   "peerDependencies": {
     "d3": "^7.0.0",
     "svelte": "^5.0.0"
+  },
+  "dependencies": {
+    "@types/node": "^26.1.1",
+    "reduce-css-calc": "^2.1.8"
   }
 }
