@@ -1,5 +1,8 @@
 import SvgExportDecorator from '../src/lib/storybook/SvgExportDecorator.svelte';
 import ThemeDecorator from '../src/lib/storybook/ThemeDecorator.svelte';
+import {sharedPalette} from "$lib/core/theme/tokens"
+
+import "../src/app.css"
 
 /** @type { import('@storybook/svelte-vite').Preview } */
 const preview = {
@@ -32,6 +35,7 @@ const preview = {
         'light-lime': { name: 'light lime', value: '#e7f5c4' },
         'light-red': { name: 'light red', value: '#fbe8e5' },
         'light-lavender': { name: 'light lavender', value: '#f4eff3' },
+        'cultnum-bg': { name: 'cultnum-bg', value: sharedPalette.base[100] },
       },
     },
     a11y: {

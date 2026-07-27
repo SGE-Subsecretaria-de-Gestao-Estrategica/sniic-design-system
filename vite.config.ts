@@ -1,8 +1,17 @@
 import { defineConfig } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import dts from 'vite-plugin-dts';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      $lib: path.resolve(__dirname, 'src/lib'),
+    },
+  },
   plugins: [
     svelte(),
     dts({ include: ['src/lib'], insertTypesEntry: true, compilerOptions: { rootDir: 'src/lib' } }),
