@@ -1,7 +1,8 @@
 export const fontFamily = "General Sans Variable"
 
 export const fontSize = {
-  sm: 9,
+  xs: 9,
+  sm: 10.5,
   md: 12,
   lg: 16,
 }

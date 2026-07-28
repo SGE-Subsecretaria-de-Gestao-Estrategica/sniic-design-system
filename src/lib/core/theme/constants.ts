@@ -1,3 +1,3 @@
 import { getPillarTheme } from "./semantic"
 
-export const DefaultTheme = getPillarTheme(6)
+export const DefaultTheme = getPillarTheme(1)

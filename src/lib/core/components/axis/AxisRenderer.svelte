@@ -9,9 +9,6 @@
 
   const defaultTextProps: Partial<TextProps> = {
     textAnchor: "middle",
-    fontFamily: "Arial",
-    fontSize: 10,
-    fill: "#222",
   };
 
   let {

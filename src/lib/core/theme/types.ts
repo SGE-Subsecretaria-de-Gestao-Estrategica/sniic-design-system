@@ -20,7 +20,7 @@ export type Palette = {
   accent?: string;
   transparent?: string;
   base?: { [key: number]: string },
-  number?: { [key: number]: string },
+  neutral?: { [key: number]: string },
 }
 
 export type TextStyle = Pick<

@@ -24,6 +24,10 @@ type OwnProps = {
   fill?: string;
   width?: number;
   text?: string;
+  suffix?: string;
+  suffixScale?: number;
+  suffixXOffset?: number;
+  suffixYOffset?: number;
 };
 
 export type TextProps = OwnProps & Omit<SVGTextProps, keyof OwnProps>;

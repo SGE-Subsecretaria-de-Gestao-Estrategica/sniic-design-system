@@ -23,6 +23,10 @@
     fontFamily,
     fontSize,
     fontWeight,
+    suffix,
+    suffixScale = 0.9,
+    suffixXOffset = 0,
+    suffixYOffset = 0,
     ...textProps
   }: TextProps = $props();
 
@@ -83,6 +87,18 @@
           {line.words.join(" ")}
         </tspan>
       {/each}
+
+      {#if suffix}
+        <tspan
+          dx={suffixXOffset}
+          dy={txt.wordsByLines.length === 1 ? txt.startDy : lineHeight}
+          font-size={style.fontSize
+            ? Number(style.fontSize) * suffixScale
+            : undefined}
+        >
+          {suffix}
+        </tspan>
+      {/if}
     </text>
   {/if}
 </svg>
