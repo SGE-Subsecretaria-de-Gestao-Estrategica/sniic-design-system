@@ -2,6 +2,7 @@
   import { defineMeta } from '@storybook/addon-svelte-csf';
   import VerticalBarChart from '../lib/components/VerticalBarChart.svelte';
   import { colors } from '../lib/tokens.js';
+  import { getPillarTheme } from '../lib/core/theme/index.js';
 
   const { Story } = defineMeta({
     title: 'Charts/VerticalBarChart',
@@ -44,6 +45,27 @@
     color: colors.accent[0],
     xLabel: 'Quarter',
     yLabel: 'Revenue ($k)',
+  }}
+/>
+
+<!-- Post-migration capabilities: bar fill comes from the theme (no `color`
+     prop) and the SVG can take a fixed width instead of tracking its box. -->
+<Story
+  name="Themed / Fixed Width"
+  args={{
+    data: [
+      { label: 'Norte', value: 120 },
+      { label: 'Nordeste', value: 310 },
+      { label: 'Centro-Oeste', value: 150 },
+      { label: 'Sudeste', value: 480 },
+      { label: 'Sul', value: 290 },
+    ],
+    theme: getPillarTheme(1),
+    responsive: false,
+    width: 560,
+    height: 340,
+    xLabel: 'Região',
+    yLabel: 'Equipamentos',
   }}
 />
 
