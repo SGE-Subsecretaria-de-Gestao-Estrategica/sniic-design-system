@@ -1,3 +1,18 @@
+import { DefaultTheme } from './constants';
+import type { ChartTheme } from './types';
+
+/**
+ * Series colour at `index`, wrapping around the palette. Use for any chart
+ * that assigns one colour per series/key rather than a single themed fill.
+ */
+export function getCategoricalColor(index: number, theme?: ChartTheme): string {
+  const scale = theme?.palette?.categorical?.length
+    ? theme.palette.categorical
+    : DefaultTheme.palette.categorical;
+
+  return scale[((index % scale.length) + scale.length) % scale.length];
+}
+
 export function resolveThemeStyle<T, K extends keyof T>(
   propValue: T[K] | undefined,
   themeValue: T[K] | undefined,
