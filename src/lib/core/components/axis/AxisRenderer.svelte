@@ -46,8 +46,22 @@
     ...labelProps,
   });
 
+  // Tick labels hang off the axis, so their anchor follows the orientation:
+  // a centred label on a left axis runs back over the plot area, which long
+  // category names make obvious. Overridable via `tickLabelProps`.
+  let tickAnchorProps = $derived({
+    textAnchor:
+      orientation === Orientation.left
+        ? "end"
+        : orientation === Orientation.right
+          ? "start"
+          : "middle",
+    ...(horizontal ? null : { verticalAnchor: "middle" }),
+  } as Partial<TextProps>);
+
   let tickLabelPropsDefault = $derived({
     ...defaultTextProps,
+    ...tickAnchorProps,
     ...(typeof tickLabelProps === "object" ? tickLabelProps : null),
   });
 

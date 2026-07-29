@@ -21,7 +21,12 @@ function getStringWidth(str: string, style?: string) {
       document.body.appendChild(svg);
     }
 
-    Object.assign(textEl.style, style);
+    // `style` is a CSS text string. Object.assign would treat it as an
+    // array-like of characters and throw on the read-only indexed properties
+    // of CSSStyleDeclaration, so every styled measurement returned null and
+    // callers silently fell back to character-count estimates.
+    if (style) textEl.setAttribute('style', style);
+    else textEl.removeAttribute('style');
     textEl.textContent = str;
     return textEl.getComputedTextLength();
   } catch {
