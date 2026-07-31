@@ -27,6 +27,8 @@ export {
 	Markers,
 	Circle,
 	Legend as ChartLegend,
+	LegendChips,
+	ValueCallout,
 	DefaultTheme,
 	getPillarTheme,
 	getChartTheme,
@@ -130,6 +132,8 @@ export { default as EqualSign } from './components/EqualSign.svelte';
 export { default as HeatMap } from './components/HeatMap.svelte';
 export { default as ColorPalette } from './components/ColorPalette.svelte';
 export { default as StreamGraph } from './components/StreamGraph.svelte';
+export { default as RibbonChart } from './components/RibbonChart.svelte';
+export type { RibbonDatum } from './components/RibbonChart.svelte';
 export { default as PictogramChart } from './components/PictogramChart.svelte';
 export { default as ProportionalAreaChart } from './components/ProportionalAreaChart.svelte';
 export { default as MarimekkoChart } from './components/MarimekkoChart.svelte';
@@ -195,6 +199,7 @@ export * from './utils/colorMapHelpers.js';
 export * from './utils/tooltipState.js';
 export * from './utils/scaleHelpers.js';
 export * from './utils/stackHelpers.js';
+export * from './utils/callouts.js';
 
 // Chart draw functions (for headless / custom-shell usage)
 export * from './charts/choroplethMap.js';
