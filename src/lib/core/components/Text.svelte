@@ -23,6 +23,10 @@
     fontFamily,
     fontSize,
     fontWeight,
+    suffix,
+    suffixScale = 0.9,
+    suffixXOffset = 0,
+    suffixYOffset = 0,
     // Held back from the spread below: `text` is our own prop, and letting it
     // through would emit an invalid `text` attribute on every <text> element.
     text,
@@ -87,6 +91,18 @@
           {line.words.join(" ")}
         </tspan>
       {/each}
+
+      {#if suffix}
+        <tspan
+          dx={suffixXOffset}
+          dy={txt.wordsByLines.length === 1 ? txt.startDy : lineHeight}
+          font-size={style.fontSize
+            ? Number(style.fontSize) * suffixScale
+            : undefined}
+        >
+          {suffix}
+        </tspan>
+      {/if}
     </text>
   {/if}
 </svg>
