@@ -1,3 +1,76 @@
+// Core — composable chart primitives (Chart, Axis, Grid, shapes, theme).
+// New charts are built from these; the atoms/molecules below are the previous
+// generation and remain exported while charts migrate over.
+// `Legend` is taken by the legacy atom, so core's is re-exported as
+// `ChartLegend` here; it is plain `Legend` when imported from `$lib/core`.
+export {
+	Chart,
+	Svg,
+	Group,
+	Text,
+	Theme,
+	Axis,
+	AxisRenderer,
+	Ticks,
+	Grid,
+	GridRows,
+	GridColumns,
+	Line,
+	LinePath,
+	AreaPath,
+	Arc,
+	Bar,
+	BarStack,
+	BarGroup,
+	Marker,
+	MarkerCircle,
+	Markers,
+	Circle,
+	Legend as ChartLegend,
+	DefaultTheme,
+	getPillarTheme,
+	getChartTheme,
+	setChartTheme,
+	resolveThemeStyle,
+	resolveThemeStyles,
+	getCategoricalColor,
+	useAxis,
+	useText,
+	coerceNumber,
+	getScaleBandwidth,
+	getStringWidth,
+	getTicks,
+	getLabelTransform,
+	line,
+	area,
+	arc,
+	Orientation,
+} from './core/index.js';
+
+export type {
+	ChartTheme,
+	Palette,
+	TextStyle,
+	AxisStyle,
+	LineStyle,
+	AreaStyle,
+	BarStyle,
+	ArcStyle,
+	GridStyle,
+	LegendStyle,
+	MarkerStyle,
+	OrientationType,
+} from './core/index.js';
+
+export type { ChartDimensions, ChartProps, Margin as ChartMargin } from './types/Chart.js';
+export type { BarProps, BarStackProps, BarGroupProps, ComputedBar } from './types/Bar.js';
+export type { AreaPathProps } from './types/Area.js';
+export type { ArcProps } from './types/Arc.js';
+export type { LegendItem, LegendProps } from './types/Legend.js';
+export type { GridProps, GridRowsProps, GridColumnsProps } from './types/Grid.js';
+export type { AxisScale, SharedAxisProps } from './types/Axis.js';
+export type { TextProps } from './types/Text.js';
+
 // Atoms — single-responsibility SVG <g> fragments
 export { default as XAxis } from './components/atoms/XAxis.svelte';
 export { default as YAxis } from './components/atoms/YAxis.svelte';

@@ -86,7 +86,7 @@
   fill="var(--chart-bg, #ffffff)"
   stroke={color}
   stroke-width="1"
-  rx="2"
+  rx="0"
 />
 
 {#if title}

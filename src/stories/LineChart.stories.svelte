@@ -2,6 +2,7 @@
   import { defineMeta } from '@storybook/addon-svelte-csf';
   import LineChart from '../lib/components/LineChart.svelte';
   import { blue, orange, teal, yellow, purple, lime, red, lavender } from '../lib/tokens.js';
+  import { getPillarTheme } from '../lib/core/theme/index.js';
 
   const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
 
@@ -53,6 +54,24 @@
     yLabel: 'Units',
     showDots: true,
     smooth: true,
+  }}
+/>
+
+<!-- Post-migration capabilities: series colours come from the pillar theme and
+     the SVG tracks its container instead of using a fixed width. -->
+<Story
+  name="Themed / Responsive"
+  args={{
+    series: [
+      { name: 'Museus',      data: monthLabels.map((label, i) => ({ label, value: [42, 78, 55, 91, 63, 110][i] })) },
+      { name: 'Bibliotecas', data: monthLabels.map((label, i) => ({ label, value: [30, 50, 70, 60, 80,  95][i] })) },
+      { name: 'Teatros',     data: monthLabels.map((label, i) => ({ label, value: [60, 45, 80, 35, 95,  50][i] })) },
+    ],
+    theme: getPillarTheme(1),
+    responsive: true,
+    height: 400,
+    xLabel: 'Mês',
+    yLabel: 'Equipamentos',
   }}
 />
 

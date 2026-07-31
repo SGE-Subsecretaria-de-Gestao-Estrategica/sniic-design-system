@@ -144,7 +144,7 @@
   fill="var(--chart-bg, #ffffff)"
   stroke={teal}
   stroke-width="1"
-  rx="2"
+  rx="0"
 />
 
 <!-- Title (may wrap to multiple lines) -->

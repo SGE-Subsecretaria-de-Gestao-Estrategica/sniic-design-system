@@ -33,10 +33,26 @@ export const pillarPalettes = [
   { id: 6, primary: '#F6B60E', secondary: '#265C4F', accent: '#D74D2A' },
 ]
 
+export type PillarPalette = (typeof pillarPalettes)[number]
+
 export const spacing = {
   md: 10
 }
 
 export const strokeWidths = {
   lg: 12,
+}
+
+export const radii = {
+  none: 0,
+  sm: 2,
+  md: 4,
+}
+
+/** Default plotting-area insets, leaving room for a bottom and a left axis. */
+export const defaultMargin = {
+  top: 20,
+  right: 20,
+  bottom: 40,
+  left: 48,
 }

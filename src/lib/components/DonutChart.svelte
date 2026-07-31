@@ -34,8 +34,8 @@
 
 	const chartFont = typography.chartValueFontFamily;
 	const MARGIN = { top: 16, right: 16, bottom: 16, left: 16 };
-	const LEGEND_ROW_H = 28;
-	const LEGEND_ITEM_H = 20;
+	const LEGEND_ROW_H = 20;
+	const LEGEND_ROW_GAP = 6;
 
 	let innerW = $state(0);
 	let innerH = $state(0);
@@ -49,14 +49,21 @@
 		})),
 	);
 
-	const legendDirection = $derived<'row' | 'col'>(legendItems.length > 3 ? 'col' : 'row');
-	const legendH = $derived(
-		legendDirection === 'col'
-			? legendItems.length * LEGEND_ITEM_H + 4
-			: LEGEND_ROW_H,
+	// Split into rows: 1 row for ≤3 items, 2 rows for >3
+	const legendNumRows = $derived(legendItems.length > 3 ? 2 : 1);
+	const legendRowSize = $derived(Math.ceil(legendItems.length / legendNumRows));
+	const legendRows = $derived(
+		Array.from({ length: legendNumRows }, (_, r) =>
+			legendItems.slice(r * legendRowSize, (r + 1) * legendRowSize),
+		),
 	);
+	const legendH = $derived(legendNumRows * LEGEND_ROW_H + (legendNumRows - 1) * LEGEND_ROW_GAP);
 
-	const outerR = $derived(Math.min(innerW, innerH) * radiusFraction);
+	function sliceColor(d: DonutDatum, i: number): string {
+		return d.color ?? colors[i % colors.length];
+	}
+
+	const outerR = $derived(Math.min(innerW, innerH - (showLegend ? legendH : 0)) * radiusFraction);
 	const innerR = $derived(outerR * innerRadiusFraction);
 
 	const cx = $derived(innerW / 2);
@@ -80,21 +87,6 @@
 		arc<PieArcDatum<DonutDatum>>()
 			.innerRadius((outerR + innerR) / 2)
 			.outerRadius((outerR + innerR) / 2),
-	);
-
-	function sliceColor(d: DonutDatum, i: number): string {
-		return d.color ?? colors[i % colors.length];
-	}
-
-	const legendSpacing = $derived(
-		legendDirection === 'col'
-			? LEGEND_ITEM_H
-			: Math.min(120, innerW / Math.max(1, legendItems.length)),
-	);
-	const legendX = $derived(
-		legendDirection === 'col'
-			? 0
-			: Math.max(0, (innerW - legendItems.length * legendSpacing) / 2),
 	);
 </script>
 
@@ -160,8 +152,14 @@
 			</g>
 
 			{#if showLegend && legendItems.length > 0}
-				<g transform="translate({legendX}, {innerH - legendH})">
-					<Legend items={legendItems} spacing={legendSpacing} direction={legendDirection} />
+				<g transform="translate(0, {innerH - legendH})">
+					{#each legendRows as rowItems, rowIndex}
+						{@const rowSpacing = Math.min(120, innerW / Math.max(1, rowItems.length))}
+						{@const rowX = Math.max(0, (innerW - rowItems.length * rowSpacing) / 2)}
+						<g transform="translate({rowX}, {rowIndex * (LEGEND_ROW_H + LEGEND_ROW_GAP)})">
+							<Legend items={rowItems} spacing={rowSpacing} />
+						</g>
+					{/each}
 				</g>
 			{/if}
 		</ChartFrame>

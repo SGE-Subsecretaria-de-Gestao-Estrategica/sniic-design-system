@@ -1,14 +1,16 @@
 <script lang="ts">
-  import { scaleLinear, scalePoint, line, curveMonotoneX, curveLinear, extent, type ScalePoint, type ScaleLinear } from 'd3';
-  import { defaultMargin, type Margin } from '../tokens.js';
-  import { categorical8 } from '../palettes.js';
-  import { gridPositions, yLinearTicks } from '../utils/scaleHelpers.js';
-  import ChartFrame from './molecules/ChartFrame.svelte';
-  import XAxis from './atoms/XAxis.svelte';
-  import YAxis from './atoms/YAxis.svelte';
-  import GridLines from './atoms/GridLines.svelte';
-  import Legend from './atoms/Legend.svelte';
+  import { scaleLinear, scalePoint, curveMonotoneX, curveLinear, extent, type ScalePoint, type ScaleLinear } from 'd3';
   import type { Snippet } from 'svelte';
+  import Chart from '$lib/core/components/Chart.svelte';
+  import Axis from '$lib/core/components/axis/Axis.svelte';
+  import GridRows from '$lib/core/components/grid/GridRows.svelte';
+  import LinePath from '$lib/core/components/shape/LinePath.svelte';
+  import Markers from '$lib/core/components/markers/Markers.svelte';
+  import Circle from '$lib/core/components/markers/Circle.svelte';
+  import Legend from '$lib/core/components/legend/Legend.svelte';
+  import { DefaultTheme, getCategoricalColor, getChartTheme } from '$lib/core/theme';
+  import type { ChartTheme } from '$lib/core/theme/types';
+  import type { Margin } from '$lib/types/Chart';
 
   interface DataPoint {
     label: string;
@@ -30,12 +32,24 @@
     series?: Series[];
     width?: number;
     height?: number;
-    margin?: Margin;
+    /** Merged over the theme default; pass only the sides you need. */
+    margin?: Partial<Margin>;
+    /** Track the container width instead of using `width`. */
+    responsive?: boolean;
+    /** Sets the theme for this chart; inherits an ancestor `<Theme>` when omitted. */
+    theme?: ChartTheme;
     xLabel?: string;
     yLabel?: string;
     showDots?: boolean;
     smooth?: boolean;
+    /**
+     * Line weight. Defaults to 2.5 rather than the theme's `line.strokeWidth`,
+     * which is tuned for single-series emphasis and reads far too heavy with
+     * several series overlaid.
+     */
+    strokeWidth?: number;
     annotations?: Snippet<[AnnotationContext]>;
+    /** Series colours; defaults to the theme's categorical palette. */
     colors?: readonly string[];
   }
 
@@ -43,97 +57,120 @@
     series = [],
     width = 600,
     height = 400,
-    margin = defaultMargin,
+    margin,
+    responsive = false,
+    theme,
     xLabel = '',
     yLabel = '',
     showDots = true,
     smooth = true,
+    strokeWidth = 2.5,
     annotations,
-    colors = categorical8,
+    colors,
   }: Props = $props();
 
-  const defaultColors = $derived(colors);
+  // The prop wins, then an ancestor <Theme>, then the default — the same
+  // cascade the primitives apply, resolved here because this component needs
+  // palette values of its own.
+  const inheritedTheme = getChartTheme();
+  let activeTheme = $derived(theme ?? inheritedTheme ?? DefaultTheme);
 
-  const allData = $derived(series.flatMap(s => s.data));
+  const allData = $derived(series.flatMap((s) => s.data));
+  const labels = $derived([...new Set(allData.map((d) => d.label))]);
 
-  let innerWidth = $state(0);
-  let innerHeight = $state(0);
+  const yExtent = $derived(extent(allData, (d) => d.value) as [number, number]);
+  const yDomain = $derived<[number, number]>([
+    Math.min(0, yExtent[0] ?? 0),
+    yExtent[1] ?? 0,
+  ]);
 
-  const labels = $derived([...new Set(allData.map(d => d.label))]);
+  const curve = $derived(smooth ? curveMonotoneX : curveLinear);
 
-  const xScale = $derived(
-    scalePoint()
-      .domain(labels)
-      .range([0, innerWidth])
-      .padding(0.1)
-  );
-
-  const yExtent = $derived(extent(allData, d => d.value) as [number, number]);
-  const yScale = $derived(
-    scaleLinear()
-      .domain([Math.min(0, yExtent[0] ?? 0), yExtent[1] ?? 0])
-      .nice()
-      .range([innerHeight, 0])
-  );
-
-  const xTicks = $derived(labels.map(l => ({ value: l, x: xScale(l) ?? 0 })));
-  const yTicks = $derived(yLinearTicks(yScale, 5));
-  const yGridPositions = $derived(gridPositions(yScale, 5));
-
-  const lineGen = $derived(
-    line<DataPoint>()
-      .x(d => xScale(d.label) ?? 0)
-      .y(d => yScale(d.value))
-      .curve(smooth ? curveMonotoneX : curveLinear)
-  );
+  function seriesColor(s: Series, index: number) {
+    return (
+      s.color ??
+      (colors?.length ? colors[index % colors.length] : undefined) ??
+      getCategoricalColor(index, activeTheme)
+    );
+  }
 
   const legendItems = $derived(
     series.length > 1
-      ? series.map((s, i) => ({
-          label: s.name,
-          color: s.color ?? defaultColors[i % defaultColors.length],
-        }))
-      : []
+      ? series.map((s, i) => ({ label: s.name, color: seriesColor(s, i) }))
+      : [],
   );
+
+  const dotRing = $derived(activeTheme.palette?.base?.[100] ?? '#ffffff');
 </script>
 
-<ChartFrame {width} {height} {margin} bind:innerWidth bind:innerHeight ariaLabel="Line chart">
-  <GridLines positions={yGridPositions} length={innerWidth} />
+<Chart
+  {width}
+  {height}
+  {margin}
+  {responsive}
+  {theme}
+  ariaLabel="Line chart"
+>
+  {#snippet children({ innerWidth, innerHeight, margin: resolvedMargin })}
+    {@const xScale = scalePoint<string>()
+      .domain(labels)
+      .range([0, innerWidth])
+      .padding(0.1)}
+    {@const yScale = scaleLinear()
+      .domain(yDomain)
+      .nice()
+      .range([innerHeight, 0])}
 
-  {#each series as s, i (s.name)}
-    {@const seriesColor = s.color ?? defaultColors[i % defaultColors.length]}
-    <path
-      d={lineGen(s.data) ?? ''}
-      fill="none"
-      stroke={seriesColor}
-      stroke-width="2.5"
-      stroke-linejoin="round"
-      stroke-linecap="round"
-    />
-    {#if showDots}
-      {#each s.data as d (d.label)}
-        <circle
-          cx={xScale(d.label) ?? 0}
-          cy={yScale(d.value)}
-          r="4"
-          fill={seriesColor}
-          stroke="var(--chart-bg, white)"
-          stroke-width="2"
+    <GridRows scale={yScale} width={innerWidth} numTicks={5} />
+
+    {#each series as s, i (s.name)}
+      {@const color = seriesColor(s, i)}
+      <LinePath
+        data={s.data}
+        x={(d) => xScale(d.label) ?? 0}
+        y={(d) => yScale(d.value)}
+        stroke={color}
+        {strokeWidth}
+        {curve}
+        fill="none"
+        stroke-linejoin="round"
+      />
+
+      {#if showDots}
+        <Markers
+          data={s.data}
+          x={(d) => xScale(d.label) ?? 0}
+          y={(d) => yScale(d.value)}
         >
-          <title>{s.name} — {d.label}: {d.value}</title>
-        </circle>
-      {/each}
+          {#snippet marker({ x, y, datum })}
+            <g>
+              <title>{s.name} — {datum.label}: {datum.value}</title>
+              <Circle
+                {x}
+                {y}
+                size={4}
+                fill={color}
+                stroke={dotRing}
+                strokeWidth={2}
+              />
+            </g>
+          {/snippet}
+        </Markers>
+      {/if}
+    {/each}
+
+    {@render annotations?.({ xScale, yScale })}
+
+    <Axis orientation="left" scale={yScale} numTicks={5} label={yLabel} />
+    <Axis
+      orientation="bottom"
+      scale={xScale}
+      top={innerHeight}
+      label={xLabel}
+    />
+
+    {#if legendItems.length > 0}
+      <Legend items={legendItems} top={-resolvedMargin.top + 4} />
     {/if}
-  {/each}
-
-  {@render annotations?.({ xScale, yScale })}
-
-  <XAxis ticks={xTicks} {innerHeight} {innerWidth} label={xLabel} />
-  <YAxis ticks={yTicks} {innerHeight} label={yLabel} />
-
-  {#if legendItems.length > 0}
-    <g transform="translate(0, {-margin.top + 4})">
-      <Legend items={legendItems} spacing={100} />
-    </g>
-  {/if}
-</ChartFrame>
+  {/snippet}
+</Chart>

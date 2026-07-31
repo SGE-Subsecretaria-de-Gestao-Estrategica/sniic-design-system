@@ -1,14 +1,11 @@
 <script lang="ts">
 	import { scaleBand, scaleLinear, max } from 'd3';
-	import { colors, defaultMargin, typography, type Margin } from '../tokens.js';
-	import { gridPositions, yLinearTicks } from '../utils/scaleHelpers.js';
-
-	const STROKE_W = 0.5;
-	import ChartFrame from './molecules/ChartFrame.svelte';
-	import XAxis from './atoms/XAxis.svelte';
-	import YAxis from './atoms/YAxis.svelte';
-	import GridLines from './atoms/GridLines.svelte';
-	import BarRect from './atoms/BarRect.svelte';
+	import Chart from '$lib/core/components/Chart.svelte';
+	import Axis from '$lib/core/components/axis/Axis.svelte';
+	import GridRows from '$lib/core/components/grid/GridRows.svelte';
+	import Bar from '$lib/core/components/shape/Bar.svelte';
+	import type { ChartTheme } from '$lib/core/theme/types';
+	import type { Margin } from '$lib/types/Chart';
 
 	interface DataPoint {
 		label: string;
@@ -17,69 +14,61 @@
 
 	interface Props {
 		data?: DataPoint[];
+		/** Used when `responsive` is off. */
+		width?: number;
 		height?: number;
+		/** Track the container width instead of using `width`. */
+		responsive?: boolean;
+		/** Sets the theme for this chart; inherits an ancestor `<Theme>` when omitted. */
+		theme?: ChartTheme;
+		/** Bar fill; defaults to the theme's bar style. */
 		color?: string;
-		margin?: Margin;
+		/** Merged over the theme default; pass only the sides you need. */
+		margin?: Partial<Margin>;
 		xLabel?: string;
 		yLabel?: string;
 	}
 
 	let {
 		data = [],
+		width = 600,
 		height = 400,
-		color = colors.primary[0],
-		margin = defaultMargin,
+		responsive = true,
+		theme,
+		color,
+		margin,
 		xLabel = '',
 		yLabel = '',
 	}: Props = $props();
-
-	const chartFont = typography.chartValueFontFamily;
-
-	let innerWidth = $state(0);
-	let innerHeight = $state(0);
-
-	const xScale = $derived(
-		scaleBand()
-			.domain(data.map((d) => d.label))
-			.range([0, innerWidth])
-			.padding(0.25),
-	);
-
-	const yScale = $derived(
-		scaleLinear()
-			.domain([0, max(data, (d) => d.value) ?? 0])
-			.nice()
-			.range([innerHeight, 0]),
-	);
-
-	const xTicks = $derived(
-		data.map((d) => ({
-			value: d.label,
-			x: (xScale(d.label) ?? 0) + xScale.bandwidth() / 2,
-		})),
-	);
-
-	const yTicks = $derived(yLinearTicks(yScale, 5));
-	const yGridPositions = $derived(gridPositions(yScale, 5));
 </script>
 
-<ChartFrame responsive {height} {margin} bind:innerWidth bind:innerHeight ariaLabel="Bar chart">
-	<GridLines positions={yGridPositions} length={innerWidth} color="var(--chart-grid, #e2e8f0)" dashed />
+<Chart {width} {height} {responsive} {margin} {theme} ariaLabel="Bar chart">
+	{#snippet children({ innerWidth, innerHeight })}
+		{@const xScale = scaleBand<string>()
+			.domain(data.map((d) => d.label))
+			.range([0, innerWidth])
+			.padding(0.25)}
+		{@const yScale = scaleLinear()
+			.domain([0, max(data, (d) => d.value) ?? 0])
+			.nice()
+			.range([innerHeight, 0])}
 
-	{#each data as d (d.label)}
-		<BarRect
-			x={xScale(d.label) ?? 0}
-			y={yScale(d.value)}
-			width={xScale.bandwidth()}
-			height={innerHeight - yScale(d.value)}
-			fill={color}
-			stroke="var(--chart-fg-strong, #000000)"
-			strokeWidth={STROKE_W}
-			shapeRendering="crispEdges"
-			title="{d.label}: {d.value}"
-		/>
-	{/each}
+		<GridRows scale={yScale} width={innerWidth} numTicks={5} />
 
-	<XAxis ticks={xTicks} {innerHeight} {innerWidth} label={xLabel} fontFamily={chartFont} />
-	<YAxis ticks={yTicks} {innerHeight} label={yLabel} fontFamily={chartFont} />
-</ChartFrame>
+		{#each data as d (d.label)}
+			<g>
+				<title>{d.label}: {d.value}</title>
+				<Bar
+					x={xScale(d.label) ?? 0}
+					y={yScale(d.value)}
+					width={xScale.bandwidth()}
+					height={innerHeight - yScale(d.value)}
+					fill={color}
+				/>
+			</g>
+		{/each}
+
+		<Axis orientation="left" scale={yScale} numTicks={5} label={yLabel} />
+		<Axis orientation="bottom" scale={xScale} top={innerHeight} label={xLabel} />
+	{/snippet}
+</Chart>

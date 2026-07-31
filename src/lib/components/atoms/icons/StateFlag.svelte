@@ -7,6 +7,7 @@
 	}
 
 	const STATE_NAMES: Record<string, string> = {
+		BR: 'Brasil',
 		AC: 'Acre', AL: 'Alagoas', AP: 'Amapá', AM: 'Amazonas',
 		BA: 'Bahia', CE: 'Ceará', DF: 'Distrito Federal', ES: 'Espírito Santo',
 		GO: 'Goiás', MA: 'Maranhão', MT: 'Mato Grosso', MS: 'Mato Grosso do Sul',
