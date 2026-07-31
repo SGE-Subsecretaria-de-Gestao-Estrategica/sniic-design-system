@@ -36,6 +36,10 @@ export { default as Circle } from './components/markers/Circle.svelte';
 
 // Legend
 export { default as Legend } from './components/legend/Legend.svelte';
+export { default as LegendChips } from './components/legend/LegendChips.svelte';
+
+// Annotation
+export { default as ValueCallout } from './components/annotation/ValueCallout.svelte';
 
 // Theme — tokens, palettes, context and the props > theme > default cascade
 export * from './theme/index.js';
