@@ -15,6 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      # necessario para o npm trocar o token OIDC do Actions (trusted publishing)
+      id-token: write
     steps:
       - uses: actions/checkout@v4
 
@@ -22,7 +24,10 @@ jobs:
         with:
           node-version: 24
           cache: npm
-          registry-url: https://registry.npmjs.org
+
+      # trusted publishing exige npm >= 11.5.1
+      - name: Atualiza npm
+        run: npm install -g npm@latest
 
       - run: npm ci
 
@@ -44,11 +49,11 @@ jobs:
         if: steps.pkg.outputs.published == 'false'
         run: npm run build
 
+      # sem NODE_AUTH_TOKEN: a auth vem do OIDC do proprio Actions.
+      # provenance eh gerado automaticamente pelo trusted publishing.
       - name: Publish
         if: steps.pkg.outputs.published == 'false'
         run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Tag da release
         if: steps.pkg.outputs.published == 'false'
