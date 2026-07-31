@@ -6,8 +6,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sniic/sniic-dsm.git"
+    "url": "git+https://github.com/SGE-Subsecretaria-de-Gestao-Estrategica/sniic-design-system.git"
   },
+  "bugs": {
+    "url": "https://github.com/SGE-Subsecretaria-de-Gestao-Estrategica/sniic-design-system/issues"
+  },
+  "homepage": "https://github.com/SGE-Subsecretaria-de-Gestao-Estrategica/sniic-design-system#readme",
   "keywords": [
     "svelte",
     "d3",
