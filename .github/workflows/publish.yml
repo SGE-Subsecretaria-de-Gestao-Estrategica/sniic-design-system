@@ -24,6 +24,7 @@ jobs:
         with:
           node-version: 24
           cache: npm
+          registry-url: https://registry.npmjs.org
 
       # trusted publishing exige npm >= 11.5.1
       - name: Atualiza npm
@@ -53,7 +54,7 @@ jobs:
       # provenance eh gerado automaticamente pelo trusted publishing.
       - name: Publish
         if: steps.pkg.outputs.published == 'false'
-        run: npm publish --access public
+        run: npm publish --access public --loglevel verbose
 
       - name: Tag da release
         if: steps.pkg.outputs.published == 'false'
