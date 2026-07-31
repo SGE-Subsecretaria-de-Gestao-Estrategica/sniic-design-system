@@ -1,15 +1,13 @@
 <script lang="ts">
 	import { scaleBand, scaleLinear, max } from 'd3';
-	import { colors, typography, type Margin } from '../tokens.js';
-	import { gridPositions, xLinearTicks } from '../utils/scaleHelpers.js';
-	import { computeDynamicHeight } from '../utils/scaleHelpers.js';
-
-	const STROKE_W = 0.5;
-	import ChartFrame from './molecules/ChartFrame.svelte';
-	import XAxis from './atoms/XAxis.svelte';
-	import YAxis from './atoms/YAxis.svelte';
-	import GridLines from './atoms/GridLines.svelte';
-	import BarRect from './atoms/BarRect.svelte';
+	import Chart from '$lib/core/components/Chart.svelte';
+	import Axis from '$lib/core/components/axis/Axis.svelte';
+	import GridColumns from '$lib/core/components/grid/GridColumns.svelte';
+	import Bar from '$lib/core/components/shape/Bar.svelte';
+	import Text from '$lib/core/components/Text.svelte';
+	import { DefaultTheme, getChartTheme } from '$lib/core/theme';
+	import type { ChartTheme } from '$lib/core/theme/types';
+	import type { Margin } from '$lib/types/Chart';
 
 	interface DataPoint {
 		label: string;
@@ -21,6 +19,13 @@
 
 	interface Props {
 		data?: DataPoint[];
+		/** Used when `responsive` is off. */
+		width?: number;
+		/** Track the container width instead of using `width`. */
+		responsive?: boolean;
+		/** Sets the theme for this chart; inherits an ancestor `<Theme>` when omitted. */
+		theme?: ChartTheme;
+		/** Bar fill; defaults to the theme's bar style. */
 		color?: string;
 		margin?: Margin;
 		xLabel?: string;
@@ -35,7 +40,10 @@
 
 	let {
 		data = [],
-		color = colors.primary[0],
+		width = 600,
+		responsive = true,
+		theme,
+		color,
 		margin = { top: 20, right: 40, bottom: 40, left: 120 },
 		xLabel = '',
 		yLabel = '',
@@ -47,116 +55,90 @@
 		flagSize = 20,
 	}: Props = $props();
 
+	const inheritedTheme = getChartTheme();
+	let activeTheme = $derived(theme ?? inheritedTheme ?? DefaultTheme);
+
 	const flagW = $derived(flagSize * FLAG_RATIO);
 	const effectiveMargin = $derived(
 		showFlags ? { ...margin, left: margin.left + flagW + FLAG_GAP } : margin,
 	);
 
-	const chartFont = typography.chartValueFontFamily;
-
-	let innerWidth = $state(0);
-
 	const sorted = $derived([...data].sort((a, b) => b.value - a.value));
 
-	const { height, innerHeight } = $derived(computeDynamicHeight(sorted.length, rowHeight, margin));
+	// One row per datum, so the height is data-driven rather than a prop.
+	const innerHeight = $derived(sorted.length * rowHeight);
+	const height = $derived(innerHeight + margin.top + margin.bottom);
 
-	const xScale = $derived(
-		scaleLinear()
-			.domain([0, max(sorted, (d) => d.value) ?? 0])
-			.nice()
-			.range([0, innerWidth]),
-	);
-
-	const yScale = $derived(
-		scaleBand()
-			.domain(sorted.map((d) => d.label))
-			.range([0, innerHeight])
-			.padding(0.25),
-	);
-
-	const xTicks = $derived(xLinearTicks(xScale, 5, format));
-	const xGridPositions = $derived(gridPositions(xScale, 5));
-
-	const yTicks = $derived(
-		sorted.map((d) => ({
-			value: d.label,
-			y: (yScale(d.label) ?? 0) + yScale.bandwidth() / 2,
-		})),
-	);
+	const valueLabelFill = $derived(activeTheme.dataLabel?.fill ?? DefaultTheme.dataLabel.fill);
 </script>
 
-<ChartFrame
-	responsive
+<Chart
+	{width}
 	{height}
+	{responsive}
+	{theme}
 	margin={effectiveMargin}
-	bind:innerWidth
 	ariaLabel="Horizontal bar chart"
 >
-	<GridLines
-		type="vertical"
-		positions={xGridPositions}
-		length={innerHeight}
-		color="var(--chart-grid, #e2e8f0)"
-		dashed
-	/>
+	{#snippet children({ innerWidth })}
+		{@const xScale = scaleLinear()
+			.domain([0, max(sorted, (d) => d.value) ?? 0])
+			.nice()
+			.range([0, innerWidth])}
+		{@const yScale = scaleBand<string>()
+			.domain(sorted.map((d) => d.label))
+			.range([0, innerHeight])
+			.padding(0.25)}
 
-	{#each sorted as d (d.label)}
-		<BarRect
-			x={0}
-			y={yScale(d.label) ?? 0}
-			width={xScale(d.value)}
-			height={yScale.bandwidth()}
-			fill={color}
-			stroke="var(--chart-fg-strong, #000000)"
-			strokeWidth={STROKE_W}
-			shapeRendering="crispEdges"
-			title="{d.label}: {d.value}"
+		<GridColumns scale={xScale} height={innerHeight} numTicks={5} />
+
+		{#each sorted as d (d.label)}
+			<g>
+				<title>{d.label}: {d.value}</title>
+				<Bar
+					x={0}
+					y={yScale(d.label) ?? 0}
+					width={xScale(d.value)}
+					height={yScale.bandwidth()}
+					fill={color}
+				/>
+			</g>
+		{/each}
+
+		{#if showValueLabels}
+			{#each sorted as d (d.label)}
+				<Text
+					x={xScale(d.value) + 6}
+					y={(yScale(d.label) ?? 0) + yScale.bandwidth() / 2}
+					verticalAnchor="middle"
+					fontSize={10}
+					fontWeight={500}
+					fill={valueLabelFill}
+					text={format(d.value)}
+				/>
+			{/each}
+		{/if}
+
+		{#if showFlags}
+			{#each sorted as d (d.label)}
+				<image
+					href="{flagBasePath}/{d.label.toUpperCase()}.svg"
+					x={-(effectiveMargin.left - 4)}
+					y={(yScale(d.label) ?? 0) + yScale.bandwidth() / 2 - flagSize / 2}
+					width={flagW}
+					height={flagSize}
+				/>
+			{/each}
+		{/if}
+
+		<Axis
+			orientation="bottom"
+			scale={xScale}
+			top={innerHeight}
+			numTicks={5}
+			tickFormat={(v) => format(Number(v))}
+			label={xLabel}
 		/>
-	{/each}
-
-	{#if showValueLabels}
-		{#each sorted as d (d.label)}
-			<text
-				x={xScale(d.value) + 6}
-				y={(yScale(d.label) ?? 0) + yScale.bandwidth() / 2}
-				dy="0.35em"
-				font-size={10}
-				font-weight="500"
-				font-family={chartFont}
-				fill="var(--chart-fg-strong, #000000)"
-			>{format(d.value)}</text>
-		{/each}
-	{/if}
-
-	<XAxis
-		ticks={xTicks}
-		{innerHeight}
-		{innerWidth}
-		label={xLabel}
-		showLine={false}
-		fontSize={10}
-		fontFamily={chartFont}
-	/>
-
-	{#if showFlags}
-		{#each sorted as d (d.label)}
-			<image
-				href="{flagBasePath}/{d.label.toUpperCase()}.svg"
-				x={-(effectiveMargin.left - 4)}
-				y={(yScale(d.label) ?? 0) + yScale.bandwidth() / 2 - flagSize / 2}
-				width={flagW}
-				height={flagSize}
-			/>
-		{/each}
-	{/if}
-
-	<YAxis
-		ticks={yTicks}
-		{innerHeight}
-		label={yLabel}
-		showLine={false}
-		fontSize={11}
-		tickOffset={-8}
-		fontFamily={chartFont}
-	/>
-</ChartFrame>
+		<Axis orientation="left" scale={yScale} label={yLabel} />
+	{/snippet}
+</Chart>

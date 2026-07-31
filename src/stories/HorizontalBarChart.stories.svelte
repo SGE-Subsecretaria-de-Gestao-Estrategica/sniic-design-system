@@ -2,6 +2,7 @@
   import { defineMeta } from '@storybook/addon-svelte-csf';
   import HorizontalBarChart from '../lib/components/HorizontalBarChart.svelte';
   import { colors } from '../lib/tokens.js';
+  import { getPillarTheme } from '../lib/core/theme/index.js';
 
   const { Story } = defineMeta({
     title: 'Charts/HorizontalBarChart',
@@ -77,5 +78,24 @@
     format: (v) => v.toLocaleString('pt-BR'),
     xLabel: 'Registros',
     showFlags: true,
+  }}
+/>
+
+<!-- Post-migration capabilities: bar fill comes from the theme (no `color`
+     prop) and long category names sit right-aligned against the axis. -->
+<Story
+  name="Themed"
+  args={{
+    data: [
+      { label: 'Norte', value: 120 },
+      { label: 'Nordeste', value: 310 },
+      { label: 'Centro-Oeste', value: 150 },
+      { label: 'Sudeste', value: 480 },
+      { label: 'Sul', value: 290 },
+    ],
+    theme: getPillarTheme(1),
+    rowHeight: 40,
+    format: (v) => `${v} un`,
+    xLabel: 'Equipamentos',
   }}
 />

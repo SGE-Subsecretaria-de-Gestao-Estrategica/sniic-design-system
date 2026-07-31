@@ -6,15 +6,24 @@
     width: number;
     height: number;
     children?: Snippet;
+    ref?: SVGSVGElement | null;
   } & Omit<
     SVGAttributes<SVGSVGElement>,
     "width" | "height" | "children" | "xmlns"
   >;
 
-  let { width, height, children, viewBox, ...props }: SvgProps = $props();
+  let {
+    width,
+    height,
+    children,
+    viewBox,
+    ref = $bindable(null),
+    ...props
+  }: SvgProps = $props();
 </script>
 
 <svg
+  bind:this={ref}
   {width}
   {height}
   viewBox={viewBox || `0 0 ${width} ${height}`}

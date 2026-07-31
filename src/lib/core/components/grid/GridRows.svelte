@@ -5,7 +5,7 @@
   import Point from "$lib/entities/Point";
   import Group from "../Group.svelte";
   import Line from "../shape/Line.svelte";
-  import type { AllGridColumnsProps, GridScale } from "$lib/types/Grid";
+  import type { AllGridRowsProps, GridScale } from "$lib/types/Grid";
   import {
     DefaultTheme,
     getChartTheme,
@@ -16,7 +16,7 @@
     top = 0,
     left = 0,
     scale,
-    height,
+    width,
     stroke,
     strokeWidth,
     strokeDasharray,
@@ -27,7 +27,7 @@
     tickValues,
     children,
     ...restProps
-  }: AllGridColumnsProps<Scale> = $props();
+  }: AllGridRowsProps<Scale> = $props();
 
   const theme = getChartTheme();
 
@@ -48,21 +48,21 @@
   let scaleOffset = $derived((offset ?? 0) + getScaleBandwidth(scale) / 2);
   let tickLines = $derived(
     ticks.map((d, index) => {
-      const x = (coerceNumber(scale(d)) ?? 0) + scaleOffset;
+      const y = (coerceNumber(scale(d)) ?? 0) + scaleOffset;
       return {
         index,
-        from: new Point({ x, y: 0 }),
-        to: new Point({ x, y: height }),
+        from: new Point({ x: 0, y }),
+        to: new Point({ x: width, y }),
       };
     }),
   );
 </script>
 
-<Group class={["columns", className]} {top} {left}>
+<Group class={["rows", className]} {top} {left}>
   {#if children}
     {@render children({ lines: tickLines })}
   {:else}
-    {#each tickLines as { from, to, index } (`column-line-${index}`)}
+    {#each tickLines as { from, to, index } (`row-line-${index}`)}
       <Line
         {from}
         {to}
