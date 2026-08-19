@@ -19,6 +19,7 @@
 </script>
 
 <line
+  stroke-linecap="round"
   {...restProps}
   {stroke}
   stroke-width={strokeWidth}

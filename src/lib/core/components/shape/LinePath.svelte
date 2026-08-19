@@ -11,8 +11,8 @@
   let {
     children,
     data = [],
-    x,
-    y,
+    x = (d: any) => d.x ?? 0,
+    y = (d: any) => d.y ?? 0,
     className,
     innerRef = $bindable(null),
 

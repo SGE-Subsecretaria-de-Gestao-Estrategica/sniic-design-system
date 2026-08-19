@@ -3,10 +3,11 @@
   import type { Accessor } from "$lib/types/Accessor";
   import Group from "../Group.svelte";
 
-  type MarkerProps = {
+  type MarkerProps<D> = {
     x: number;
     y: number;
     placement: "START" | "MID" | "END";
+    data: D;
   };
 
   type MarkersProps<Datum> = {
@@ -15,7 +16,7 @@
     data?: Datum[];
     x?: Accessor<Datum, number>;
     y?: Accessor<Datum, number>;
-    marker?: Snippet<[MarkerProps]>;
+    marker?: Snippet<[MarkerProps<Datum>]>;
   };
 
   let { left, top, data, x, y, marker }: MarkersProps<Datum> = $props();
@@ -30,6 +31,7 @@
         x: x?.(d) ?? 0,
         y: y?.(d) ?? 0,
         placement,
+        data: d,
       })}
     {/each}
   </Group>

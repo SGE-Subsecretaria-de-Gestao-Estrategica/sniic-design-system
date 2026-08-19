@@ -6,11 +6,9 @@ export function getPillarTheme(pillarId: number) {
   const res = Tokens.pillarPalettes.find((p) => p.id === pillarId)
   if (!res) throw new Error(`No palette found for pillar ID: ${pillarId}`);
   const { id: _, ...pillarPalette } = res
-  const palette = { ...Tokens.sharedPalette, ...pillarPalette };
-
-  const primaryColor = d3.color(pillarPalette.primary)!
-  const secondaryColor = d3.color(pillarPalette.secondary)!
-  const accentColor = d3.color(pillarPalette.accent)!
+  const palette = { 
+    ...Tokens.sharedPalette, 
+    ...pillarPalette };
 
   return {
     palette,
@@ -18,7 +16,8 @@ export function getPillarTheme(pillarId: number) {
       fill: palette.neutral[200],
       fontFamily: Tokens.fontFamily,
       fontSize: Tokens.fontSize.md,
-      fontWeight: Tokens.fontWeight.medium
+      fontWeight: Tokens.fontWeight.medium,
+      lineHeight: "1.1em"
     },
     dataLabel: {
       fill: palette.neutral[300],
@@ -40,7 +39,7 @@ export function getPillarTheme(pillarId: number) {
     },
     grid: {
       stroke: palette.base[200],
-      strokeWidth: 3,
+      strokeWidth: 1.5,
       numTicks: 10,
     },
     line: {
@@ -52,7 +51,7 @@ export function getPillarTheme(pillarId: number) {
     marker: {
       circle: {
         size: 5,
-        fill: primaryColor.darker().toString()
+        fill: pillarPalette.primaryVariant
       }
     }
   } satisfies ChartTheme

@@ -15,7 +15,7 @@
     innerTextRef = $bindable(null),
     verticalAnchor,
     angle,
-    lineHeight = "1em",
+    lineHeight,
     scaleToFit = false,
     capHeight,
     width,
@@ -39,6 +39,7 @@
         fontFamily,
         fontSize,
         fontWeight,
+        lineHeight,
       },
       theme?.text,
       DefaultTheme.text,
@@ -56,7 +57,7 @@
       innerTextRef,
       verticalAnchor,
       angle,
-      lineHeight,
+      lineHeight: style.lineHeight,
       scaleToFit,
       capHeight,
       width,
@@ -83,7 +84,7 @@
       text-anchor={textAnchor}
     >
       {#each txt.wordsByLines as line, i (i)}
-        <tspan {x} dy={i === 0 ? txt.startDy : lineHeight}>
+        <tspan {x} dy={i === 0 ? txt.startDy : style.lineHeight}>
           {line.words.join(" ")}
         </tspan>
       {/each}
@@ -91,7 +92,7 @@
       {#if suffix}
         <tspan
           dx={suffixXOffset}
-          dy={txt.wordsByLines.length === 1 ? txt.startDy : lineHeight}
+          dy={txt.wordsByLines.length === 1 ? 0 : style.lineHeight}
           font-size={style.fontSize
             ? Number(style.fontSize) * suffixScale
             : undefined}
