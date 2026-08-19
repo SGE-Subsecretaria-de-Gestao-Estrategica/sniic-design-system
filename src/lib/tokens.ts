@@ -43,12 +43,15 @@ export const colors = {
 } as const;
 
 export const typography = {
-  fontFamily: "'Inter', system-ui, sans-serif",
+  // Rawline — tipografia oficial do Governo Federal — é a fonte padrão de todos
+  // os gráficos (eixos, legendas, rótulos e valores), para consistência na
+  // diagramação (InDesign). Antes: Inter (UI/eixos) e Space Grotesk (valores).
+  fontFamily: "'Rawline', 'Raleway', system-ui, sans-serif",
   /**
-   * Valores em gráficos (rótulos em barras, etc.) — neo-grotesca geométrica no espírito de
-   * Clash Grotesk (Fontshare), com licença aberta: Space Grotesk (OFL, Google Fonts).
+   * Valores em gráficos (rótulos em barras, etc.). Padronizado para Rawline
+   * (Raleway com algarismos alinhados) junto com o restante dos textos.
    */
-  chartValueFontFamily: "'Space Grotesk', system-ui, sans-serif",
+  chartValueFontFamily: "'Rawline', 'Raleway', system-ui, sans-serif",
   /** Rawline — tipografia oficial do Governo Federal (Raleway com algarismos alinhados). */
   rawlineFontFamily: "'Rawline', 'Raleway', system-ui, sans-serif",
   /** Raleway — geométrica elegante, base da Rawline. */

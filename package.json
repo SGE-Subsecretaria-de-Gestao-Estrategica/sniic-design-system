@@ -1,13 +1,17 @@
 {
   "name": "sniic-design-system",
-  "version": "1.0.20",
+  "version": "1.0.28",
   "description": "A Svelte component library with chart components and design tokens based on the Brazilian Government Design System (Padrão Digital de Governo).",
   "author": "SNIIC",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sniic/sniic-dsm.git"
+    "url": "git+https://github.com/SGE-Subsecretaria-de-Gestao-Estrategica/sniic-design-system.git"
   },
+  "bugs": {
+    "url": "https://github.com/SGE-Subsecretaria-de-Gestao-Estrategica/sniic-design-system/issues"
+  },
+  "homepage": "https://github.com/SGE-Subsecretaria-de-Gestao-Estrategica/sniic-design-system#readme",
   "keywords": [
     "svelte",
     "d3",
@@ -41,19 +45,19 @@
     "build:demo": "vite build --config vite.config.demo.ts && mv dist-demo/demo/index.html dist-demo/index.html && rm -rf dist-demo/demo"
   },
   "devDependencies": {
-    "@chromatic-com/storybook": "^5.1.2",
-    "@storybook/addon-a11y": "^10.3.6",
-    "@storybook/addon-docs": "^10.3.6",
+    "@chromatic-com/storybook": "^5.2.1",
+    "@storybook/addon-a11y": "^10.5.5",
+    "@storybook/addon-docs": "^10.5.5",
     "@storybook/addon-svelte-csf": "^5.1.2",
-    "@storybook/addon-vitest": "^10.3.6",
-    "@storybook/svelte-vite": "^10.3.6",
+    "@storybook/addon-vitest": "^10.5.5",
+    "@storybook/svelte-vite": "^10.5.5",
     "@sveltejs/vite-plugin-svelte": "^5.0.3",
     "@tsconfig/svelte": "^5.0.8",
     "@types/d3": "^7.4.3",
     "@vitest/browser-playwright": "^4.1.2",
     "@vitest/coverage-v8": "^4.1.2",
     "playwright": "^1.59.1",
-    "storybook": "^10.3.6",
+    "storybook": "^10.5.5",
     "svelte": "^5.0.0",
     "svelte-check": "^4.4.6",
     "topojson-client": "^3.1.0",

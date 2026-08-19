@@ -27,6 +27,9 @@
     suffixScale = 0.9,
     suffixXOffset = 0,
     suffixYOffset = 0,
+    // Held back from the spread below: `text` is our own prop, and letting it
+    // through would emit an invalid `text` attribute on every <text> element.
+    text,
     ...textProps
   }: TextProps = $props();
 
@@ -61,6 +64,7 @@
       scaleToFit,
       capHeight,
       width,
+      text,
       ...textProps,
     }),
   );

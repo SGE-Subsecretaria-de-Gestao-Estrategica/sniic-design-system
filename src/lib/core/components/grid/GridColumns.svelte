@@ -69,6 +69,7 @@
         stroke={style.stroke}
         strokeWidth={style.strokeWidth}
         strokeDasharray={style.strokeDasharray}
+        {strokeOpacity}
         {...restProps}
       />
     {/each}
