@@ -16,7 +16,7 @@ export default function useAxis<Scale extends AxisScale>({
   hideAxisLine = false,
   hideTicks = false,
   hideZero = false,
-  numTicks = 10,
+  numTicks,
   orientation = Orientation.bottom,
   rangePadding = 0,
   scale,
@@ -26,6 +26,13 @@ export default function useAxis<Scale extends AxisScale>({
   ...restProps
 }: UseAxisOptions<Scale>): AxisRendererProps<Scale> {
   const format = tickFormat ?? getTickFormatter(scale);
+
+  // A continuous scale picks a readable tick count for you; a band/point scale
+  // has no such notion — its domain *is* the tick set, and thinning it silently
+  // drops category labels. Opt into thinning by passing `numTicks` explicitly.
+  const resolvedNumTicks =
+    numTicks ??
+    ('ticks' in (scale as AnyD3Scale) ? 10 : (scale as AnyD3Scale).domain().length);
 
   const isLeft = orientation === Orientation.left;
   const isTop = orientation === Orientation.top;
@@ -46,7 +53,7 @@ export default function useAxis<Scale extends AxisScale>({
     horizontal,
   );
 
-  const filteredTickValues = (tickValues ?? getTicks(scale, numTicks))
+  const filteredTickValues = (tickValues ?? getTicks(scale, resolvedNumTicks))
     .filter((value) => !hideZero || (value !== 0 && value !== '0'))
     .map((value, index) => ({ value, index }));
 
@@ -70,7 +77,7 @@ export default function useAxis<Scale extends AxisScale>({
     hideTicks,
     hideZero,
     horizontal,
-    numTicks,
+    numTicks: resolvedNumTicks,
     orientation,
     rangePadding,
     scale,
@@ -87,7 +94,10 @@ function getTickFormatter<Scale extends AxisScale>(scale: Scale) {
   const s = scale as AxisScale;
   const hasTickFmt = 'tickFormat' in s
   if (hasTickFmt) return s.tickFormat() as TickFormatter<ScaleInput<Scale>>;
-  return toString as TickFormatter<ScaleInput<Scale>>;
+  // Band/point scales have no tickFormat. A bare `toString` here resolves to
+  // the global one, which stringifies its *receiver* — hence the
+  // "[object Undefined]" labels every band axis used to render.
+  return ((value: unknown) => String(value)) as TickFormatter<ScaleInput<Scale>>;
 }
 
 function getTickPositionFactory<Scale extends AxisScale>(

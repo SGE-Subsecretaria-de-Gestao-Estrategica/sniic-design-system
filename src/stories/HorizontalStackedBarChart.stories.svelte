@@ -64,3 +64,15 @@
     showFlags: true,
   }}
 />
+
+<!-- Long category names run past the default 50px left margin (they did before
+     the core migration too). `margin` is the escape hatch. -->
+<Story
+  name="Wider Category Margin"
+  args={{
+    data,
+    keys,
+    labels,
+    margin: { left: 120 },
+  }}
+/>

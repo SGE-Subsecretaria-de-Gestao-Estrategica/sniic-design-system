@@ -1,17 +1,19 @@
+<script lang="ts" module>
+	export type { StackedDatum } from '../types.js';
+</script>
+
 <script lang="ts">
 	import type { StackedDatum } from '../types.js';
-	import { scaleBand, scaleLinear, stack, max } from 'd3';
-	import { typography } from '../tokens.js';
-	import { categorical8 } from '../palettes.js';
-	import { buildColorMap, buildLegendItems } from '../utils/colorMapHelpers.js';
-	import { gridPositions, yLinearTicks } from '../utils/scaleHelpers.js';
+	import { scaleBand, scaleLinear, max } from 'd3';
+	import Chart from '$lib/core/components/Chart.svelte';
+	import Axis from '$lib/core/components/axis/Axis.svelte';
+	import GridRows from '$lib/core/components/grid/GridRows.svelte';
+	import BarStack from '$lib/core/components/shape/BarStack.svelte';
+	import Legend from '$lib/core/components/legend/Legend.svelte';
+	import { DefaultTheme, getCategoricalColor, getChartTheme } from '$lib/core/theme';
+	import type { ChartTheme } from '$lib/core/theme/types';
+	import type { Margin } from '$lib/types/Chart';
 	import { deriveEffectiveKeys, processStackedRows, rowTotal } from '../utils/stackHelpers.js';
-	import ChartFrame from './molecules/ChartFrame.svelte';
-	import XAxis from './atoms/XAxis.svelte';
-	import YAxis from './atoms/YAxis.svelte';
-	import GridLines from './atoms/GridLines.svelte';
-	import Legend from './atoms/Legend.svelte';
-	import BarRect from './atoms/BarRect.svelte';
 
 	interface Props {
 		data?: StackedDatum[];
@@ -21,8 +23,20 @@
 		normalize?: boolean;
 		sortBy?: string;
 		sortDirection?: 'asc' | 'desc';
+		/** Series colours; defaults to the theme's categorical palette. */
 		colors?: readonly string[];
+		/** Used when `responsive` is off. */
+		width?: number;
 		height?: number;
+		/** Track the container width instead of using `width`. */
+		responsive?: boolean;
+		/** Sets the theme for this chart; inherits an ancestor `<Theme>` when omitted. */
+		theme?: ChartTheme;
+		/**
+		 * Merged over the computed frame margin. Widen `left` when value
+		 * labels need more room than the default 60px.
+		 */
+		margin?: Partial<Margin>;
 		yTickFormat?: (v: number) => string;
 		icons?: Record<string, string>;
 		iconSize?: number;
@@ -36,8 +50,12 @@
 		normalize = false,
 		sortBy,
 		sortDirection = 'desc',
-		colors = categorical8,
+		colors,
+		width = 600,
 		height: chartHeight = 260,
+		responsive = true,
+		theme,
+		margin,
 		yTickFormat,
 		icons,
 		iconSize = 20,
@@ -45,19 +63,32 @@
 
 	const ICON_RATIO = 3 / 2;
 	const ICON_GAP = 4;
+	const LEGEND_SPACING = 110;
+
+	const inheritedTheme = getChartTheme();
+	let activeTheme = $derived(theme ?? inheritedTheme ?? DefaultTheme);
+
 	const iconW = $derived(iconSize * ICON_RATIO);
 	const iconExtra = $derived(icons ? iconSize + ICON_GAP : 0);
-	const MARGIN = $derived({ top: 16, right: 24, bottom: 60 + iconExtra, left: 60 });
-	const LEGEND_SPACING = 110;
-	const chartFont = typography.chartValueFontFamily;
-
-	let innerW = $state(0);
-	let innerH = $state(0);
+	const MARGIN = $derived({
+		top: 16,
+		right: 24,
+		bottom: 60 + iconExtra,
+		left: 60,
+		...margin,
+	});
 
 	const effectiveKeys = $derived(deriveEffectiveKeys(data, keys, categoryKey));
 
-	const colorMap = $derived(buildColorMap(effectiveKeys, colors));
-	const legendItems = $derived(buildLegendItems(effectiveKeys, colorMap, labels));
+	function seriesColor(index: number) {
+		return colors?.length
+			? colors[index % colors.length]
+			: getCategoricalColor(index, activeTheme);
+	}
+
+	const legendItems = $derived(
+		effectiveKeys.map((key, i) => ({ label: labels[key] ?? key, color: seriesColor(i) })),
+	);
 
 	const processed = $derived(
 		processStackedRows(data, effectiveKeys, categoryKey, {
@@ -67,105 +98,78 @@
 		}),
 	);
 
-	const stackLayout = $derived(
-		stack<Record<string, string | number>>().keys(effectiveKeys)(processed),
-	);
-
-	const xScale = $derived(
-		scaleBand()
-			.domain(processed.map((d) => String(d[categoryKey])))
-			.range([0, innerW])
-			.padding(0.25),
-	);
-
 	const yMax = $derived(
-		normalize
-			? 100
-			: (max(processed, (d) => rowTotal(d, effectiveKeys)) ?? 1),
+		normalize ? 100 : (max(processed, (d) => rowTotal(d, effectiveKeys)) ?? 1),
 	);
-
-	const yScale = $derived(scaleLinear().domain([0, yMax]).range([innerH, 0]).nice());
 
 	const defaultFormat = $derived(
 		normalize ? (v: number) => `${v}%` : (v: number) => String(v),
 	);
 	const formatTick = $derived(yTickFormat ?? defaultFormat);
-
-	const xTicks = $derived(
-		processed.map((d) => ({
-			value: String(d[categoryKey]),
-			x: (xScale(String(d[categoryKey])) ?? 0) + xScale.bandwidth() / 2,
-		})),
-	);
-
-	const yTicks = $derived(yLinearTicks(yScale, 4, formatTick));
-	const yGridPositions = $derived(gridPositions(yScale, 4));
-
-	const legendCenterX = $derived(
-		innerW / 2 - ((legendItems.length - 1) * LEGEND_SPACING) / 2,
-	);
 </script>
 
-<ChartFrame
-	responsive
+<Chart
+	{width}
 	height={chartHeight}
+	{responsive}
+	{theme}
 	margin={MARGIN}
-	bind:innerWidth={innerW}
-	bind:innerHeight={innerH}
+	ariaLabel="Stacked bar chart"
 >
-	<GridLines positions={yGridPositions} length={innerW} color="var(--chart-grid, #e2e8f0)" dashed />
+	{#snippet children({ innerWidth, innerHeight })}
+		{@const xScale = scaleBand<string>()
+			.domain(processed.map((d) => String(d[categoryKey])))
+			.range([0, innerWidth])
+			.padding(0.25)}
+		{@const yScale = scaleLinear()
+			.domain([0, yMax])
+			.range([innerHeight, 0])
+			.nice()}
+		{@const legendCenterX =
+			innerWidth / 2 - ((legendItems.length - 1) * LEGEND_SPACING) / 2}
 
-	{#each stackLayout as layer (layer.key)}
-		{@const fill = colorMap[layer.key] ?? '#999'}
-		{#each layer as segment (String(segment.data[categoryKey]))}
-			<BarRect
-				x={xScale(String(segment.data[categoryKey])) ?? 0}
-				y={yScale(segment[1])}
-				width={xScale.bandwidth()}
-				height={yScale(segment[0]) - yScale(segment[1])}
-				{fill}
-				stroke="none"
-				strokeWidth={0}
-				shapeRendering="crispEdges"
-				rx={0}
-			/>
-		{/each}
-	{/each}
+		<GridRows scale={yScale} width={innerWidth} numTicks={4} />
 
-	<XAxis
-		ticks={xTicks}
-		innerHeight={innerH}
-		innerWidth={innerW}
-		showLine={false}
-		fontSize={9}
-		fontFamily={chartFont}
-	/>
+		<BarStack
+			data={processed}
+			keys={effectiveKeys}
+			category={(d) => String(d[categoryKey])}
+			value={(d, key) => Number(d[key]) || 0}
+			color={(_key, i) => seriesColor(i)}
+			{xScale}
+			{yScale}
+			rx={0}
+		/>
 
-	{#if icons}
-		{#each processed as d (String(d[categoryKey]))}
-			{@const cat = String(d[categoryKey])}
-			{@const iconUrl = icons[cat]}
-			{#if iconUrl}
-				<image
-					href={iconUrl}
-					x={(xScale(cat) ?? 0) + xScale.bandwidth() / 2 - iconW / 2}
-					y={innerH + 18 + ICON_GAP}
-					width={iconW}
-					height={iconSize}
-				/>
-			{/if}
-		{/each}
-	{/if}
+		<Axis orientation="bottom" scale={xScale} top={innerHeight} />
+		<Axis
+			orientation="left"
+			scale={yScale}
+			numTicks={4}
+			tickFormat={(v) => formatTick(Number(v))}
+		/>
 
-	<YAxis
-		ticks={yTicks}
-		innerHeight={innerH}
-		showLine={false}
-		fontSize={10}
-		fontFamily={chartFont}
-	/>
+		{#if icons}
+			{#each processed as d (String(d[categoryKey]))}
+				{@const cat = String(d[categoryKey])}
+				{@const iconUrl = icons[cat]}
+				{#if iconUrl}
+					<image
+						href={iconUrl}
+						x={(xScale(cat) ?? 0) + xScale.bandwidth() / 2 - iconW / 2}
+						y={innerHeight + 18 + ICON_GAP}
+						width={iconW}
+						height={iconSize}
+					/>
+				{/if}
+			{/each}
+		{/if}
 
-	<g transform="translate({legendCenterX}, {innerH + 40 + iconExtra})">
-		<Legend items={legendItems} spacing={LEGEND_SPACING} fontFamily={chartFont} />
-	</g>
-</ChartFrame>
+		<Legend
+			items={legendItems}
+			left={legendCenterX}
+			top={innerHeight + 40 + iconExtra}
+			itemSpacing={LEGEND_SPACING}
+		/>
+	{/snippet}
+</Chart>

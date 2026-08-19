@@ -369,7 +369,7 @@
     display: flex;
     gap: 16px;
     width: 100%;
-    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-family: 'Rawline', 'Raleway', system-ui, sans-serif;
   }
 
   .panel {
@@ -445,7 +445,7 @@
   :global(.map-wrapper svg) {
     display: block;
     width: 100%;
-    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-family: 'Rawline', 'Raleway', system-ui, sans-serif;
   }
 
   :global(.map-el svg path[role='button']:focus),

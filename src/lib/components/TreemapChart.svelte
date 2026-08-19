@@ -33,7 +33,7 @@
 
 	const chartFont = typography.chartValueFontFamily;
 	const MIN_LABEL_W = 36;
-	const MIN_LABEL_H = 18;
+	const MIN_LABEL_H = 20;
 
 	let innerW = $state(0);
 	let innerH = $state(0);
@@ -105,7 +105,7 @@
 					{#if w >= MIN_LABEL_W && h >= MIN_LABEL_H}
 						{@const labelColor = getContrastColor(fill)}
 						{@const Icon = icons[leaf.data.name]}
-						{@const iconSize = Math.min(12, h - 6)}
+						{@const iconSize = Math.min(16, h - 6)}
 						{@const textX = leaf.x0 + 4 + (Icon ? iconSize + 3 : 0)}
 						{#if Icon}
 							<g transform="translate({leaf.x0 + 4}, {leaf.y0 + 2})">
@@ -114,8 +114,8 @@
 						{/if}
 						<text
 							x={textX}
-							y={leaf.y0 + 14}
-							font-size={Math.min(12, w * 0.12)}
+							y={leaf.y0 + 16}
+							font-size={Math.min(16, w * 0.16)}
 							font-weight={600}
 							font-family={chartFont}
 							fill={labelColor}
@@ -123,11 +123,11 @@
 						>
 							{leaf.data.name}
 						</text>
-						{#if h >= 32}
+						{#if h >= 36}
 							<text
 								x={leaf.x0 + 4}
-								y={leaf.y0 + 28}
-								font-size={Math.min(10, w * 0.1)}
+								y={leaf.y0 + 32}
+								font-size={Math.min(13, w * 0.13)}
 								font-weight={400}
 								font-family={chartFont}
 								fill={labelColor}

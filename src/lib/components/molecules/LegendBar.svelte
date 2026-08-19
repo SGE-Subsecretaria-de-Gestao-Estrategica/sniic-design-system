@@ -1,8 +1,13 @@
 <script lang="ts">
-	import { typography } from '../../tokens.js';
+	import Group from '$lib/core/components/Group.svelte';
+	import Text from '$lib/core/components/Text.svelte';
+	import Bar from '$lib/core/components/shape/Bar.svelte';
+	import Line from '$lib/core/components/shape/Line.svelte';
+	import { DefaultTheme, getChartTheme, resolveThemeStyles } from '$lib/core/theme';
+	import type { TextStyle } from '$lib/core/theme/types';
+	import getStringWidth from '$lib/core/utils/getStringWidth';
+	import Point from '$lib/entities/Point';
 	import { getContrastColor } from '../../utils/colorContrast.js';
-	import { measureTextWidth } from '../../utils/labelHelpers.js';
-	import BarRect from '../atoms/BarRect.svelte';
 
 	interface LegendBarItem {
 		label: string;
@@ -16,10 +21,12 @@
 		height?: number;
 		textPadding?: number;
 		strokeWidth?: number;
+		/** Divider and border colour; defaults to the theme's strongest neutral. */
+		stroke?: string;
 		fontSize?: number;
 		fontFamily?: string;
 		fontWeight?: string;
-		/** When true, label color adapts to background contrast. Otherwise uses black. */
+		/** When true, label color adapts to background contrast. Otherwise uses the theme text color. */
 		contrastLabels?: boolean;
 		/** When true, the legend bar is centered around x=0. */
 		centered?: boolean;
@@ -32,66 +39,93 @@
 		height = 34,
 		textPadding = 12,
 		strokeWidth = 0.5,
-		fontSize = typography.sizes.sm,
-		fontFamily = typography.chartValueFontFamily,
+		stroke,
+		fontSize,
+		fontFamily,
 		fontWeight = '600',
 		contrastLabels = true,
 		centered = false,
 	}: Props = $props();
 
-	const segW = $derived(
+	const theme = getChartTheme();
+
+	let textStyle = $derived(
+		resolveThemeStyles<TextStyle>(
+			{ fill: undefined, fontSize, fontFamily, fontWeight },
+			theme?.text,
+			DefaultTheme.text,
+		),
+	);
+
+	let chromeStroke = $derived(
+		stroke ?? theme?.palette?.neutral?.[300] ?? DefaultTheme.palette.neutral[300],
+	);
+
+	let measuredFontSize = $derived(Number(textStyle.fontSize) || DefaultTheme.text.fontSize);
+
+	function labelWidth(label: string) {
+		return (
+			getStringWidth(
+				label,
+				`font-size: ${measuredFontSize}px; font-family: ${textStyle.fontFamily}; font-weight: ${textStyle.fontWeight}`,
+			) ?? label.length * measuredFontSize * 0.62
+		);
+	}
+
+	// Every segment takes the width of the widest label, so the bar reads as
+	// one evenly divided strip rather than ragged blocks.
+	let segW = $derived(
 		items.length > 0
-			? Math.max(...items.map((item) => measureTextWidth(item.label, fontSize, fontFamily, Number(fontWeight)))) + textPadding * 2
+			? Math.max(...items.map((item) => labelWidth(item.label))) + textPadding * 2
 			: 0,
 	);
-	const totalW = $derived(segW * items.length);
-	const offsetX = $derived(centered ? (width - totalW) / 2 : 0);
+	let totalW = $derived(segW * items.length);
+	let offsetX = $derived(centered ? (width - totalW) / 2 : 0);
 </script>
 
-<g transform="translate({offsetX}, 0)">
-<!-- Colored segments with labels -->
-{#each items as item, i (item.label)}
-	<BarRect
-		x={i * segW}
-		{y}
-		width={segW}
-		{height}
-		fill={item.color}
-		shapeRendering="crispEdges"
-	/>
-	<text
-		x={i * segW + textPadding}
-		y={y + height / 2}
-		dy="0.35em"
-		font-size={fontSize}
-		font-weight={fontWeight}
-		font-family={fontFamily}
-		fill={contrastLabels ? getContrastColor(item.color) : 'var(--chart-fg-strong, #000000)'}
-	>{item.label}</text>
-{/each}
+<Group class="legend-bar" left={offsetX}>
+	{#each items as item, i (item.label)}
+		<Bar
+			x={i * segW}
+			{y}
+			width={segW}
+			{height}
+			fill={item.color}
+			rx={0}
+			shape-rendering="crispEdges"
+		/>
+		<Text
+			x={i * segW + textPadding}
+			y={y + height / 2}
+			verticalAnchor="middle"
+			fontSize={textStyle.fontSize}
+			fontFamily={textStyle.fontFamily}
+			fontWeight={textStyle.fontWeight}
+			fill={contrastLabels ? getContrastColor(item.color) : textStyle.fill}
+			text={item.label}
+		/>
+	{/each}
 
-<!-- Divider lines between segments -->
-{#each { length: Math.max(0, items.length - 1) } as _, i (i)}
-	<line
-		x1={(i + 1) * segW}
-		y1={y}
-		x2={(i + 1) * segW}
-		y2={y + height}
-		stroke="var(--chart-fg-strong, #000000)"
-		stroke-width={strokeWidth}
+	<!-- Dividers between segments -->
+	{#each { length: Math.max(0, items.length - 1) } as _, i (i)}
+		<Line
+			from={new Point({ x: (i + 1) * segW, y })}
+			to={new Point({ x: (i + 1) * segW, y: y + height })}
+			stroke={chromeStroke}
+			{strokeWidth}
+		/>
+	{/each}
+
+	<!-- Outer border -->
+	<Bar
+		x={0}
+		{y}
+		width={totalW}
+		{height}
+		fill="none"
+		rx={0}
+		stroke={chromeStroke}
+		{strokeWidth}
 		shape-rendering="crispEdges"
 	/>
-{/each}
-
-<!-- Outer border -->
-<rect
-	x={0}
-	{y}
-	width={totalW}
-	{height}
-	fill="none"
-	stroke="var(--chart-fg-strong, #000000)"
-	stroke-width={strokeWidth}
-	shape-rendering="crispEdges"
-/>
-</g>
+</Group>

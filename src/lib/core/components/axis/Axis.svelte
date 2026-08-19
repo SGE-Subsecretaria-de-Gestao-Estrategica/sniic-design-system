@@ -20,7 +20,9 @@
     axisClassName,
     innerRef = $bindable(null),
     left = 0,
-    numTicks = 10,
+    // Left undefaulted so useAxis can pick per scale type: ~10 for continuous
+    // scales, every category for band/point ones.
+    numTicks,
     orientation = Orientation.bottom,
     rangePadding = 0,
     scale,
