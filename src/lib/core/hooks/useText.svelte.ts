@@ -25,7 +25,7 @@ export default function useText(props: TextProps): {
     scaleToFit = false,
     angle,
     width,
-    lineHeight = '1em',
+    lineHeight = '1.15em',
     capHeight = '0.71em', // Magic number from d3
     text,
     style,

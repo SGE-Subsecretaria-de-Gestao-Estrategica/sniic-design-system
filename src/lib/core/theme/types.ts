@@ -26,7 +26,9 @@ export type ChartTheme = {
 
 export type Palette = {
   primary?: string;
+  primaryVariant?: string;
   secondary?: string;
+  secondaryVariant?: string;
   accent?: string;
   transparent?: string;
   base?: { [key: number]: string },
@@ -36,11 +38,12 @@ export type Palette = {
 }
 
 export type TextStyle = Pick<
-  TextProps,
-  'fill' |
-  'fontFamily' |
-  'fontSize' |
-  'fontWeight'
+  TextProps, 
+  'fill' | 
+  'fontFamily' | 
+  'fontSize' | 
+  'fontWeight' |
+  'lineHeight'
 >
 
 export type AxisStyle = Pick<

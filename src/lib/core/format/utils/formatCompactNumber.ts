@@ -1,4 +1,4 @@
-export default function formatCompactNumber(value: number, decimals = 0) {
+export function formatCompactNumber(value: number, decimals = 0) {
     if (!Number.isFinite(value)) return "";
 
     const abs = Math.abs(value);

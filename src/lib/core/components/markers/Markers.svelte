@@ -3,13 +3,11 @@
   import type { Accessor } from "$lib/types/Accessor";
   import Group from "../Group.svelte";
 
-  type MarkerProps<Datum> = {
+  type MarkerProps<D> = {
     x: number;
     y: number;
     placement: "START" | "MID" | "END";
-    /** The datum behind this marker — for labels, titles or hit targets. */
-    datum: Datum;
-    index: number;
+    data: D;
   };
 
   type MarkersProps<Datum> = {
@@ -33,8 +31,7 @@
         x: x?.(d) ?? 0,
         y: y?.(d) ?? 0,
         placement,
-        datum: d,
-        index: i,
+        data: d,
       })}
     {/each}
   </Group>
