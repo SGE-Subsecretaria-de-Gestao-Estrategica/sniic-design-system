@@ -73,6 +73,7 @@
   },
   "dependencies": {
     "@types/node": "^26.1.1",
-    "reduce-css-calc": "^2.1.8"
+    "reduce-css-calc": "^2.1.8",
+    "textures": "^1.2.3"
   }
 }
