@@ -56,3 +56,44 @@ export function arc<Datum>({
   if (padRadius != null) setNumberOrNumberAccessor(path.padRadius, padRadius);
   return path;
 }
+
+export function generateRoundedRect(x = 0, y = 0, width: number, height: number, side: 'top' | 'right' | 'bottom' | 'left', radius: number) {
+  if (!radius) {
+    radius = Math.min(width, height)
+  }
+  
+  const r = Math.max(0, Math.min(radius, width / 2, height / 2));
+
+  let tl = 0, tr = 0, br = 0, bl = 0;
+
+  if (side === 'top') {
+    tl = r; tr = r;
+  } else if (side === 'right') {
+    tr = r; br = r;
+  } else if (side === 'bottom') {
+    br = r; bl = r;
+  } else if (side === 'left') {
+    bl = r; tl = r;
+  } else {
+    throw new Error(`Invalid side: "${side}". Use 'top' | 'right' | 'bottom' | 'left'.`);
+  }
+
+  const arc = (rad: number, px: number, py: number) => (rad ? `A${rad},${rad} 0 0 1 ${px},${py}` : '');
+
+  const d = [
+    `M${x + tl},${y}`,
+    `H${x + width - tr}`,
+    arc(tr, x + width, y + tr),
+    `V${y + height - br}`,
+    arc(br, x + width - br, y + height),
+    `H${x + bl}`,
+    arc(bl, x, y + height - bl),
+    `V${y + tl}`,
+    arc(tl, x + tl, y),
+    'Z',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  return d;
+}

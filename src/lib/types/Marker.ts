@@ -25,4 +25,5 @@ export type CommonShapeProps = {
   stroke?: string;
   strokeOpacity?: number;
   strokeWidth?: number;
+  strokeDasharray?: string;
 };

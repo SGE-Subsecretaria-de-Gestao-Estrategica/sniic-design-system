@@ -22,6 +22,7 @@ export type ChartTheme = {
   grid?: GridStyle;
   legend?: LegendStyle;
   marker?: MarkerStyle;
+  missing?: MissingStyle;
 }
 
 export type Palette = {
@@ -35,6 +36,14 @@ export type Palette = {
   neutral?: { [key: number]: string },
   /** Series colours, in assignment order, for multi-series charts. */
   categorical?: string[],
+}
+
+export type MissingStyle = {
+  fill?: string;
+  opacity?: number;
+  stroke?: string;
+  strokeWidth?: number;
+  strokeDasharray?: string;
 }
 
 export type TextStyle = Pick<

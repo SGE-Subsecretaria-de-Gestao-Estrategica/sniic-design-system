@@ -3,8 +3,8 @@ export function formatCompactNumber(value: number, decimals = 0) {
 
     const abs = Math.abs(value);
     const units = [
-      { value: 1e9, suffix: "B" },
-      { value: 1e6, suffix: "M" },
+      { value: 1e9, suffix: " bi" },
+      { value: 1e6, suffix: " mi" },
       { value: 1e3, suffix: " mil" },
     ];
 
