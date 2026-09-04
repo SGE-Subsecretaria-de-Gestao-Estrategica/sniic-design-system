@@ -10,7 +10,7 @@ const THRESHOLD_LINE_OFFSET = 6;
 
 function computeBarSegments(value: number, threshold: number, yScale: d3.ScaleLinear<number, number>) {
   const fullHeight = yScale(value);
-  const isOverThreshold = threshold != null && value > threshold;
+  const isOverThreshold = Boolean(threshold && value > threshold);
 
   const baseValue = isOverThreshold ? threshold : value;
   const baseHeight = yScale(baseValue);
