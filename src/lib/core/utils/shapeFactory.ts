@@ -57,7 +57,7 @@ export function arc<Datum>({
   return path;
 }
 
-export function generateRoundedRect(x = 0, y = 0, width: number, height: number, side: 'top' | 'right' | 'bottom' | 'left', radius: number) {
+export function generateRoundedRect(x = 0, y = 0, width: number, height: number, side: 'top' | 'right' | 'bottom' | 'left', radius: number): string {
   if (!radius) {
     radius = Math.min(width, height)
   }
@@ -96,4 +96,17 @@ export function generateRoundedRect(x = 0, y = 0, width: number, height: number,
     .join(' ');
 
   return d;
+}
+
+export function generateHexagon(radius: number): string {
+  const sqrt3 = Math.sqrt(3);
+  return (
+    `M${radius},0` + 
+    `L${radius / 2},${radius * sqrt3 / 2}` + 
+    `L-${radius / 2},${radius * sqrt3 / 2}` + 
+    `L-${radius},0` + 
+    `L-${radius / 2},-${radius * sqrt3 / 2}` + 
+    `L${radius / 2},-${radius * sqrt3 / 2}` + 
+    `Z`
+  )
 }
