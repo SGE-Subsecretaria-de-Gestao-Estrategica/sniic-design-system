@@ -197,6 +197,9 @@ export { BRAZIL_STATE_PATHS, BRAZIL_STATE_LABELS, type BrazilState } from './cha
 // Eixo 6 — interactive charts driven by a `step` prop, for scrollytelling hosts
 export * from './components/eixo6/index.js';
 
+// Eixo 1 — Gestão e Participação, self-contained print/SVG charts (own palette & type scale)
+export * from './components/eixo1/index.js';
+
 // Tokens
 export * from './tokens.js';
 

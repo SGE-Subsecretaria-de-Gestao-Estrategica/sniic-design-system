@@ -30,6 +30,8 @@
 			/** Categories left out of the plot; reported in a footnote instead. */
 			excluded?: string[];
 			scopeLabels?: Record<RacaCorScope, string>;
+			/** Overrides the Eixo 6 palette — used for style previews in other eixos. */
+			pillarId?: number;
 		};
 
 	let {
@@ -44,10 +46,11 @@
 		focusIndex = null,
 		interactive = true,
 		excluded = ['Não identificado'],
-		scopeLabels = { EC: 'Economia Criativa', BR: 'Brasil' }
+		scopeLabels = { EC: 'Economia Criativa', BR: 'Brasil' },
+		pillarId = 6
 	}: Props = $props();
 
-	const theme = getPillarTheme(6);
+	const theme = getPillarTheme(pillarId);
 	const pctFormat = formatLocale.format('.1%');
 	const hover = new HoverState();
 	const uid = $props.id();

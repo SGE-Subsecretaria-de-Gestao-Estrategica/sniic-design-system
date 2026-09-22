@@ -35,6 +35,8 @@
 			 * every point.
 			 */
 			valueLabels?: 'selective' | 'all';
+			/** Overrides the Eixo 6 palette — used for style previews in other eixos. */
+			pillarId?: number;
 		};
 
 	let {
@@ -49,10 +51,11 @@
 		focusIndex = null,
 		interactive = true,
 		breakYear = RAIS_BREAK_YEAR,
-		valueLabels = 'selective'
+		valueLabels = 'selective',
+		pillarId = 6
 	}: Props = $props();
 
-	const theme = getPillarTheme(6);
+	const theme = getPillarTheme(pillarId);
 	const pctFormat = formatLocale.format('.2%');
 
 	const hover = new HoverState();
