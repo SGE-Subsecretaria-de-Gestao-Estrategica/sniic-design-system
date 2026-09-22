@@ -1,6 +1,9 @@
 <script lang="ts">
   import { scaleLinear, extent, timeWeek, timeMonths, timeFormat } from 'd3';
   import { colorScales, typography, type Margin } from '../tokens.js';
+  import { getChartTheme } from '$lib/core/theme';
+  import type { ChartTheme } from '$lib/core/theme/types';
+  import { buildSequentialRange } from '../utils/colorMapHelpers.js';
   import ChartFrame from './molecules/ChartFrame.svelte';
   import GradientLegend from './atoms/GradientLegend.svelte';
   import type { CalendarDatum } from '../types.js';
@@ -9,6 +12,7 @@
     data?: CalendarDatum[];
     height?: number;
     margin?: Margin;
+    /** Sequential fill ramp (low → high); defaults to the active theme's primary hue. */
     colorRange?: readonly string[];
     emptyColor?: string;
     format?: (v: number) => string;
@@ -16,20 +20,32 @@
     cellRadius?: number;
     cellGap?: number;
     weekdayLabels?: string[];
+    /** Sets the theme for this chart; inherits an ancestor theme context when omitted. */
+    theme?: ChartTheme;
   }
 
   let {
     data = [],
     height = 160,
     margin = { top: 24, right: 20, bottom: 40, left: 36 },
-    colorRange = colorScales.teal,
+    colorRange,
     emptyColor = '#ebedf0',
     format = (v: number) => String(v),
     showLegend = true,
     cellRadius = 2,
     cellGap = 3,
     weekdayLabels = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'],
+    theme,
   }: Props = $props();
+
+  const inheritedTheme = getChartTheme();
+  const activeTheme = $derived(theme ?? inheritedTheme);
+  const resolvedColorRange = $derived(
+    colorRange ??
+      (activeTheme?.palette?.primary
+        ? buildSequentialRange(activeTheme.palette.primary)
+        : [...colorScales.teal]),
+  );
 
   const chartFont = typography.chartValueFontFamily;
   const legendHeight = 28;
@@ -64,9 +80,9 @@
 
   const colorScale = $derived.by(() => {
     const [lo, hi] = valueExtent;
-    const n = colorRange.length;
+    const n = resolvedColorRange.length;
     const domain = Array.from({ length: n }, (_, i) => lo + (hi - lo) * (i / (n - 1)));
-    return scaleLinear<string>().domain(domain).range([...colorRange]);
+    return scaleLinear<string>().domain(domain).range([...resolvedColorRange]);
   });
 
   // Build all days in range
@@ -171,7 +187,7 @@
   {#if showLegend}
     <g transform="translate(0,{legendBarY})">
       <GradientLegend
-        colorRange={[...colorRange]}
+        colorRange={[...resolvedColorRange]}
         min={valueExtent[0]}
         max={valueExtent[1]}
         width={legendWidth}

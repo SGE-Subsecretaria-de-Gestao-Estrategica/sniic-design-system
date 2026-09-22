@@ -1,6 +1,8 @@
 <script lang="ts">
 	import type { ParliamentDatum } from '../types.js';
 	import { categorical8 } from '../palettes.js';
+	import { getCategoricalColor, getChartTheme } from '$lib/core/theme';
+	import type { ChartTheme } from '$lib/core/theme/types';
 	import ChartFrame from './molecules/ChartFrame.svelte';
 	import Legend from './atoms/Legend.svelte';
 	import TooltipContainer from './molecules/TooltipContainer.svelte';
@@ -10,8 +12,11 @@
 		height?: number;
 		rows?: number;
 		seatGap?: number;
+		/** Party colours; defaults to the active theme's categorical ramp. */
 		colors?: readonly string[];
 		showLegend?: boolean;
+		/** Sets the theme for this chart; inherits an ancestor theme context when omitted. */
+		theme?: ChartTheme;
 	}
 
 	let {
@@ -19,9 +24,13 @@
 		height = 360,
 		rows = 4,
 		seatGap = 0.4,
-		colors = categorical8,
+		colors,
 		showLegend = true,
+		theme,
 	}: Props = $props();
+
+	const inheritedTheme = getChartTheme();
+	const activeTheme = $derived(theme ?? inheritedTheme);
 
 	const MARGIN = { top: 16, right: 16, bottom: 16, left: 16 };
 	const LEGEND_H = 28;
@@ -33,7 +42,11 @@
 	const totalSeats = $derived(data.reduce((s, d) => s + d.seats, 0));
 
 	function seatColor(d: ParliamentDatum, i: number): string {
-		return d.color ?? colors[i % colors.length];
+		if (d.color) return d.color;
+		if (colors?.length) return colors[i % colors.length];
+		return activeTheme?.palette?.categorical?.length
+			? getCategoricalColor(i, activeTheme)
+			: categorical8[i % categorical8.length];
 	}
 
 	const seatList = $derived.by(() => {

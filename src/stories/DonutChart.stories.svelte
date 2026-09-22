@@ -1,6 +1,7 @@
 <script module>
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 	import DonutChart from '../lib/components/DonutChart.svelte';
+	import { getPillarTheme } from '../lib/core/theme/index.js';
 
 	const { Story } = defineMeta({
 		title: 'Charts/DonutChart',
@@ -55,5 +56,23 @@
 		],
 		height: 360,
 		innerRadiusFraction: 0,
+	}}
+/>
+
+<!-- No `colors` prop: picks up the active theme's categorical ramp automatically. -->
+<Story
+	name="Themed"
+	args={{
+		data: [
+			{ label: 'Musica', value: 3200 },
+			{ label: 'Cinema', value: 2100 },
+			{ label: 'Teatro', value: 1400 },
+			{ label: 'Danca', value: 800 },
+			{ label: 'Artes Visuais', value: 600 },
+		],
+		height: 360,
+		centerValue: '8.1k',
+		centerLabel: 'Total',
+		theme: getPillarTheme(100),
 	}}
 />

@@ -1,5 +1,7 @@
 <script lang="ts">
   import { white, black, typography } from '../tokens.js';
+  import { getChartTheme } from '$lib/core/theme';
+  import type { ChartTheme } from '$lib/core/theme/types';
 
   interface Props {
     value: string | number;
@@ -7,12 +9,15 @@
     label?: string;
     subtitle?: string;
     fontSize?: number;
+    /** Main fill; defaults to the active theme's primary colour, else white. */
     color?: string;
     shadowColor?: string;
     shadowDepth?: number;
     width?: number;
     labelColor?: string;
     subtitleColor?: string;
+    /** Sets the theme for this chart; inherits an ancestor theme context when omitted. */
+    theme?: ChartTheme;
   }
 
   let {
@@ -21,13 +26,18 @@
     label = '',
     subtitle = '',
     fontSize = 96,
-    color = white,
+    color,
     shadowColor = black,
     shadowDepth = 8,
     width = 400,
     labelColor = black,
     subtitleColor = black,
+    theme,
   }: Props = $props();
+
+  const inheritedTheme = getChartTheme();
+  const activeTheme = $derived(theme ?? inheritedTheme);
+  const resolvedColor = $derived(color ?? activeTheme?.palette?.primary ?? white);
 
   const outlineSize = $derived(Math.max(2, Math.round(fontSize * 0.035)));
   const labelFontSize = $derived(Math.round(fontSize * 0.22));
@@ -83,7 +93,7 @@
     x={cx}
     y={valueBaseline}
     text-anchor="middle"
-    fill={color}
+    fill={resolvedColor}
     stroke={shadowColor}
     stroke-width={outlineSize * 2}
     paint-order="stroke fill"

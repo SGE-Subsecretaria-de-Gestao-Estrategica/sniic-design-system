@@ -4,6 +4,8 @@
 	import { scaleLog, scaleLinear, scaleSqrt, extent, max } from 'd3';
 	import { categorical8 } from '../palettes.js';
 	import { typography } from '../tokens.js';
+	import { getChartTheme } from '$lib/core/theme';
+	import type { ChartTheme } from '$lib/core/theme/types';
 	import ChartFrame from './molecules/ChartFrame.svelte';
 	import XAxis from './atoms/XAxis.svelte';
 	import YAxis from './atoms/YAxis.svelte';
@@ -22,10 +24,13 @@
 		xFormat?: (v: number) => string;
 		yFormat?: (v: number) => string;
 		tooltipFormat?: (d: BubbleDatum) => string;
+		/** Bubble/group colours; defaults to the active theme's categorical ramp. */
 		colors?: readonly string[];
 		minRadius?: number;
 		maxRadius?: number;
 		icons?: Record<string, Component>;
+		/** Sets the theme for this chart; inherits an ancestor theme context when omitted. */
+		theme?: ChartTheme;
 	}
 
 	let {
@@ -39,18 +44,27 @@
 		xFormat = (v: number) => v.toLocaleString(),
 		yFormat = (v: number) => v.toLocaleString(),
 		tooltipFormat,
-		colors = categorical8,
+		colors,
 		minRadius = 4,
 		maxRadius = 24,
 		icons = {},
+		theme,
 	}: Props = $props();
+
+	const inheritedTheme = getChartTheme();
+	const activeTheme = $derived(theme ?? inheritedTheme);
+	const resolvedColors = $derived(
+		colors ?? (activeTheme?.palette?.categorical?.length ? activeTheme.palette.categorical : categorical8),
+	);
 
 	const MARGIN = { top: 24, right: 24, bottom: 52, left: 72 };
 
 	const groupColorMap = $derived.by(() => {
 		if (Object.keys(groups).length > 0) return groups;
 		const uniqueGroups = [...new Set(data.map((d) => d.group).filter(Boolean))] as string[];
-		return Object.fromEntries(uniqueGroups.map((g, i) => [g, colors[i % colors.length]]));
+		return Object.fromEntries(
+			uniqueGroups.map((g, i) => [g, resolvedColors[i % resolvedColors.length]]),
+		);
 	});
 
 	function defaultTooltipHtml(d: BubbleDatum): string {
@@ -64,7 +78,7 @@
 
 	function bubbleColor(d: BubbleDatum): string {
 		if (d.group && groupColorMap[d.group]) return groupColorMap[d.group];
-		return colors[0] ?? '#a0a0a0';
+		return resolvedColors[0] ?? '#a0a0a0';
 	}
 
 	let measuredWidth = $state(0);

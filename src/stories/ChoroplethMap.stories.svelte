@@ -2,6 +2,7 @@
   import { defineMeta } from '@storybook/addon-svelte-csf';
   import ChoroplethMap from '../lib/components/ChoroplethMap.svelte';
   import { colorScales } from '../lib/tokens.js';
+  import { getPillarTheme } from '../lib/core/theme/index.js';
 
   // Requires /geo/brazil-states.geojson to be served as a static asset
   const statesData = {
@@ -84,6 +85,19 @@
     label: 'Valor Per Capita',
     format: (v) => BRL.format(v),
     colorRange: [...colorScales.yellow],
+    showCapitals: false,
+  }}
+/>
+
+<!-- No `colorRange` prop: sequential ramp is built from the active theme's primary hue. -->
+<Story
+  name="Themed"
+  args={{
+    states: statesData,
+    metric: 'valorRecebido',
+    label: 'Valor Recebido',
+    format: (v) => BRL.format(v),
+    theme: getPillarTheme(100),
     showCapitals: false,
   }}
 />

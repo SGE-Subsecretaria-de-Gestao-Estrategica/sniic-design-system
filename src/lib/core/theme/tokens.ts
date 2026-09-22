@@ -33,9 +33,10 @@ export const sharedPalette = {
 export const pillarPalettes = [
   { id: 1, primary: '#CB3328', primaryVariant: '#CB3328', secondary: '#2062C2', secondaryVariant: '#2062C2', accent: '#12C9D2' },
   { id: 6, primary: '#F6B60E', primaryVariant: '#F68E0E', secondary: '#265C4F', secondaryVariant: '#3D9142', accent: '#D74D2A' },
-  // TODO(PNAB): placeholder — troque pelas cores de marca reais do PNAB antes de usar em produção.
-  // Magenta escolhido de propósito por ser visualmente "errado", para chamar atenção caso alguém esqueça de trocar.
-  { id: 100, primary: '#FF00AA', primaryVariant: '#FF00AA', secondary: '#FF00AA', secondaryVariant: '#FF00AA', accent: '#FF00AA' },
+  // PNAB: extraído de public/logos/pnab-logo.svg (azul dominante, verde e amarelo
+  // nos blocos principais da marca). Confirme com o guia de marca oficial do PNAB
+  // se houver um, antes de considerar definitivo.
+  { id: 100, primary: '#173EFC', primaryVariant: '#173EFC', secondary: '#0DCB03', secondaryVariant: '#0DCB03', accent: '#FCCC02' },
 ]
 
 export type PillarPalette = (typeof pillarPalettes)[number]

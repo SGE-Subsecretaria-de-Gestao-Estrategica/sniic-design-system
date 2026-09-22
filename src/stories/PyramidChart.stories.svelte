@@ -2,6 +2,7 @@
   import { defineMeta } from '@storybook/addon-svelte-csf';
   import PyramidChart from '../lib/components/PyramidChart.svelte';
   import { colorPairs } from '../lib/palettes.js';
+  import { getPillarTheme } from '../lib/core/theme/index.js';
 
   const { Story } = defineMeta({
     title: 'Charts/PyramidChart',
@@ -48,6 +49,25 @@
     leftLabel: 'Homens',
     rightLabel: 'Mulheres',
     colors: colorPairs.orangeTeal,
+    height: 400,
+  }}
+/>
+
+<!-- No `colors` prop: picks up the active theme's primary/secondary automatically. -->
+<Story
+  name="Themed"
+  args={{
+    data: [
+      { label: '0–14',  left: 22000, right: 21000 },
+      { label: '15–29', left: 25000, right: 24500 },
+      { label: '30–44', left: 28000, right: 27000 },
+      { label: '45–59', left: 21000, right: 22500 },
+      { label: '60–74', left: 14000, right: 16000 },
+      { label: '75+',   left: 5000,  right: 7500  },
+    ],
+    leftLabel: 'Homens',
+    rightLabel: 'Mulheres',
+    theme: getPillarTheme(100),
     height: 400,
   }}
 />

@@ -3,6 +3,8 @@
 	import { pie, arc, type PieArcDatum } from 'd3';
 	import { typography } from '../tokens.js';
 	import { categorical8 } from '../palettes.js';
+	import { getCategoricalColor, getChartTheme } from '$lib/core/theme';
+	import type { ChartTheme } from '$lib/core/theme/types';
 	import { getContrastColor } from '../utils/colorContrast.js';
 	import ChartFrame from './molecules/ChartFrame.svelte';
 	import Legend from './atoms/Legend.svelte';
@@ -12,23 +14,30 @@
 		data?: PieDatum[];
 		radiusFraction?: number;
 		height?: number;
+		/** Slice colours; defaults to the active theme's categorical ramp. */
 		colors?: readonly string[];
 		format?: (v: number) => string;
 		showLegend?: boolean;
 		showLabels?: boolean;
 		labelThreshold?: number;
+		/** Sets the theme for this chart; inherits an ancestor theme context when omitted. */
+		theme?: ChartTheme;
 	}
 
 	let {
 		data = [],
 		radiusFraction = 0.42,
 		height = 360,
-		colors = categorical8,
+		colors,
 		format = (v: number) => v.toLocaleString(),
 		showLegend = true,
 		showLabels = true,
 		labelThreshold = 0.35,
+		theme,
 	}: Props = $props();
+
+	const inheritedTheme = getChartTheme();
+	const activeTheme = $derived(theme ?? inheritedTheme);
 
 	const chartFont = typography.chartValueFontFamily;
 	const MARGIN = { top: 16, right: 16, bottom: 16, left: 16 };
@@ -65,7 +74,11 @@
 	);
 
 	function sliceColor(d: PieDatum, i: number): string {
-		return d.color ?? colors[i % colors.length];
+		if (d.color) return d.color;
+		if (colors?.length) return colors[i % colors.length];
+		return activeTheme?.palette?.categorical?.length
+			? getCategoricalColor(i, activeTheme)
+			: categorical8[i % categorical8.length];
 	}
 
 	const legendItems = $derived(

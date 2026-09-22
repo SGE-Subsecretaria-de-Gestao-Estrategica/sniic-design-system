@@ -1,7 +1,10 @@
 <script lang="ts">
   import { scaleBand, scaleLinear, extent } from 'd3';
   import { colorScales, defaultMargin, typography, type Margin } from '../tokens.js';
+  import { getChartTheme } from '$lib/core/theme';
+  import type { ChartTheme } from '$lib/core/theme/types';
   import { getContrastColor } from '../utils/colorContrast.js';
+  import { buildSequentialRange } from '../utils/colorMapHelpers.js';
   import ChartFrame from './molecules/ChartFrame.svelte';
   import XAxis from './atoms/XAxis.svelte';
   import YAxis from './atoms/YAxis.svelte';
@@ -12,6 +15,7 @@
     data?: HeatMapCell[];
     height?: number;
     margin?: Margin;
+    /** Sequential fill ramp (low → high); defaults to the active theme's primary hue. */
     colorRange?: readonly string[];
     xLabel?: string;
     yLabel?: string;
@@ -21,13 +25,15 @@
     cellRadius?: number;
     cellGap?: number;
     xRotate?: number;
+    /** Sets the theme for this chart; inherits an ancestor theme context when omitted. */
+    theme?: ChartTheme;
   }
 
   let {
     data = [],
     height = 400,
     margin = defaultMargin,
-    colorRange = colorScales.blue,
+    colorRange,
     xLabel = '',
     yLabel = '',
     format = (v: number) => String(v),
@@ -36,7 +42,17 @@
     cellRadius = 3,
     cellGap = 4,
     xRotate = 0,
+    theme,
   }: Props = $props();
+
+  const inheritedTheme = getChartTheme();
+  const activeTheme = $derived(theme ?? inheritedTheme);
+  const resolvedColorRange = $derived(
+    colorRange ??
+      (activeTheme?.palette?.primary
+        ? buildSequentialRange(activeTheme.palette.primary)
+        : [...colorScales.blue]),
+  );
 
   const chartFont = typography.chartValueFontFamily;
 
@@ -74,9 +90,9 @@
 
   const colorScale = $derived.by(() => {
     const [lo, hi] = valueExtent;
-    const n = colorRange.length;
+    const n = resolvedColorRange.length;
     const domain = Array.from({ length: n }, (_, i) => lo + (hi - lo) * (i / (n - 1)));
-    return scaleLinear<string>().domain(domain).range([...colorRange]);
+    return scaleLinear<string>().domain(domain).range([...resolvedColorRange]);
   });
 
   const xTicks = $derived(
@@ -155,7 +171,7 @@
   {#if showLegend && innerWidth > 0}
     <g transform="translate(0,{legendBarY})">
       <GradientLegend
-        colorRange={[...colorRange]}
+        colorRange={[...resolvedColorRange]}
         min={valueExtent[0]}
         max={valueExtent[1]}
         width={innerWidth}
