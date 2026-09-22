@@ -5,6 +5,7 @@
   import HorizontalStackedBarChart from '../lib/components/HorizontalStackedBarChart.svelte';
   import DivergingBarChart from '../lib/components/DivergingBarChart.svelte';
   import LineChart from '../lib/components/LineChart.svelte';
+  import RibbonChart from '../lib/components/RibbonChart.svelte';
   import BubbleChart from '../lib/components/BubbleChart.svelte';
   import SlopeGraph from '../lib/components/SlopeGraph.svelte';
   import RadialChart from '../lib/components/RadialChart.svelte';
@@ -314,6 +315,15 @@
     Dance: [10, 12, 8, 15, 18, 20, 24][i],
   }));
 
+  const ribbonData = [
+    { label: '2019', Audiovisual: 320, Música: 280, Teatro: 210, Dança: 120, Literatura: 90 },
+    { label: '2020', Audiovisual: 180, Música: 340, Teatro: 150, Dança: 100, Literatura: 160 },
+    { label: '2021', Audiovisual: 260, Música: 220, Teatro: 320, Dança: 140, Literatura: 130 },
+    { label: '2022', Audiovisual: 410, Música: 200, Teatro: 240, Dança: 220, Literatura: 110 },
+    { label: '2023', Audiovisual: 300, Música: 380, Teatro: 260, Dança: 190, Literatura: 240 },
+    { label: '2024', Audiovisual: 350, Música: 290, Teatro: 400, Dança: 260, Literatura: 180 },
+  ];
+
   const pictogramData = [
     { label: 'Museus', value: 35 },
     { label: 'Bibliotecas', value: 52 },
@@ -584,6 +594,17 @@
         data={streamData}
         keys={['Music', 'Film', 'Theater', 'Dance']}
         height={300}
+      />
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="cell span-2">
+      <span class="label">Grafico de Fita (trocas de posicao)</span>
+      <RibbonChart
+        data={ribbonData}
+        valueFormat={(v) => v.toLocaleString('pt-BR')}
+        height={380}
       />
     </div>
   </div>
