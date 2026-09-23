@@ -98,6 +98,10 @@ export { default as ConcentracaoGastoChart } from './ConcentracaoGastoChart.svel
 export { default as ConcentracaoChart } from './ConcentracaoChart.svelte';
 export type { PontoLorenz, Marco } from './ConcentracaoChart.svelte';
 
+export { default as CaboGuerraMunicipalChart } from './CaboGuerraMunicipalChart.svelte';
+export { default as BarraDivergenteChart } from './BarraDivergenteChart.svelte';
+export type { LinhaDivergente } from './BarraDivergenteChart.svelte';
+
 // `cores.ts` and `tokens.ts` are internal to this folder's own charts (own
 // palette + A4 type scale, distinct from the package's generic `tokens.ts`
 // and `getPillarTheme`) — not re-exported at the package root to avoid name
