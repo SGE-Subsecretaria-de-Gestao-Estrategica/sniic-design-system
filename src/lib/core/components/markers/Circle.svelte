@@ -15,6 +15,7 @@
     stroke,
     strokeWidth,
     strokeOpacity,
+    strokeDasharray,
   }: CommonShapeProps = $props();
 
   const theme = getChartTheme();
@@ -28,6 +29,7 @@
         stroke,
         strokeWidth,
         strokeOpacity,
+        strokeDasharray,
       },
       theme?.marker?.circle,
       DefaultTheme.marker.circle,
@@ -44,4 +46,5 @@
   fill-opacity={style.fillOpacity}
   stroke-width={style.strokeWidth}
   stroke-opacity={style.strokeOpacity}
+  stroke-dasharray={style.strokeDasharray}
 />

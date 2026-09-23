@@ -14,7 +14,7 @@ export function getPillarTheme(pillarId: number) {
     palette: { ...palette, categorical: getCategoricalPalette(pillarPalette) },
     margin: Tokens.defaultMargin,
     text: {
-      fill: palette.neutral[200],
+      fill: palette.neutral[300],
       fontFamily: Tokens.fontFamily,
       fontSize: Tokens.fontSize.md,
       fontWeight: Tokens.fontWeight.medium,
@@ -86,6 +86,13 @@ export function getPillarTheme(pillarId: number) {
         size: 5,
         fill: pillarPalette.primaryVariant
       }
+    },
+    missing: {
+      fill: palette.base[300],
+      opacity: 1,
+      stroke: palette.neutral[100],
+      strokeWidth: Tokens.strokeWidth.xs,
+      strokeDasharray: "4 2"
     }
   } satisfies ChartTheme
 }

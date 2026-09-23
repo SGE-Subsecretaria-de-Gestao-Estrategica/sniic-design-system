@@ -31,7 +31,7 @@ export const sharedPalette = {
 }
 
 export const pillarPalettes = [
-  { id: 1, primary: '#CB3328', primaryVariant: '#CB3328', secondary: '#2062C2', secondaryVariant: '#2062C2', accent: '#12C9D2' },
+  { id: 1, primary: '#D5362A', primaryVariant: '#EC6596', secondary: '#4B2F92', secondaryVariant: '#4F68DA', accent: '#4ACA5D' },
   { id: 6, primary: '#F6B60E', primaryVariant: '#F68E0E', secondary: '#265C4F', secondaryVariant: '#3D9142', accent: '#D74D2A' },
 ]
 
@@ -39,16 +39,20 @@ export type PillarPalette = (typeof pillarPalettes)[number]
 
 export const spacing = {
   none: 0,
+  xs: 4,
   sm: 6,
   md: 10,
-  lg: 14
+  lg: 16,
+  xl: 24,
+  xxl: 32,
+  xxxl: 48,
 }
 
 export const strokeWidth = {
-  xs: 2.5,
-  sm: 4,
-  md: 8,
-  lg: 12,
+  xs: 1,
+  sm: 1.5,
+  md: 2,
+  lg: 2.5,
 }
 
 export const radii = {
