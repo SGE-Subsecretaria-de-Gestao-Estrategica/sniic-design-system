@@ -81,6 +81,11 @@ export { default as MetaRclChart } from './MetaRclChart.svelte';
 export { default as LinhaProporcaoChart } from './LinhaProporcaoChart.svelte';
 export type { PontoAbs as LinhaProporcaoPonto } from './LinhaProporcaoChart.svelte';
 
+export { default as MetaRclRegiaoChart } from './MetaRclRegiaoChart.svelte';
+export { default as TripeRegiaoMunicipalChart } from './TripeRegiaoMunicipalChart.svelte';
+export { default as PequenosMultiplosChart } from './PequenosMultiplosChart.svelte';
+export type { PainelSerie } from './PequenosMultiplosChart.svelte';
+
 // `cores.ts` and `tokens.ts` are internal to this folder's own charts (own
 // palette + A4 type scale, distinct from the package's generic `tokens.ts`
 // and `getPillarTheme`) — not re-exported at the package root to avoid name
