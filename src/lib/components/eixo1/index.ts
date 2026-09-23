@@ -94,6 +94,10 @@ export { default as CompetenciaConselhosEstadualChart } from './CompetenciaConse
 export { default as AntesDepoisChart } from './AntesDepoisChart.svelte';
 export type { LinhaAntesDepois } from './AntesDepoisChart.svelte';
 
+export { default as ConcentracaoGastoChart } from './ConcentracaoGastoChart.svelte';
+export { default as ConcentracaoChart } from './ConcentracaoChart.svelte';
+export type { PontoLorenz, Marco } from './ConcentracaoChart.svelte';
+
 // `cores.ts` and `tokens.ts` are internal to this folder's own charts (own
 // palette + A4 type scale, distinct from the package's generic `tokens.ts`
 // and `getPillarTheme`) — not re-exported at the package root to avoid name
