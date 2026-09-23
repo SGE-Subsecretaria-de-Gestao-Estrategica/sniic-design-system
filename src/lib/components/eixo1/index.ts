@@ -48,6 +48,11 @@ export { default as TripeUfChart } from './TripeUfChart.svelte';
 export { default as HexMapaUfChart } from './HexMapaUfChart.svelte';
 export type { ValorUf as HexMapaValorUf } from './HexMapaUfChart.svelte';
 
+export { default as ExecucaoLabMunicipalChart } from './ExecucaoLabMunicipalChart.svelte';
+export { default as TransversalidadeEstadualChart } from './TransversalidadeEstadualChart.svelte';
+export { default as BarraRankingChart } from './BarraRankingChart.svelte';
+export type { LinhaRanking } from './BarraRankingChart.svelte';
+
 // `cores.ts` and `tokens.ts` are internal to this folder's own charts (own
 // palette + A4 type scale, distinct from the package's generic `tokens.ts`
 // and `getPillarTheme`) — not re-exported at the package root to avoid name
