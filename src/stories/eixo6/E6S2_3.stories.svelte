@@ -8,7 +8,7 @@
     type InformalidadeDatum,
   } from "$lib/components/eixo6/data";
 
-  const { Story } = defineMeta({ title: "Cultura em Números/Eixo 6" });
+  const { Story } = defineMeta({ title: "Cultura em Números/Eixo 6/Informalidade" });
 </script>
 
 <script lang="ts">

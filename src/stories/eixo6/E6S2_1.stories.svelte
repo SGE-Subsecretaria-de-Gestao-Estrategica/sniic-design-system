@@ -9,7 +9,7 @@
   } from "$lib/components/eixo6/data";
   import { ScrollySteps, scrollStep } from "$lib/core/interaction/scrolly.svelte";
 
-  const { Story } = defineMeta({ title: "Cultura em Números/Eixo 6" });
+  const { Story } = defineMeta({ title: "Cultura em Números/Eixo 6/Trabalhadores da cultura" });
 </script>
 
 <script lang="ts">
