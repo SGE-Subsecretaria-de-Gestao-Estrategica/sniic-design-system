@@ -57,6 +57,10 @@ export { default as CrescimentoMunicipalChart } from './CrescimentoMunicipalChar
 export { default as CascataChart } from './CascataChart.svelte';
 export type { Bloco as CascataBloco, Destaque as CascataDestaque } from './CascataChart.svelte';
 
+export { default as DistribuicaoRclChart } from './DistribuicaoRclChart.svelte';
+export { default as CristasChart } from './CristasChart.svelte';
+export type { Crista } from './CristasChart.svelte';
+
 // `cores.ts` and `tokens.ts` are internal to this folder's own charts (own
 // palette + A4 type scale, distinct from the package's generic `tokens.ts`
 // and `getPillarTheme`) — not re-exported at the package root to avoid name
