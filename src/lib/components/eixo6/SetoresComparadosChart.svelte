@@ -36,6 +36,8 @@
 			/** Sector drawn in the emphasis colour and revealed on the first step. */
 			featured?: string;
 			valueLabels?: 'selective' | 'all';
+			/** Overrides the Eixo 6 palette — used for style previews in other eixos. */
+			pillarId?: number;
 		};
 
 	let {
@@ -51,10 +53,11 @@
 		interactive = true,
 		breakYear = RAIS_BREAK_YEAR,
 		featured = SETOR_DESTAQUE,
-		valueLabels = 'selective'
+		valueLabels = 'selective',
+		pillarId = 6
 	}: Props = $props();
 
-	const theme = getPillarTheme(6);
+	const theme = getPillarTheme(pillarId);
 	const hover = new HoverState();
 
 	const shows = (stage: number) => step < 0 || step >= stage;

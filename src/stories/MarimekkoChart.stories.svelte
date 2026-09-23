@@ -1,6 +1,7 @@
 <script module>
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 	import MarimekkoChart from '../lib/components/MarimekkoChart.svelte';
+	import { getPillarTheme } from '../lib/core/theme/index.js';
 
 	const { Story } = defineMeta({
 		title: 'Charts/MarimekkoChart',
@@ -41,5 +42,23 @@
 		keys: ['public', 'private'],
 		labels: { public: 'Publico', private: 'Privado' },
 		height: 350,
+	}}
+/>
+
+<!-- No `colors` prop: series colours picked up from the active theme's categorical ramp. -->
+<Story
+	name="Themed"
+	args={{
+		data: [
+			{ label: 'Sudeste', total: 4500, music: 1800, film: 1200, theater: 900, dance: 600 },
+			{ label: 'Nordeste', total: 2800, music: 1000, film: 800, theater: 600, dance: 400 },
+			{ label: 'Sul', total: 1900, music: 700, film: 500, theater: 400, dance: 300 },
+			{ label: 'Centro-Oeste', total: 900, music: 350, film: 250, theater: 180, dance: 120 },
+			{ label: 'Norte', total: 600, music: 200, film: 180, theater: 120, dance: 100 },
+		],
+		keys: ['music', 'film', 'theater', 'dance'],
+		labels: { music: 'Musica', film: 'Cinema', theater: 'Teatro', dance: 'Danca' },
+		height: 400,
+		theme: getPillarTheme(100),
 	}}
 />

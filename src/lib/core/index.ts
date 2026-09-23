@@ -27,6 +27,7 @@ export { default as Arc } from './components/shape/Arc.svelte';
 export { default as Bar } from './components/shape/Bar.svelte';
 export { default as BarStack } from './components/shape/BarStack.svelte';
 export { default as BarGroup } from './components/shape/BarGroup.svelte';
+export { default as RoundedBar } from './components/shape/RoundedBar.svelte';
 
 // Markers
 export { default as Marker } from './components/markers/Marker.svelte';
@@ -40,6 +41,8 @@ export { default as LegendChips } from './components/legend/LegendChips.svelte';
 
 // Annotation
 export { default as ValueCallout } from './components/annotation/ValueCallout.svelte';
+export { default as HighlightCallout } from './components/annotation/HighlightCallout.svelte';
+export { default as TimelineBreak } from './components/annotation/TimelineBreak.svelte';
 
 // Interaction — hover, crosshair, tooltip and the optional scrollytelling driver
 export { default as HoverLayer } from './components/interaction/HoverLayer.svelte';
@@ -65,7 +68,9 @@ export { default as getScaleBandwidth } from './utils/getScaleBandwidth.js';
 export { default as getStringWidth } from './utils/getStringWidth.js';
 export { default as getTicks } from './utils/getTicks.js';
 export { default as getLabelTransform } from './utils/getLabelTransform.js';
-export { line, area, arc } from './utils/shapeFactory.js';
+export { line, area, arc, roundedRect } from './utils/shapeFactory.js';
+export { wrapText } from './utils/wrapText.js';
+export { relativeLuminance, contrastRatio, pickContrastInk } from './utils/contrastColor.js';
 
 // Constants
 export { default as Orientation } from './constants/orientation.js';

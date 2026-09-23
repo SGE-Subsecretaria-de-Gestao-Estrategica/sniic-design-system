@@ -3,6 +3,7 @@
   import RegionSilhouetteChart from '../lib/components/RegionSilhouetteChart.svelte';
   import { colors } from '../lib/tokens.js';
   import { categorical8 } from '../lib/palettes.js';
+  import { getPillarTheme } from '../lib/core/theme/index.js';
 
   const { Story } = defineMeta({
     title: 'Charts/RegionSilhouetteChart',
@@ -91,5 +92,21 @@
       { region: 'Norte',       value: 600 },
     ],
     maxSize: 50,
+  }}
+/>
+
+<!-- No `colors` prop: silhouette colours picked up from the active theme's categorical ramp. -->
+<Story
+  name="Themed"
+  args={{
+    data: [
+      { region: 'Sudeste',     value: 4200 },
+      { region: 'Nordeste',    value: 2800 },
+      { region: 'Sul',         value: 1500 },
+      { region: 'CentroOeste', value: 900 },
+      { region: 'Norte',       value: 600 },
+    ],
+    maxSize: 90,
+    theme: getPillarTheme(100),
   }}
 />

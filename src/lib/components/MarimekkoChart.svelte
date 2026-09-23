@@ -2,6 +2,8 @@
 	import type { MekkoDatum } from '../types.js';
 	import { typography, type Margin } from '../tokens.js';
 	import { categorical8 } from '../palettes.js';
+	import { getChartTheme } from '$lib/core/theme';
+	import type { ChartTheme } from '$lib/core/theme/types';
 	import { buildColorMap, buildLegendItems } from '../utils/colorMapHelpers.js';
 	import { deriveEffectiveKeys } from '../utils/stackHelpers.js';
 	import ChartFrame from './molecules/ChartFrame.svelte';
@@ -16,10 +18,13 @@
 		labels?: Record<string, string>;
 		height?: number;
 		margin?: Margin;
+		/** Series colours; defaults to the active theme's categorical ramp. */
 		colors?: readonly string[];
 		format?: (v: number) => string;
 		pctFormat?: (v: number) => string;
 		columnGap?: number;
+		/** Sets the theme for this chart; inherits an ancestor theme context when omitted. */
+		theme?: ChartTheme;
 	}
 
 	let {
@@ -28,11 +33,18 @@
 		labels = {},
 		height = 400,
 		margin = { top: 16, right: 16, bottom: 72, left: 16 },
-		colors = categorical8,
+		colors,
 		format = (v: number) => v.toLocaleString(),
 		pctFormat = (v: number) => `${Math.round(v * 100)}%`,
 		columnGap = 2,
+		theme,
 	}: Props = $props();
+
+	const inheritedTheme = getChartTheme();
+	const activeTheme = $derived(theme ?? inheritedTheme);
+	const resolvedColors = $derived(
+		colors ?? (activeTheme?.palette?.categorical?.length ? activeTheme.palette.categorical : categorical8),
+	);
 
 	const chartFont = typography.chartValueFontFamily;
 	const LEGEND_BAR_H = 34;
@@ -42,7 +54,7 @@
 
 	const effectiveKeys = $derived(deriveEffectiveKeys(data, keys, 'label', ['total']));
 
-	const colorMap = $derived(buildColorMap(effectiveKeys, colors));
+	const colorMap = $derived(buildColorMap(effectiveKeys, resolvedColors));
 	const legendItems = $derived(buildLegendItems(effectiveKeys, colorMap, labels));
 
 	const totalWidth = $derived(data.reduce((s, d) => s + d.total, 0));

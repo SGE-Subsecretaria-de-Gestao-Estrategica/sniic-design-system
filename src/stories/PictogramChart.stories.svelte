@@ -1,6 +1,7 @@
 <script module>
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 	import PictogramChart from '../lib/components/PictogramChart.svelte';
+	import { getPillarTheme } from '../lib/core/theme/index.js';
 
 	const { Story } = defineMeta({
 		title: 'Charts/PictogramChart',
@@ -56,5 +57,22 @@
 		unitValue: 1,
 		columns: 10,
 		iconSize: 20,
+	}}
+/>
+
+<!-- No `colors` prop: section colours picked up from the active theme's categorical ramp. -->
+<Story
+	name="Themed"
+	args={{
+		data: [
+			{ label: 'Museus', value: 35 },
+			{ label: 'Bibliotecas', value: 52 },
+			{ label: 'Teatros', value: 18 },
+			{ label: 'Cinemas', value: 24 },
+		],
+		unitValue: 1,
+		columns: 10,
+		iconSize: 20,
+		theme: getPillarTheme(100),
 	}}
 />

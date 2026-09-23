@@ -3,6 +3,7 @@
 	import ProportionalAreaChart from '../lib/components/ProportionalAreaChart.svelte';
 	import RegionSilhouetteChart from '../lib/components/RegionSilhouetteChart.svelte';
 	import StatesSilhouetteChart from '../lib/components/StatesSilhouetteChart.svelte';
+	import { getPillarTheme } from '../lib/core/theme/index.js';
 
 	const { Story } = defineMeta({
 		title: 'Charts/ProportionalAreaChart',
@@ -58,6 +59,22 @@
 			{ label: 'F', value: 10 },
 		],
 		maxRadius: 40,
+	}}
+/>
+
+<!-- No `colors` prop: circle colours picked up from the active theme's categorical ramp. -->
+<Story
+	name="Themed"
+	args={{
+		data: [
+			{ label: 'Sudeste', value: 4200 },
+			{ label: 'Nordeste', value: 2800 },
+			{ label: 'Sul', value: 1500 },
+			{ label: 'Centro-Oeste', value: 900 },
+			{ label: 'Norte', value: 600 },
+		],
+		maxRadius: 80,
+		theme: getPillarTheme(100),
 	}}
 />
 

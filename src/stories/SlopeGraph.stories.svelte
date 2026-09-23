@@ -2,6 +2,7 @@
   import { defineMeta } from '@storybook/addon-svelte-csf';
   import SlopeGraph from '../lib/components/SlopeGraph.svelte';
   import { blue, orange, teal, yellow, purple, lime } from '../lib/tokens.js';
+  import { getPillarTheme } from '../lib/core/theme/index.js';
 
   const { Story } = defineMeta({
     title: 'Charts/SlopeGraph',
@@ -99,6 +100,25 @@
       { name: 'Product B', values: [85, 78, 68, 60] },
       { name: 'Product C', values: [55, 60, 68, 75] },
       { name: 'Product D', values: [30, 35, 42, 50] },
+    ],
+  }}
+/>
+
+<!-- No `colors` prop: item colours picked up from the active theme's categorical ramp. -->
+<Story
+  name="Themed"
+  args={{
+    labels: ['2019', '2020', '2021', '2022', '2023', '2024'],
+    width: 800,
+    height: 480,
+    showValues: true,
+    theme: getPillarTheme(100),
+    items: [
+      { name: 'São Paulo',       values: [82, 84, 86, 88, 90, 91] },
+      { name: 'Rio de Janeiro',  values: [74, 73, 71, 70, 69, 68] },
+      { name: 'Belo Horizonte',  values: [61, 64, 68, 72, 76, 79] },
+      { name: 'Salvador',        values: [55, 56, 58, 59, 61, 63] },
+      { name: 'Fortaleza',       values: [48, 52, 57, 62, 67, 72] },
     ],
   }}
 />

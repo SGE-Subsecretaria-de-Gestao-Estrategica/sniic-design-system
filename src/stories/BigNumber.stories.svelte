@@ -2,6 +2,7 @@
   import { defineMeta } from '@storybook/addon-svelte-csf';
   import BigNumber from '../lib/components/BigNumber.svelte';
   import { orange, blue, teal } from '../lib/tokens.js';
+  import { getPillarTheme } from '../lib/core/theme/index.js';
 
   const { Story } = defineMeta({
     title: 'Charts/BigNumber',
@@ -86,5 +87,18 @@
     subtitle: 'Pesquisa realizada em março de 2025',
     fontSize: 96,
     shadowDepth: 8,
+  }}
+/>
+
+<!-- No `color` prop: main fill picks up the active theme's primary colour automatically. -->
+<Story
+  name="Themed"
+  args={{
+    value: 93,
+    suffix: '%',
+    label: 'execução financeira',
+    fontSize: 96,
+    shadowDepth: 8,
+    theme: getPillarTheme(100),
   }}
 />

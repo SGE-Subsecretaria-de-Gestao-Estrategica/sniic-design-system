@@ -4,6 +4,8 @@
 	import { treemap, hierarchy, treemapSquarify, type HierarchyRectangularNode } from 'd3';
 	import { typography, type Margin } from '../tokens.js';
 	import { categorical8 } from '../palettes.js';
+	import { getCategoricalColor, getChartTheme } from '$lib/core/theme';
+	import type { ChartTheme } from '$lib/core/theme/types';
 	import { getContrastColor } from '../utils/colorContrast.js';
 	import ChartFrame from './molecules/ChartFrame.svelte';
 	import BarRect from './atoms/BarRect.svelte';
@@ -13,23 +15,30 @@
 		data?: TreemapNode;
 		height?: number;
 		margin?: Margin;
+		/** Top-level branch colours; defaults to the active theme's categorical ramp. */
 		colors?: readonly string[];
 		format?: (v: number) => string;
 		padding?: number;
 		paddingOuter?: number;
 		icons?: Record<string, Component>;
+		/** Sets the theme for this chart; inherits an ancestor theme context when omitted. */
+		theme?: ChartTheme;
 	}
 
 	let {
 		data = { name: 'root', children: [] },
 		height = 400,
 		margin = { top: 8, right: 8, bottom: 8, left: 8 },
-		colors = categorical8,
+		colors,
 		format = (v: number) => v.toLocaleString(),
 		padding = 2,
 		paddingOuter = 4,
 		icons = {},
+		theme,
 	}: Props = $props();
+
+	const inheritedTheme = getChartTheme();
+	const activeTheme = $derived(theme ?? inheritedTheme);
 
 	const chartFont = typography.chartValueFontFamily;
 	const MIN_LABEL_W = 36;
@@ -64,9 +73,12 @@
 
 	function nodeColor(node: HierarchyRectangularNode<TreemapNode>): string {
 		const topAncestor = node.ancestors().find((a) => a.depth === 1);
-		if (!topAncestor) return colors[0];
-		const idx = topLevelNames.indexOf(topAncestor.data.name);
-		return colors[idx >= 0 ? idx % colors.length : 0];
+		const idx = topAncestor ? topLevelNames.indexOf(topAncestor.data.name) : -1;
+		const safeIdx = idx >= 0 ? idx : 0;
+		if (colors?.length) return colors[safeIdx % colors.length];
+		return activeTheme?.palette?.categorical?.length
+			? getCategoricalColor(safeIdx, activeTheme)
+			: categorical8[safeIdx % categorical8.length];
 	}
 </script>
 

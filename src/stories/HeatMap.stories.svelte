@@ -2,6 +2,7 @@
   import { defineMeta } from '@storybook/addon-svelte-csf';
   import HeatMap from '../lib/components/HeatMap.svelte';
   import { colorScales } from '../lib/tokens.js';
+  import { getPillarTheme } from '../lib/core/theme/index.js';
 
   const { Story } = defineMeta({
     title: 'Charts/HeatMap',
@@ -93,5 +94,18 @@
     colorRange: colorScales.teal,
     format: (v) => String(v),
     data: makeGrid(['A', 'B', 'C', 'D'], ['W', 'X', 'Y', 'Z'], 3),
+  }}
+/>
+
+<!-- No `colorRange` prop: sequential ramp built from the active theme's primary hue. -->
+<Story
+  name="Themed"
+  args={{
+    height: 400,
+    cellRadius: 3,
+    showValues: false,
+    showLegend: true,
+    theme: getPillarTheme(100),
+    data: makeGrid(states, months),
   }}
 />

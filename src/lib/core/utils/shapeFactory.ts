@@ -1,6 +1,7 @@
 import type { ArcConfig } from "$lib/types/Arc";
 import type { AreaPathConfig } from "$lib/types/Area";
 import type { LinePathConfig } from "$lib/types/Line";
+import type { RoundedRectConfig } from "$lib/types/RoundedRect";
 import * as d3 from "d3";
 import setNumberOrNumberAccessor from "./setNumberOrNumberAccessor";
 
@@ -57,56 +58,49 @@ export function arc<Datum>({
   return path;
 }
 
-export function generateRoundedRect(x = 0, y = 0, width: number, height: number, side: 'top' | 'right' | 'bottom' | 'left', radius: number): string {
-  if (!radius) {
-    radius = Math.min(width, height)
+/**
+ * A rect path with independently roundable corners — what a plain `<rect rx>`
+ * can't do, since SVG's native radius applies to all four corners alike. Used
+ * for a stacked-bar segment (top corners only, base flush with its neighbour)
+ * or a legend/pill chip (one rounded end, or both — set `radius` to half the
+ * height for a full capsule).
+ *
+ * Not built on a D3 generator like `line`/`area`/`arc` above: there's no
+ * accessor to bind per-datum, just four numbers and which corners to round.
+ */
+export function roundedRect({
+  x,
+  y,
+  width,
+  height,
+  radius = 0,
+  corners = { topLeft: true, topRight: true, bottomLeft: true, bottomRight: true },
+}: RoundedRectConfig): string {
+  const w = Math.max(0, width);
+  const h = Math.max(0, height);
+  const r = Math.max(0, Math.min(radius, w / 2, h / 2));
+
+  const tl = corners.topLeft ? r : 0;
+  const tr = corners.topRight ? r : 0;
+  const br = corners.bottomRight ? r : 0;
+  const bl = corners.bottomLeft ? r : 0;
+
+  if (!tl && !tr && !br && !bl) {
+    return `M${x},${y} H${x + w} V${y + h} H${x} Z`;
   }
-  
-  const r = Math.max(0, Math.min(radius, width / 2, height / 2));
 
-  let tl = 0, tr = 0, br = 0, bl = 0;
-
-  if (side === 'top') {
-    tl = r; tr = r;
-  } else if (side === 'right') {
-    tr = r; br = r;
-  } else if (side === 'bottom') {
-    br = r; bl = r;
-  } else if (side === 'left') {
-    bl = r; tl = r;
-  } else {
-    throw new Error(`Invalid side: "${side}". Use 'top' | 'right' | 'bottom' | 'left'.`);
-  }
-
-  const arc = (rad: number, px: number, py: number) => (rad ? `A${rad},${rad} 0 0 1 ${px},${py}` : '');
-
-  const d = [
+  return [
     `M${x + tl},${y}`,
-    `H${x + width - tr}`,
-    arc(tr, x + width, y + tr),
-    `V${y + height - br}`,
-    arc(br, x + width - br, y + height),
+    `H${x + w - tr}`,
+    tr ? `A${tr},${tr} 0 0 1 ${x + w},${y + tr}` : "",
+    `V${y + h - br}`,
+    br ? `A${br},${br} 0 0 1 ${x + w - br},${y + h}` : "",
     `H${x + bl}`,
-    arc(bl, x, y + height - bl),
+    bl ? `A${bl},${bl} 0 0 1 ${x},${y + h - bl}` : "",
     `V${y + tl}`,
-    arc(tl, x + tl, y),
-    'Z',
+    tl ? `A${tl},${tl} 0 0 1 ${x + tl},${y}` : "",
+    "Z",
   ]
     .filter(Boolean)
-    .join(' ');
-
-  return d;
-}
-
-export function generateHexagon(radius: number): string {
-  const sqrt3 = Math.sqrt(3);
-  return (
-    `M${radius},0` + 
-    `L${radius / 2},${radius * sqrt3 / 2}` + 
-    `L-${radius / 2},${radius * sqrt3 / 2}` + 
-    `L-${radius},0` + 
-    `L-${radius / 2},-${radius * sqrt3 / 2}` + 
-    `L${radius / 2},-${radius * sqrt3 / 2}` + 
-    `Z`
-  )
+    .join(" ");
 }

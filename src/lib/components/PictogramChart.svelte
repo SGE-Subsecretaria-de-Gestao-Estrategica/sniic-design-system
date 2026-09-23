@@ -2,6 +2,8 @@
 	import type { PictogramDatum } from '../types.js';
 	import { typography } from '../tokens.js';
 	import { categorical8 } from '../palettes.js';
+	import { getCategoricalColor, getChartTheme } from '$lib/core/theme';
+	import type { ChartTheme } from '$lib/core/theme/types';
 	import ChartFrame from './molecules/ChartFrame.svelte';
 
 	interface Props {
@@ -16,9 +18,12 @@
 		gap?: number;
 		/** SVG path for the icon (viewBox 0 0 24 24). */
 		iconPath?: string;
+		/** Section colours; defaults to the active theme's categorical ramp. */
 		colors?: readonly string[];
 		showLabels?: boolean;
 		format?: (v: number) => string;
+		/** Sets the theme for this chart; inherits an ancestor theme context when omitted. */
+		theme?: ChartTheme;
 	}
 
 	let {
@@ -28,10 +33,14 @@
 		iconSize = 20,
 		gap = 4,
 		iconPath = 'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z',
-		colors = categorical8,
+		colors,
 		showLabels = true,
 		format = (v: number) => v.toLocaleString(),
+		theme,
 	}: Props = $props();
+
+	const inheritedTheme = getChartTheme();
+	const activeTheme = $derived(theme ?? inheritedTheme);
 
 	const chartFont = typography.chartValueFontFamily;
 	const LABEL_H = 24;
@@ -41,7 +50,13 @@
 		data.map((d, i) => {
 			const count = Math.round(d.value / unitValue);
 			const rows = Math.ceil(count / columns);
-			const color = d.color ?? colors[i % colors.length];
+			const color =
+				d.color ??
+				(colors?.length
+					? colors[i % colors.length]
+					: activeTheme?.palette?.categorical?.length
+						? getCategoricalColor(i, activeTheme)
+						: categorical8[i % categorical8.length]);
 			return { ...d, count, rows, color };
 		}),
 	);

@@ -1,6 +1,8 @@
 <script lang="ts">
 	import type { WaffleDatum } from '../types.js';
 	import { categorical8 } from '../palettes.js';
+	import { getCategoricalColor, getChartTheme } from '$lib/core/theme';
+	import type { ChartTheme } from '$lib/core/theme/types';
 	import ChartFrame from './molecules/ChartFrame.svelte';
 	import Legend from './atoms/Legend.svelte';
 	import TooltipContainer from './molecules/TooltipContainer.svelte';
@@ -12,9 +14,12 @@
 		height?: number;
 		cellGap?: number;
 		cellRadius?: number;
+		/** Category colours; defaults to the active theme's categorical ramp. */
 		colors?: readonly string[];
 		showLegend?: boolean;
 		format?: (v: number) => string;
+		/** Sets the theme for this chart; inherits an ancestor theme context when omitted. */
+		theme?: ChartTheme;
 	}
 
 	let {
@@ -24,10 +29,14 @@
 		height = 360,
 		cellGap = 3,
 		cellRadius = 2,
-		colors = categorical8,
+		colors,
 		showLegend = true,
 		format = (v: number) => v.toLocaleString(),
+		theme,
 	}: Props = $props();
+
+	const inheritedTheme = getChartTheme();
+	const activeTheme = $derived(theme ?? inheritedTheme);
 
 	const MARGIN = { top: 16, right: 16, bottom: 16, left: 16 };
 	const LEGEND_H = 28;
@@ -40,7 +49,11 @@
 	const rowCount = $derived(Math.ceil(totalCells / columns));
 
 	function catColor(d: WaffleDatum, i: number): string {
-		return d.color ?? colors[i % colors.length];
+		if (d.color) return d.color;
+		if (colors?.length) return colors[i % colors.length];
+		return activeTheme?.palette?.categorical?.length
+			? getCategoricalColor(i, activeTheme)
+			: categorical8[i % categorical8.length];
 	}
 
 	const cellAssignments = $derived.by(() => {

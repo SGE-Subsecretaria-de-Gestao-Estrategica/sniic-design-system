@@ -1,6 +1,7 @@
 <script module>
   import { defineMeta } from '@storybook/addon-svelte-csf';
   import BubbleChart from '../lib/components/BubbleChart.svelte';
+  import { getPillarTheme } from '../lib/core/theme/index.js';
 
   const allData = [
     { label: 'São Paulo',          x: 46000000, y: 820000000, size: 420, group: 'Sudeste' },
@@ -86,5 +87,21 @@
     xLabel: 'Units Sold',
     yLabel: 'Revenue ($)',
     sizeLabel: 'Market Share',
+  }}
+/>
+
+<!-- No `groups`/`colors` prop: group colours picked up from the active theme's categorical ramp. -->
+<Story
+  name="Themed"
+  args={{
+    data: allData,
+    xLabel: 'População total (escala log)',
+    yLabel: 'Valor recebido (escala log)',
+    sizeLabel: 'Tamanho da bolha = nº de projetos',
+    xScaleType: 'log',
+    yScaleType: 'log',
+    xFormat: (v) => NUM.format(v),
+    yFormat: (v) => BRL.format(v),
+    theme: getPillarTheme(100),
   }}
 />

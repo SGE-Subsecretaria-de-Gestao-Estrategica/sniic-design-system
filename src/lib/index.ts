@@ -22,6 +22,7 @@ export {
 	Bar,
 	BarStack,
 	BarGroup,
+	RoundedBar,
 	Marker,
 	MarkerCircle,
 	Markers,
@@ -29,6 +30,8 @@ export {
 	Legend as ChartLegend,
 	LegendChips,
 	ValueCallout,
+	HighlightCallout,
+	TimelineBreak,
 	DefaultTheme,
 	getPillarTheme,
 	getChartTheme,
@@ -46,6 +49,11 @@ export {
 	line,
 	area,
 	arc,
+	roundedRect,
+	wrapText,
+	relativeLuminance,
+	contrastRatio,
+	pickContrastInk,
 	Orientation,
 	HoverLayer,
 	HitTarget,
@@ -86,6 +94,11 @@ export type { LegendItem, LegendProps } from './types/Legend.js';
 export type { GridProps, GridRowsProps, GridColumnsProps } from './types/Grid.js';
 export type { AxisScale, SharedAxisProps } from './types/Axis.js';
 export type { TextProps } from './types/Text.js';
+export type {
+	RoundedRectCorners,
+	RoundedRectConfig,
+	RoundedBarProps,
+} from './types/RoundedRect.js';
 
 // Atoms — single-responsibility SVG <g> fragments
 export { default as XAxis } from './components/atoms/XAxis.svelte';
@@ -196,6 +209,9 @@ export { BRAZIL_STATE_PATHS, BRAZIL_STATE_LABELS, type BrazilState } from './cha
 
 // Eixo 6 — interactive charts driven by a `step` prop, for scrollytelling hosts
 export * from './components/eixo6/index.js';
+
+// Eixo 1 — Gestão e Participação, self-contained print/SVG charts (own palette & type scale)
+export * from './components/eixo1/index.js';
 
 // Tokens
 export * from './tokens.js';

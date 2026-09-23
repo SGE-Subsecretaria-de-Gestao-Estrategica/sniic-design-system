@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { scaleBand, scaleLinear } from 'd3';
 	import { colors, defaultMargin, typography, type Margin } from '../tokens.js';
+	import { getChartTheme } from '$lib/core/theme';
+	import type { ChartTheme } from '$lib/core/theme/types';
 	import { gridPositions, yLinearTicks } from '../utils/scaleHelpers.js';
 	import { computeBoxStats, type BoxSeries, type BoxStats } from '../charts/boxplot.js';
 	import ChartFrame from './molecules/ChartFrame.svelte';
@@ -11,12 +13,15 @@
 	interface Props {
 		data?: BoxSeries[];
 		height?: number;
+		/** Box/whisker colour; defaults to the active theme's primary colour. */
 		color?: string;
 		margin?: Margin;
 		xLabel?: string;
 		yLabel?: string;
 		showOutliers?: boolean;
 		format?: (v: number) => string;
+		/** Sets the theme for this chart; inherits an ancestor theme context when omitted. */
+		theme?: ChartTheme;
 	}
 
 	const boxPlotMargin = { ...defaultMargin, left: 108 };
@@ -24,13 +29,18 @@
 	let {
 		data = [],
 		height = 400,
-		color = colors.primary[0],
+		color,
 		margin = boxPlotMargin,
 		xLabel = '',
 		yLabel = '',
 		showOutliers = true,
 		format = (v: number) => String(v),
+		theme,
 	}: Props = $props();
+
+	const inheritedTheme = getChartTheme();
+	const activeTheme = $derived(theme ?? inheritedTheme);
+	const resolvedColor = $derived(color ?? activeTheme?.palette?.primary ?? colors.primary[0]);
 
 	const chartFont = typography.chartValueFontFamily;
 
@@ -95,7 +105,7 @@
 			y1={yScale(s.min)}
 			x2={cx}
 			y2={yScale(s.q1)}
-			stroke={color}
+			stroke={resolvedColor}
 			stroke-width="1.5"
 		/>
 		<!-- Upper whisker: Q3 → max -->
@@ -104,7 +114,7 @@
 			y1={yScale(s.q3)}
 			x2={cx}
 			y2={yScale(s.max)}
-			stroke={color}
+			stroke={resolvedColor}
 			stroke-width="1.5"
 		/>
 		<!-- Whisker cap: min -->
@@ -113,7 +123,7 @@
 			y1={yScale(s.min)}
 			x2={cx + boxW / 4}
 			y2={yScale(s.min)}
-			stroke={color}
+			stroke={resolvedColor}
 			stroke-width="1.5"
 		/>
 		<!-- Whisker cap: max -->
@@ -122,7 +132,7 @@
 			y1={yScale(s.max)}
 			x2={cx + boxW / 4}
 			y2={yScale(s.max)}
-			stroke={color}
+			stroke={resolvedColor}
 			stroke-width="1.5"
 		/>
 		<!-- IQR box: Q1 → Q3 -->
@@ -131,9 +141,9 @@
 			y={yScale(s.q3)}
 			width={boxW}
 			height={Math.max(0, yScale(s.q1) - yScale(s.q3))}
-			fill={color}
+			fill={resolvedColor}
 			fill-opacity="0.18"
-			stroke={color}
+			stroke={resolvedColor}
 			stroke-width="1.5"
 		/>
 		<!-- Median line -->
@@ -142,13 +152,13 @@
 			y1={yScale(s.median)}
 			x2={boxX + boxW}
 			y2={yScale(s.median)}
-			stroke={color}
+			stroke={resolvedColor}
 			stroke-width="2.5"
 		/>
 		<!-- Outliers -->
 		{#if showOutliers && s.outliers}
 			{#each s.outliers as ov (ov)}
-				<circle cx={cx} cy={yScale(ov)} r="3" fill="none" stroke={color} stroke-width="1.5" />
+				<circle cx={cx} cy={yScale(ov)} r="3" fill="none" stroke={resolvedColor} stroke-width="1.5" />
 			{/each}
 		{/if}
 	{/each}
