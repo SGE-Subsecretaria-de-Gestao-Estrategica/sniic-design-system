@@ -2,16 +2,18 @@
  * Eixo 1 — Gestão e Participação.
  *
  * Portado de `cultura-em-numeros-eixo-1/data-vis`, que segue vivo consumindo
- * `sniic-design-system`. Charts sobre quatro bases — `FaixaLinhasChart`
- * (linhas), `ComposicaoChart` (colunas 100%), `CoropletoUfChart` (mapa real
- * do IBGE por UF) e `HexMapaUfChart` (mapa hexagonal esquemático, mesma
- * malha de `mapaUf.ts` que a base anterior) —, com paleta e tipografia
- * próprias (`cores.ts`, `tokens.ts`) — um sistema de charts autocontido,
- * pensado para exportação em SVG/PNG para impressão em A4, diferente do
- * sistema interativo (`ChartFrame`, `getPillarTheme`) usado pelo Eixo 6.
- * `AgentesPorMunicipioChart` (mosaico municipal, ~1,1MB de geometria) ficou
- * fora de propósito — ver nota no commit. Os demais componentes do repo
- * original ainda não foram portados.
+ * `sniic-design-system`. Todas as ~17 bases de chart do repo original foram
+ * portadas — FaixaLinhasChart, ComposicaoChart, CoropletoUfChart,
+ * HexMapaUfChart, BarraRankingChart, CascataChart, CristasChart,
+ * MatrizBolhasChart, ColunaCategoriaChart, HistomapChart,
+ * LinhaProporcaoChart, PequenosMultiplosChart, MatrizPontosChart,
+ * AntesDepoisChart, ConcentracaoChart, BarraDivergenteChart e RibbonChart —,
+ * com paleta e tipografia próprias (`cores.ts`, `tokens.ts`) — um sistema de
+ * charts autocontido, pensado para exportação em SVG/PNG para impressão em
+ * A4, diferente do sistema interativo (`ChartFrame`, `getPillarTheme`) usado
+ * pelo Eixo 6. `MosaicoMunicipalChart`/`AgentesPorMunicipioChart`
+ * (mosaico/coroplético municipal, ~1,1MB de geometria) e `CartogramaUfChart`
+ * (não usado por nenhum leaf no repo original) ficaram de fora de propósito.
  */
 
 export { default as EquipamentosCulturaisChart } from './EquipamentosCulturaisChart.svelte';
@@ -101,6 +103,15 @@ export type { PontoLorenz, Marco } from './ConcentracaoChart.svelte';
 export { default as CaboGuerraMunicipalChart } from './CaboGuerraMunicipalChart.svelte';
 export { default as BarraDivergenteChart } from './BarraDivergenteChart.svelte';
 export type { LinhaDivergente } from './BarraDivergenteChart.svelte';
+
+export { default as RibbonEstadualChart } from './RibbonEstadualChart.svelte';
+export { default as RibbonEstadualProprioChart } from './RibbonEstadualProprioChart.svelte';
+export { default as RibbonMunicipalChart } from './RibbonMunicipalChart.svelte';
+export { default as RibbonMunicipalProprioChart } from './RibbonMunicipalProprioChart.svelte';
+// Aliased: the package root already exports a generic, interactive `RibbonChart`
+// (`./components/RibbonChart.svelte`) — this is Eixo 1's own print-oriented base.
+export { default as Eixo1RibbonChart } from './RibbonChart.svelte';
+export type { ColunaRow as Eixo1RibbonColunaRow, Periodo as Eixo1RibbonPeriodo } from './RibbonChart.svelte';
 
 // `cores.ts` and `tokens.ts` are internal to this folder's own charts (own
 // palette + A4 type scale, distinct from the package's generic `tokens.ts`
