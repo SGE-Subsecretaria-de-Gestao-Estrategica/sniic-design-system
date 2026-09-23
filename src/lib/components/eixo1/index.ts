@@ -69,6 +69,14 @@ export { default as FederalPorMandatoChart } from './FederalPorMandatoChart.svel
 export { default as ColunaCategoriaChart } from './ColunaCategoriaChart.svelte';
 export type { CategoriaRow } from './ColunaCategoriaChart.svelte';
 
+export { default as HistomapFederalChart } from './HistomapFederalChart.svelte';
+export { default as HistomapChart } from './HistomapChart.svelte';
+export type {
+  AnoRow as HistomapAnoRow,
+  Anotacao as HistomapAnotacao,
+  DestaqueAno as HistomapDestaqueAno,
+} from './HistomapChart.svelte';
+
 // `cores.ts` and `tokens.ts` are internal to this folder's own charts (own
 // palette + A4 type scale, distinct from the package's generic `tokens.ts`
 // and `getPillarTheme`) — not re-exported at the package root to avoid name
