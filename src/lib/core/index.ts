@@ -41,6 +41,17 @@ export { default as LegendChips } from './components/legend/LegendChips.svelte';
 // Annotation
 export { default as ValueCallout } from './components/annotation/ValueCallout.svelte';
 
+// Interaction — hover, crosshair, tooltip and the optional scrollytelling driver
+export { default as HoverLayer } from './components/interaction/HoverLayer.svelte';
+export { default as HitTarget } from './components/interaction/HitTarget.svelte';
+export { default as Crosshair } from './components/interaction/Crosshair.svelte';
+export { default as ChartTooltip } from './components/interaction/ChartTooltip.svelte';
+export { HoverState, relativeTo } from './interaction/hover.svelte.js';
+export type { TooltipRow, TooltipContent } from './interaction/hover.svelte.js';
+export { nearestIndex, nearestIndexWithin, nearestPoint, distance } from './interaction/nearest.js';
+export { ScrollySteps, scrollStep } from './interaction/scrolly.svelte.js';
+export type { ScrollyOptions } from './interaction/scrolly.svelte.js';
+
 // Theme — tokens, palettes, context and the props > theme > default cascade
 export * from './theme/index.js';
 

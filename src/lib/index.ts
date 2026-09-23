@@ -47,6 +47,17 @@ export {
 	area,
 	arc,
 	Orientation,
+	HoverLayer,
+	HitTarget,
+	Crosshair,
+	ChartTooltip,
+	HoverState,
+	relativeTo,
+	nearestIndex,
+	nearestIndexWithin,
+	nearestPoint,
+	ScrollySteps,
+	scrollStep,
 } from './core/index.js';
 
 export type {
@@ -62,6 +73,9 @@ export type {
 	LegendStyle,
 	MarkerStyle,
 	OrientationType,
+	TooltipRow,
+	TooltipContent,
+	ScrollyOptions,
 } from './core/index.js';
 
 export type { ChartDimensions, ChartProps, Margin as ChartMargin } from './types/Chart.js';
@@ -179,6 +193,9 @@ export { BRAZIL_REGION_PATHS, BRAZIL_REGION_LABELS, type BrazilRegion } from './
 export { default as StatesSilhouetteChart } from './components/StatesSilhouetteChart.svelte';
 export type { StateDatum } from './charts/brazilStates.js';
 export { BRAZIL_STATE_PATHS, BRAZIL_STATE_LABELS, type BrazilState } from './charts/brazilStates.js';
+
+// Eixo 6 — interactive charts driven by a `step` prop, for scrollytelling hosts
+export * from './components/eixo6/index.js';
 
 // Tokens
 export * from './tokens.js';
