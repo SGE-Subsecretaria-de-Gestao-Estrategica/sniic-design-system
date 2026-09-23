@@ -45,16 +45,20 @@ export type PillarPalette = (typeof pillarPalettes)[number]
 
 export const spacing = {
   none: 0,
+  xs: 4,
   sm: 6,
   md: 10,
-  lg: 14
+  lg: 16,
+  xl: 24,
+  xxl: 32,
+  xxxl: 48,
 }
 
 export const strokeWidth = {
-  xs: 2.5,
-  sm: 4,
-  md: 8,
-  lg: 12,
+  xs: 1,
+  sm: 1.5,
+  md: 2,
+  lg: 2.5,
 }
 
 export const radii = {
