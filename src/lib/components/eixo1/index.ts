@@ -2,14 +2,16 @@
  * Eixo 1 — Gestão e Participação.
  *
  * Portado de `cultura-em-numeros-eixo-1/data-vis`, que segue vivo consumindo
- * `sniic-design-system`. Charts sobre três bases — `FaixaLinhasChart` (linhas),
- * `ComposicaoChart` (colunas 100%) e `CoropletoUfChart` (mapa por UF) —, com
- * paleta e tipografia próprias (`cores.ts`, `tokens.ts`) — um sistema de
- * charts autocontido, pensado para exportação em SVG/PNG para impressão em
- * A4, diferente do sistema interativo (`ChartFrame`, `getPillarTheme`) usado
- * pelo Eixo 6. `AgentesPorMunicipioChart` (mosaico municipal, ~1,1MB de
- * geometria) ficou fora de propósito — ver nota no commit. Os demais
- * componentes do repo original ainda não foram portados.
+ * `sniic-design-system`. Charts sobre quatro bases — `FaixaLinhasChart`
+ * (linhas), `ComposicaoChart` (colunas 100%), `CoropletoUfChart` (mapa real
+ * do IBGE por UF) e `HexMapaUfChart` (mapa hexagonal esquemático, mesma
+ * malha de `mapaUf.ts` que a base anterior) —, com paleta e tipografia
+ * próprias (`cores.ts`, `tokens.ts`) — um sistema de charts autocontido,
+ * pensado para exportação em SVG/PNG para impressão em A4, diferente do
+ * sistema interativo (`ChartFrame`, `getPillarTheme`) usado pelo Eixo 6.
+ * `AgentesPorMunicipioChart` (mosaico municipal, ~1,1MB de geometria) ficou
+ * fora de propósito — ver nota no commit. Os demais componentes do repo
+ * original ainda não foram portados.
  */
 
 export { default as EquipamentosCulturaisChart } from './EquipamentosCulturaisChart.svelte';
@@ -40,6 +42,11 @@ export { default as IncentivoFiscalUfChart } from './IncentivoFiscalUfChart.svel
 export { default as MaturidadeTripeUfChart } from './MaturidadeTripeUfChart.svelte';
 export { default as CoropletoUfChart } from './CoropletoUfChart.svelte';
 export type { ValorUf, Municipio as CoropletoMunicipio } from './CoropletoUfChart.svelte';
+
+export { default as ParticipacaoEstadosChart } from './ParticipacaoEstadosChart.svelte';
+export { default as TripeUfChart } from './TripeUfChart.svelte';
+export { default as HexMapaUfChart } from './HexMapaUfChart.svelte';
+export type { ValorUf as HexMapaValorUf } from './HexMapaUfChart.svelte';
 
 // `cores.ts` and `tokens.ts` are internal to this folder's own charts (own
 // palette + A4 type scale, distinct from the package's generic `tokens.ts`
