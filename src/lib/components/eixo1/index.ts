@@ -86,6 +86,10 @@ export { default as TripeRegiaoMunicipalChart } from './TripeRegiaoMunicipalChar
 export { default as PequenosMultiplosChart } from './PequenosMultiplosChart.svelte';
 export type { PainelSerie } from './PequenosMultiplosChart.svelte';
 
+export { default as PerfilCncChart } from './PerfilCncChart.svelte';
+export { default as MatrizPontosChart } from './MatrizPontosChart.svelte';
+export type { Fatia as MatrizPontosFatia, Painel as MatrizPontosPainel } from './MatrizPontosChart.svelte';
+
 // `cores.ts` and `tokens.ts` are internal to this folder's own charts (own
 // palette + A4 type scale, distinct from the package's generic `tokens.ts`
 // and `getPillarTheme`) — not re-exported at the package root to avoid name
