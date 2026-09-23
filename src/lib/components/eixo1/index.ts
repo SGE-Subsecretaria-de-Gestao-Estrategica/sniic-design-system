@@ -2,18 +2,27 @@
  * Eixo 1 — Gestão e Participação.
  *
  * Portado de `cultura-em-numeros-eixo-1/data-vis`, que segue vivo consumindo
- * `sniic-design-system`. Todas as ~17 bases de chart do repo original foram
+ * `sniic-design-system`. Todas as 18 bases de chart do repo original foram
  * portadas — FaixaLinhasChart, ComposicaoChart, CoropletoUfChart,
  * HexMapaUfChart, BarraRankingChart, CascataChart, CristasChart,
  * MatrizBolhasChart, ColunaCategoriaChart, HistomapChart,
  * LinhaProporcaoChart, PequenosMultiplosChart, MatrizPontosChart,
- * AntesDepoisChart, ConcentracaoChart, BarraDivergenteChart e RibbonChart —,
- * com paleta e tipografia próprias (`cores.ts`, `tokens.ts`) — um sistema de
- * charts autocontido, pensado para exportação em SVG/PNG para impressão em
- * A4, diferente do sistema interativo (`ChartFrame`, `getPillarTheme`) usado
- * pelo Eixo 6. `MosaicoMunicipalChart`/`AgentesPorMunicipioChart`
- * (mosaico/coroplético municipal, ~1,1MB de geometria) e `CartogramaUfChart`
- * (não usado por nenhum leaf no repo original) ficaram de fora de propósito.
+ * AntesDepoisChart, ConcentracaoChart, BarraDivergenteChart, RibbonChart e
+ * MosaicoMunicipalChart —, com paleta e tipografia próprias (`cores.ts`,
+ * `tokens.ts`) — um sistema de charts autocontido, pensado para exportação
+ * em SVG/PNG para impressão em A4, diferente do sistema interativo
+ * (`ChartFrame`, `getPillarTheme`) usado pelo Eixo 6.
+ *
+ * Dois datasets — a malha municipal projetada (1,1MB) e o gabarito de
+ * institucionalização municipal de 2021 (160KB) — são grandes demais para
+ * import estático nesta lib (build de arquivo único, sem `preserveModules`,
+ * ver `vite.config.ts`): vivem em `public/data/eixo1/` e são buscados em
+ * runtime por quem consome `AgentesPorMunicipioChart` e
+ * `MosaicoInstitucionalizacaoMunicipalChart` — ver `malhaMunicipal.ts`, e as
+ * stories desses dois componentes para o padrão de uso.
+ *
+ * `CartogramaUfChart` ficou de fora de propósito: não é usado por nenhum
+ * leaf no repo original.
  */
 
 export { default as EquipamentosCulturaisChart } from './EquipamentosCulturaisChart.svelte';
@@ -112,6 +121,19 @@ export { default as RibbonMunicipalProprioChart } from './RibbonMunicipalProprio
 // (`./components/RibbonChart.svelte`) — this is Eixo 1's own print-oriented base.
 export { default as Eixo1RibbonChart } from './RibbonChart.svelte';
 export type { ColunaRow as Eixo1RibbonColunaRow, Periodo as Eixo1RibbonPeriodo } from './RibbonChart.svelte';
+
+export { default as AgentesPorMunicipioChart } from './AgentesPorMunicipioChart.svelte';
+export { default as MosaicoInstitucionalizacaoMunicipalChart } from './MosaicoInstitucionalizacaoMunicipalChart.svelte';
+export { default as MosaicoMunicipalChart } from './MosaicoMunicipalChart.svelte';
+export {
+  loadMalhaMunicipiosProjetada,
+  loadGestaoMunicipios2021,
+} from './malhaMunicipal';
+export type {
+  MalhaMunicipiosProjetada,
+  GestaoMunicipios2021,
+  GestaoMunicipioInstitucionalizacao,
+} from './malhaMunicipal';
 
 // `cores.ts` and `tokens.ts` are internal to this folder's own charts (own
 // palette + A4 type scale, distinct from the package's generic `tokens.ts`
