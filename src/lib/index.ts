@@ -22,6 +22,7 @@ export {
 	Bar,
 	BarStack,
 	BarGroup,
+	RoundedBar,
 	Marker,
 	MarkerCircle,
 	Markers,
@@ -29,6 +30,8 @@ export {
 	Legend as ChartLegend,
 	LegendChips,
 	ValueCallout,
+	HighlightCallout,
+	TimelineBreak,
 	DefaultTheme,
 	getPillarTheme,
 	getChartTheme,
@@ -46,6 +49,11 @@ export {
 	line,
 	area,
 	arc,
+	roundedRect,
+	wrapText,
+	relativeLuminance,
+	contrastRatio,
+	pickContrastInk,
 	Orientation,
 	HoverLayer,
 	HitTarget,
@@ -86,6 +94,11 @@ export type { LegendItem, LegendProps } from './types/Legend.js';
 export type { GridProps, GridRowsProps, GridColumnsProps } from './types/Grid.js';
 export type { AxisScale, SharedAxisProps } from './types/Axis.js';
 export type { TextProps } from './types/Text.js';
+export type {
+	RoundedRectCorners,
+	RoundedRectConfig,
+	RoundedBarProps,
+} from './types/RoundedRect.js';
 
 // Atoms — single-responsibility SVG <g> fragments
 export { default as XAxis } from './components/atoms/XAxis.svelte';

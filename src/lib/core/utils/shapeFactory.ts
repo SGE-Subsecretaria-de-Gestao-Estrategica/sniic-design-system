@@ -1,6 +1,7 @@
 import type { ArcConfig } from "$lib/types/Arc";
 import type { AreaPathConfig } from "$lib/types/Area";
 import type { LinePathConfig } from "$lib/types/Line";
+import type { RoundedRectConfig } from "$lib/types/RoundedRect";
 import * as d3 from "d3";
 import setNumberOrNumberAccessor from "./setNumberOrNumberAccessor";
 
@@ -55,4 +56,51 @@ export function arc<Datum>({
   if (cornerRadius != null) setNumberOrNumberAccessor(path.cornerRadius, cornerRadius);
   if (padRadius != null) setNumberOrNumberAccessor(path.padRadius, padRadius);
   return path;
+}
+
+/**
+ * A rect path with independently roundable corners — what a plain `<rect rx>`
+ * can't do, since SVG's native radius applies to all four corners alike. Used
+ * for a stacked-bar segment (top corners only, base flush with its neighbour)
+ * or a legend/pill chip (one rounded end, or both — set `radius` to half the
+ * height for a full capsule).
+ *
+ * Not built on a D3 generator like `line`/`area`/`arc` above: there's no
+ * accessor to bind per-datum, just four numbers and which corners to round.
+ */
+export function roundedRect({
+  x,
+  y,
+  width,
+  height,
+  radius = 0,
+  corners = { topLeft: true, topRight: true, bottomLeft: true, bottomRight: true },
+}: RoundedRectConfig): string {
+  const w = Math.max(0, width);
+  const h = Math.max(0, height);
+  const r = Math.max(0, Math.min(radius, w / 2, h / 2));
+
+  const tl = corners.topLeft ? r : 0;
+  const tr = corners.topRight ? r : 0;
+  const br = corners.bottomRight ? r : 0;
+  const bl = corners.bottomLeft ? r : 0;
+
+  if (!tl && !tr && !br && !bl) {
+    return `M${x},${y} H${x + w} V${y + h} H${x} Z`;
+  }
+
+  return [
+    `M${x + tl},${y}`,
+    `H${x + w - tr}`,
+    tr ? `A${tr},${tr} 0 0 1 ${x + w},${y + tr}` : "",
+    `V${y + h - br}`,
+    br ? `A${br},${br} 0 0 1 ${x + w - br},${y + h}` : "",
+    `H${x + bl}`,
+    bl ? `A${bl},${bl} 0 0 1 ${x},${y + h - bl}` : "",
+    `V${y + tl}`,
+    tl ? `A${tl},${tl} 0 0 1 ${x + tl},${y}` : "",
+    "Z",
+  ]
+    .filter(Boolean)
+    .join(" ");
 }
