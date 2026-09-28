@@ -31,6 +31,7 @@
     source,
     width = 580,
     alturaBarra = 22,
+    raio,
     svgEl = $bindable(null),
     background = null,
   }: {
@@ -44,6 +45,8 @@
     source?: string;
     width?: number;
     alturaBarra?: number;
+    /** Raio dos cantos da barra; sem ele, a barra é uma pílula (metade da altura). */
+    raio?: number;
     svgEl?: SVGSVGElement | null;
     background?: string | null;
   } = $props();
@@ -69,6 +72,7 @@
   };
 
   const pad = 16 * k;
+  const rx = $derived(raio === undefined ? (alturaBarra * k) / 2 : raio * k);
 
   const textWidth = $derived(width - pad * 2);
   const titleLines = $derived(wrapText(title, type.title, textWidth, 600));
@@ -192,7 +196,7 @@
       >
     {/each}
 
-    <rect x={plotLeft} y={l.top} width={Math.max(l.largura, 0)} height={alturaBarra * k} rx={(alturaBarra * k) / 2} fill={cor} />
+    <rect x={plotLeft} y={l.top} width={Math.max(l.largura, 0)} height={alturaBarra * k} {rx} fill={cor} />
 
     {#if l.dentro}
       <text

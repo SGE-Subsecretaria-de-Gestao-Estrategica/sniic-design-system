@@ -33,6 +33,7 @@
    * por município — e o estado grande e claro chama mais atenção que o pequeno e
    * escuro só por ser grande. É o custo do formato, e a nota de rodapé o assume.
    */
+  import { geoConicEqualArea, polygonContains } from 'd3';
   import malha from './data/malha-ufs.json';
   import { a4Scale, fontFamily, fontSize as scale, measureLabel, wrapText } from './tokens';
 
@@ -47,6 +48,10 @@
     legendaTitulo,
     formatValue = (v: number) => String(v),
     destaque,
+    rotulosAbaixo = [],
+    rotulosEsquerda = [],
+    nomes,
+    pontos,
     footnote,
     source,
     width = 580,
@@ -72,6 +77,31 @@
     legendaTitulo?: string;
     formatValue?: (v: number) => string;
     destaque?: { valor: string; cor: string; texto: string };
+    /**
+     * UFs cujo rótulo vai logo abaixo do estado, fora dele, em vez de dentro ou
+     * na calha — para o estado da borda do mapa cuja linha de chamada até a
+     * calha atravessaria o país inteiro (o Acre).
+     */
+    rotulosAbaixo?: string[];
+    /**
+     * UFs cujo rótulo vai à esquerda do estado, fora dele, alinhado contra a
+     * borda oeste na altura do ponto de `pontos` (ou da âncora) — para o estado
+     * da borda do mapa em que nem o nome cabe dentro nem a linha até a calha
+     * passa limpa, e que tem o vazio dos países vizinhos a oeste.
+     */
+    rotulosEsquerda?: string[];
+    /**
+     * O texto que substitui a sigla no rótulo de cada UF — o nome da capital,
+     * por exemplo, quando o valor é o da capital e não o do estado. As UFs
+     * ausentes continuam com a sigla.
+     */
+    nomes?: Record<string, string>;
+    /**
+     * Um lugar por UF, em `[longitude, latitude]`, marcado com um ponto pequeno
+     * dentro do estado — a sede da capital, por exemplo. Quando o rótulo vai
+     * para a calha, a linha de chamada sai desse ponto.
+     */
+    pontos?: Record<string, [number, number]>;
     footnote?: string;
     source?: string;
     width?: number;
@@ -108,16 +138,210 @@
 
   const pad = 16 * k;
 
-  /** A calha à direita do mapa, onde ficam os rótulos que não couberam dentro. */
-  const calha = 84 * k;
+  const porUf = $derived(new Map(valores.map((v) => [v.uf, v.valor])));
+
+  /** O que o rótulo escreve no lugar da sigla. */
+  const rotuloDe = (uf: string) => nomes?.[uf] ?? uf;
+
+  /** O rótulo vai fora do estado, abaixo ou à esquerda — nem dentro, nem na calha. */
+  const foraDoEstado = (uf: string) => rotulosAbaixo.includes(uf) || rotulosEsquerda.includes(uf);
+
+  /**
+   * A projeção da malha: a cônica equivalente de Albers do d3 com os paralelos
+   * do Brasil, na escala e translação padrão, recortada e ampliada pelo
+   * `quadro` gravado com ela. Leva `[longitude, latitude]` ao domínio da malha.
+   */
+  const albers = geoConicEqualArea().parallels([-2, -32]).rotate([54, 0]);
+  const projetar = ([lon, lat]: [number, number]): [number, number] | null => {
+    const p = albers([lon, lat]);
+    if (!p) return null;
+    const { x0, y0, escala } = malha.quadro;
+    return [(p[0] - x0) * escala, (p[1] - y0) * escala];
+  };
+
+  type Uf = (typeof malha.ufs)[number];
+
+  /**
+   * Os anéis de cada UF, para o teste de ponto no polígono. A malha só tem
+   * `M`, `L` e `Z` absolutos: cada `M` abre um anel (as ilhas), e os números
+   * vêm em pares x, y.
+   */
+  const aneis = new Map(
+    malha.ufs.map((u) => [
+      u.uf,
+      u.d.split(/(?=M)/).map((trecho) => {
+        const n = (trecho.match(/-?[\d.]+/g) ?? []).map(Number);
+        const anel: [number, number][] = [];
+        for (let i = 0; i + 1 < n.length; i += 2) anel.push([n[i], n[i + 1]]);
+        return anel;
+      }),
+    ]),
+  );
+
+  /** O retângulo centrado em `c` está dentro da UF — bordas amostradas, seis pontos por lado. */
+  const retanguloDentro = (uf: string, [cx, cy]: [number, number], w: number, h: number) => {
+    const partes = aneis.get(uf) ?? [];
+    const dentro = (p: [number, number]) => partes.some((a) => polygonContains(a, p));
+    const passos = 5;
+    for (let i = 0; i <= passos; i++) {
+      const fx = cx - w / 2 + (w * i) / passos;
+      const fy = cy - h / 2 + (h * i) / passos;
+      if (
+        !dentro([fx, cy - h / 2]) ||
+        !dentro([fx, cy + h / 2]) ||
+        !dentro([cx - w / 2, fy]) ||
+        !dentro([cx + w / 2, fy])
+      )
+        return false;
+    }
+    return true;
+  };
+
+  /**
+   * Com `nomes` ou `pontos`, o rótulo deixa de ser uma sigla de duas letras
+   * centrada no estado: o nome é longo e há um ponto a desviar. O teste do
+   * círculo inscrito, bom para a sigla, fica pessimista demais para o nome — o
+   * Porto Velho de Rondônia ia para a calha com a linha atravessando o mapa —,
+   * e por isso esses rótulos são testados pelo retângulo de fato contra o
+   * contorno.
+   */
+  const rotuloLivre = $derived(!!(nomes || pontos));
+
+  /**
+   * Onde o bloco de duas linhas — nome e número — fica dentro do estado, no
+   * domínio da malha, ou `null` se não couber e o rótulo for para a calha.
+   * `escalaMapa` é a razão cartão/malha em que o mapa vai ser desenhado.
+   *
+   * Sem `nomes` nem `pontos`: o bloco cabe se couber no maior círculo inscrito,
+   * cujo raio (`folga`) vem pronto da malha. O `0,85` desconta o que o círculo
+   * tem de pessimista: ele é o que cabe no pior sentido, e o texto é largo e
+   * baixo. Sem ele o Acre e Santa Catarina — que comportam o rótulo com sobra
+   * visível — iriam para a calha por dois décimos de unidade, e as linhas de
+   * chamada deles atravessariam o mapa inteiro.
+   *
+   * Com eles: o retângulo do bloco tem de caber no contorno e não pode cobrir
+   * o ponto. Tenta primeiro o centro do círculo inscrito e depois uma grade
+   * sobre o estado, do mais próximo desse centro para o mais distante.
+   */
+  const posicaoRotulo = (u: Uf, valor: number, escalaMapa: number): [number, number] | null => {
+    const largura =
+      Math.max(
+        measureLabel(rotuloDe(u.uf), type.sigla, 600),
+        measureLabel(formatValue(valor), type.valor, 700),
+      ) / escalaMapa;
+    const ancora = u.rotulo as [number, number];
+
+    if (!rotuloLivre) {
+      const altura = (type.sigla + type.valor + 2 * k) / escalaMapa;
+      return u.folga >= 0.85 * Math.hypot(largura / 2, altura / 2) ? ancora : null;
+    }
+
+    // O bloco como ele é desenhado: duas caixas, uma por linha, cada uma da
+    // largura do seu texto — o ponto pode ficar ao lado do número, que é mais
+    // curto que o nome. Os deslocamentos são os do template, em relação ao
+    // centro: a base do nome em −3,2k, a do número em +(valor − 2,2k).
+    const e = escalaMapa;
+    const baseNome = -3.2 * k;
+    const baseValor = type.valor - 2.2 * k;
+    const caixas = [
+      {
+        w: measureLabel(rotuloDe(u.uf), type.sigla, 600) / e,
+        topo: (baseNome - 0.75 * type.sigla) / e,
+        pe: (baseNome + 0.2 * type.sigla) / e,
+      },
+      {
+        w: measureLabel(formatValue(valor), type.valor, 700) / e,
+        topo: (baseValor - 0.75 * type.valor) / e,
+        pe: (baseValor + 0.05 * type.valor) / e,
+      },
+    ];
+    const h = caixas[1].pe - caixas[0].topo;
+    const lugar = pontos?.[u.uf];
+    const ponto = lugar ? projetar(lugar) : null;
+    const margem = (3 * k) / e;
+    const cobre = ([cx, cy]: [number, number]) =>
+      !!ponto &&
+      caixas.some(
+        (c) =>
+          Math.abs(ponto[0] - cx) <= c.w / 2 + margem &&
+          ponto[1] >= cy + c.topo - margem &&
+          ponto[1] <= cy + c.pe + margem,
+      );
+    const cabe = ([cx, cy]: [number, number]) =>
+      caixas.every((c) =>
+        retanguloDentro(u.uf, [cx, cy + (c.topo + c.pe) / 2], c.w, c.pe - c.topo),
+      );
+    const w = largura;
+
+    // Uma grade sobre o retângulo envolvente do estado, do ponto mais perto do
+    // centro do círculo inscrito para o mais longe; fica o primeiro que cabe.
+    const partes = aneis.get(u.uf) ?? [];
+    const xs = partes.flat().map((p) => p[0]);
+    const ys = partes.flat().map((p) => p[1]);
+    const passo = h / 4;
+    const grade: [number, number][] = [ancora];
+    for (let x = Math.min(...xs) + w / 2; x <= Math.max(...xs) - w / 2; x += passo) {
+      for (let y = Math.min(...ys) + h / 2; y <= Math.max(...ys) - h / 2; y += passo) grade.push([x, y]);
+    }
+    const distancia = (c: [number, number]) => Math.hypot(c[0] - ancora[0], c[1] - ancora[1]);
+    grade.sort((a, b) => distancia(a) - distancia(b));
+
+    return grade.find((c) => !cobre(c) && cabe(c)) ?? null;
+  };
+
+  /** A largura de um rótulo na calha: nome em 600, número em 700. */
+  const larguraChamada = (uf: string, valor: number) =>
+    measureLabel(`${rotuloDe(uf)} `, type.chamada, 600) + measureLabel(formatValue(valor), type.chamada, 700);
+
+  /**
+   * A calha à direita do mapa, onde ficam os rótulos que não couberam dentro.
+   *
+   * Tem 84 unidades. O rótulo que não cabe numa linha — com os nomes das
+   * capitais no lugar das siglas, "Rio de Janeiro 51,9 mi" — quebra em duas,
+   * o nome em cima e o número embaixo; a calha só alarga se nem assim couber.
+   * Alargar a calha encolhe o mapa, e o mapa menor manda mais rótulos para
+   * fora: quebrar a linha é mais barato.
+   *
+   * Quais rótulos vão para a calha depende do tamanho do mapa, que depende da
+   * calha; a conta sai da circularidade medindo primeiro com a calha mais
+   * larga possível (o mapa menor, e portanto o maior conjunto de rótulos de
+   * fora). O mapa final é igual ou maior, então quem estiver fora nele já
+   * estava nesse conjunto e cabe na calha.
+   */
+  const calhaMinima = 84 * k;
+  const folgaCalha = 13 * k;
+  const umaLinha = (uf: string, valor: number) =>
+    larguraChamada(uf, valor) + folgaCalha <= calhaMinima;
+  const larguraNaCalha = (uf: string, valor: number) =>
+    (umaLinha(uf, valor)
+      ? larguraChamada(uf, valor)
+      : Math.max(
+          measureLabel(rotuloDe(uf), type.chamada, 600),
+          measureLabel(formatValue(valor), type.chamada, 700),
+        )) + folgaCalha;
+  const escalaDe = (c: number) => (width - pad * 2 - c) / malha.largura;
+  const calha = $derived.by(() => {
+    const comValor = malha.ufs.filter(
+      (u) => porUf.get(u.uf) !== undefined && !foraDoEstado(u.uf),
+    );
+    const larguraMaxima = Math.max(
+      calhaMinima,
+      ...comValor.map((u) => larguraNaCalha(u.uf, porUf.get(u.uf)!)),
+    );
+    const escalaPior = escalaDe(larguraMaxima);
+    return Math.max(
+      calhaMinima,
+      ...comValor
+        .filter((u) => !posicaoRotulo(u, porUf.get(u.uf)!, escalaPior))
+        .map((u) => larguraNaCalha(u.uf, porUf.get(u.uf)!)),
+    );
+  });
 
   const mapaLargura = $derived(width - pad * 2 - calha);
   /** Domínio da malha → unidades do cartão. */
   const km = $derived(mapaLargura / malha.largura);
   /** Unidades do cartão → domínio da malha, para o texto desenhado dentro dele. */
   const dom = $derived((v: number) => v / km);
-
-  const porUf = $derived(new Map(valores.map((v) => [v.uf, v.valor])));
 
   const classeDe = (v: number) => quebras.filter((q) => v >= q).length;
   const corDe = (v: number | undefined) => (v === undefined ? '#EDEDE8' : rampa[classeDe(v)]);
@@ -143,47 +367,91 @@
     return contraste(l, 1) >= contraste(l, luminancia(cinza.titulo)) ? '#FFFFFF' : cinza.titulo;
   };
 
-  /**
-   * O bloco de duas linhas — sigla e número — cabe no estado se couber no maior
-   * círculo que cabe nele. `folga` é o raio desse círculo, calculado uma vez na
-   * preparação da malha.
-   *
-   * O `0,85` desconta o que o círculo inscrito tem de pessimista: ele é o que
-   * cabe no pior sentido, e o texto é largo e baixo. Sem ele o Acre e Santa
-   * Catarina — que comportam o rótulo com sobra visível — iriam para a calha
-   * por dois décimos de unidade, e as linhas de chamada deles atravessariam o
-   * mapa inteiro.
-   */
-  const blocoInterno = $derived.by(() => {
-    const alturaBloco = dom(type.sigla + type.valor + 2 * k);
-    return (uf: string, valor: number) => {
-      const larguraBloco = Math.max(
-        dom(measureLabel(uf, type.sigla, 600)),
-        dom(measureLabel(formatValue(valor), type.valor, 700)),
-      );
-      return 0.85 * Math.hypot(larguraBloco / 2, alturaBloco / 2);
-    };
-  });
-
   type Estado = {
     uf: string;
+    /** O texto do rótulo: a sigla, ou o que `nomes` puser no lugar dela. */
+    nome: string;
+    /** O ponto de `pontos`, já no domínio da malha. */
+    ponto: [number, number] | null;
     d: string;
     valor: number | undefined;
     cor: string;
     ancora: [number, number];
+    /** Onde o rótulo dentro do estado é centrado; `null` quando vai para fora. */
+    centro: [number, number] | null;
     dentro: boolean;
+    abaixo: boolean;
+    esquerda: boolean;
+    /** O ponto mais a oeste do contorno ao lado do rótulo, no domínio da malha. */
+    borda: number;
+    /** A altura do centro do rótulo de fora, no domínio da malha. */
+    alturaFora: number;
+    /** O ponto mais ao sul do contorno sob o rótulo, no domínio da malha. */
+    base: number;
+  };
+
+  /**
+   * O ponto mais ao sul do contorno na faixa `[x - meia, x + meia]` — a borda
+   * que fica de fato embaixo do rótulo, e não o extremo sul do estado, que no
+   * Acre fica a leste da âncora e deixaria o rótulo solto no vazio.
+   *
+   * A malha só tem `M`, `L` e `Z` absolutos: os números vêm em pares x, y.
+   */
+  const baseSob = (d: string, x: number, meia: number) => {
+    const n = (d.match(/-?[\d.]+/g) ?? []).map(Number);
+    let base = -Infinity;
+    for (let i = 0; i + 1 < n.length; i += 2) {
+      if (Math.abs(n[i] - x) <= meia) base = Math.max(base, n[i + 1]);
+    }
+    return base;
+  };
+
+  /**
+   * O ponto mais a oeste do contorno na faixa `[y - meia, y + meia]` — a borda
+   * que fica de fato ao lado do rótulo, e não o extremo oeste do estado.
+   */
+  const bordaOeste = (d: string, y: number, meia: number) => {
+    const n = (d.match(/-?[\d.]+/g) ?? []).map(Number);
+    let borda = Infinity;
+    for (let i = 0; i + 1 < n.length; i += 2) {
+      if (Math.abs(n[i + 1] - y) <= meia) borda = Math.min(borda, n[i]);
+    }
+    return borda;
   };
 
   const estados: Estado[] = $derived(
     malha.ufs.map((u) => {
       const valor = porUf.get(u.uf);
+      const nome = rotuloDe(u.uf);
+      const lugar = pontos?.[u.uf];
+      const ponto = lugar ? projetar(lugar) : null;
+      const esquerda = valor !== undefined && rotulosEsquerda.includes(u.uf);
+      const alturaFora = (ponto ?? u.rotulo)[1];
+      const centro =
+        valor !== undefined && !foraDoEstado(u.uf) ? posicaoRotulo(u, valor, km) : null;
       return {
         uf: u.uf,
+        nome,
+        ponto,
         d: u.d,
         valor,
         cor: corDe(valor),
         ancora: u.rotulo as [number, number],
-        dentro: valor !== undefined && u.folga >= blocoInterno(u.uf, valor),
+        centro,
+        dentro: centro !== null,
+        abaixo: valor !== undefined && rotulosAbaixo.includes(u.uf),
+        base:
+          valor !== undefined && rotulosAbaixo.includes(u.uf)
+            ? baseSob(
+                u.d,
+                u.rotulo[0],
+                dom(Math.max(measureLabel(nome, type.sigla, 600), measureLabel(formatValue(valor), type.valor, 700))) / 2,
+              )
+            : 0,
+        esquerda,
+        alturaFora,
+        // A faixa é a altura do bloco de duas linhas em torno do centro.
+        borda: esquerda ? bordaOeste(u.d, alturaFora, dom(3.2 * k + 0.75 * type.sigla)) : 0,
       };
     }),
   );
@@ -221,20 +489,34 @@
 
   /**
    * Os rótulos que não couberam dentro do estado, na calha: cada um na altura da
-   * sua âncora, empurrados para baixo só o suficiente para não se encostarem. A
-   * ordem é a do norte para o sul, então as linhas de chamada não se cruzam.
+   * sua origem — o ponto de `pontos`, ou a âncora —, empurrados para baixo só
+   * o suficiente para não se encostarem. A ordem é a das origens, do norte para
+   * o sul, então as linhas de chamada não se cruzam. O rótulo de duas linhas
+   * empurra o seguinte uma linha a mais.
    */
   const chamadaLinha = $derived(type.chamada * 1.5);
+  const segundaLinha = $derived(type.chamada * 1.15);
   const chamadas = $derived.by(() => {
     const fora = estados
-      .filter((e) => !e.dentro && e.valor !== undefined)
-      .sort((a, b) => a.ancora[1] - b.ancora[1]);
+      .filter((e) => !e.dentro && !e.abaixo && !e.esquerda && e.valor !== undefined)
+      .map((e) => ({ e, origem: e.ponto ?? e.ancora }))
+      .sort((a, b) => a.origem[1] - b.origem[1]);
 
-    let ultimo = -Infinity;
-    return fora.map((e) => {
-      const y = Math.max(e.ancora[1] * km, ultimo + chamadaLinha);
-      ultimo = y;
-      return { uf: e.uf, valor: e.valor!, y, ax: e.ancora[0] * km, ay: e.ancora[1] * km };
+    let proximo = -Infinity;
+    return fora.map(({ e, origem: [ax, ay] }) => {
+      const y = Math.max(ay * km, proximo);
+      const duasLinhas = !umaLinha(e.uf, e.valor!);
+      proximo = y + chamadaLinha + (duasLinhas ? segundaLinha : 0);
+      return {
+        uf: e.uf,
+        nome: e.nome,
+        valor: e.valor!,
+        y,
+        duasLinhas,
+        ax: ax * km,
+        ay: ay * km,
+        temPonto: !!e.ponto,
+      };
     });
   });
 
@@ -354,17 +636,17 @@
             sigla de Santa Catarina encosta na divisa com o Paraná.
           -->
           <text
-            x={e.ancora[0]}
-            y={e.ancora[1] - dom(3.2 * k)}
+            x={e.centro![0]}
+            y={e.centro![1] - dom(3.2 * k)}
             text-anchor="middle"
             font-size={dom(type.sigla)}
             font-weight="600"
             fill={cor}
-            font-family={fontFamily}>{e.uf}</text
+            font-family={fontFamily}>{e.nome}</text
           >
           <text
-            x={e.ancora[0]}
-            y={e.ancora[1] + dom(type.valor - 2.2 * k)}
+            x={e.centro![0]}
+            y={e.centro![1] + dom(type.valor - 2.2 * k)}
             text-anchor="middle"
             font-size={dom(type.valor)}
             font-weight="700"
@@ -372,6 +654,50 @@
             font-family={fontFamily}>{formatValue(e.valor!)}</text
           >
         {/if}
+      {/each}
+
+      <!-- sigla e número logo abaixo do estado, fora dele, na cor do texto do cartão -->
+      {#each estados.filter((e) => e.abaixo) as e (e.uf)}
+        <text
+          x={e.ancora[0]}
+          y={e.base + dom(4 * k + type.sigla)}
+          text-anchor="middle"
+          font-size={dom(type.sigla)}
+          font-weight="600"
+          fill={cinza.dado}
+          font-family={fontFamily}>{e.nome}</text
+        >
+        <text
+          x={e.ancora[0]}
+          y={e.base + dom(6 * k + type.sigla + type.valor)}
+          text-anchor="middle"
+          font-size={dom(type.valor)}
+          font-weight="700"
+          fill={cinza.dado}
+          font-family={fontFamily}>{formatValue(e.valor!)}</text
+        >
+      {/each}
+
+      <!-- nome e número à esquerda do estado, contra a borda oeste, na altura do ponto -->
+      {#each estados.filter((e) => e.esquerda) as e (e.uf)}
+        <text
+          x={e.borda - dom(5 * k)}
+          y={e.alturaFora - dom(3.2 * k)}
+          text-anchor="end"
+          font-size={dom(type.sigla)}
+          font-weight="600"
+          fill={cinza.dado}
+          font-family={fontFamily}>{e.nome}</text
+        >
+        <text
+          x={e.borda - dom(5 * k)}
+          y={e.alturaFora + dom(type.valor - 2.2 * k)}
+          text-anchor="end"
+          font-size={dom(type.valor)}
+          font-weight="700"
+          fill={cinza.dado}
+          font-family={fontFamily}>{formatValue(e.valor!)}</text
+        >
       {/each}
     </g>
 
@@ -381,17 +707,47 @@
       <!-- o halo branco carrega a linha por cima dos estados escuros -->
       <path d={traco} fill="none" stroke="#FFFFFF" stroke-width={2 * k} stroke-opacity="0.85" />
       <path d={traco} fill="none" stroke={cinza.chamada} stroke-width={0.6 * k} />
-      <circle cx={c.ax} cy={c.ay} r={1.6 * k} fill="#FFFFFF" />
-      <circle cx={c.ax} cy={c.ay} r={1.1 * k} fill={cinza.chamada} />
-      <text
-        x={calhaX - pad}
-        y={c.y}
-        font-size={type.chamada}
-        font-weight="600"
-        fill={cinza.dado}
-        font-family={fontFamily}
-        >{c.uf} <tspan font-weight="700">{formatValue(c.valor)}</tspan></text
-      >
+      {#if !c.temPonto}
+        <circle cx={c.ax} cy={c.ay} r={1.6 * k} fill="#FFFFFF" />
+        <circle cx={c.ax} cy={c.ay} r={1.1 * k} fill={cinza.chamada} />
+      {/if}
+      {#if c.duasLinhas}
+        <text
+          x={calhaX - pad}
+          y={c.y}
+          font-size={type.chamada}
+          font-weight="600"
+          fill={cinza.dado}
+          font-family={fontFamily}
+          >{c.nome}<tspan x={calhaX - pad} dy={segundaLinha} font-weight="700"
+            >{formatValue(c.valor)}</tspan
+          ></text
+        >
+      {:else}
+        <text
+          x={calhaX - pad}
+          y={c.y}
+          font-size={type.chamada}
+          font-weight="600"
+          fill={cinza.dado}
+          font-family={fontFamily}
+          >{c.nome} <tspan font-weight="700">{formatValue(c.valor)}</tspan></text
+        >
+      {/if}
+    {/each}
+
+    <!-- os lugares de `pontos`: branco com contorno escuro, legível em qualquer degrau da rampa -->
+    {#each estados as e (e.uf)}
+      {#if e.ponto}
+        <circle
+          cx={e.ponto[0] * km}
+          cy={e.ponto[1] * km}
+          r={2 * k}
+          fill="#FFFFFF"
+          stroke={cinza.titulo}
+          stroke-width={0.9 * k}
+        />
+      {/if}
     {/each}
 
     {#if destaque}

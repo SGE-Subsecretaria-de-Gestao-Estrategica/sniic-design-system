@@ -40,6 +40,8 @@
     legenda?: boolean;
     columnRatio?: number;
     radius?: number;
+    /** Filete na cor do fundo entre os segmentos empilhados (rampas de tons próximos). */
+    divisoria?: boolean;
     plotHeight?: number;
     width?: number;
     height?: number;
@@ -60,6 +62,7 @@
     legenda = true,
     columnRatio = 0.6,
     radius = 8,
+    divisoria = false,
     plotHeight = 220,
     width = 580,
     height,
@@ -273,7 +276,12 @@
       {#if seg.valor > 0}
         {@const y = yDe(seg.top)}
         {@const h = yDe(seg.bottom) - y}
-        <path d={segmentoPath(x, y, colW, h, seg.keyIndex === topoDaColuna[i] ? radius * k : 0)} fill={cor(seg.keyIndex)} />
+        <path
+          d={segmentoPath(x, y, colW, h, seg.keyIndex === topoDaColuna[i] ? radius * k : 0)}
+          fill={cor(seg.keyIndex)}
+          stroke={divisoria ? (background ?? '#ffffff') : undefined}
+          stroke-width={divisoria ? 1.2 * k : undefined}
+        />
         {#if labelFitsInBar(formatValue(seg.valor), type.xs, colW, 600, 4 * k, 4 * k) && h >= type.xs * 1.3}
           <text
             x={x + colW / 2}

@@ -8,6 +8,9 @@
     /** Sua magnitude cresce para a esquerda — entra positiva, não negativa. */
     negativo: number;
   };
+
+  /** Um número grande na cor da parcela, com a frase que o explica abaixo. */
+  export type Destaque = { valor: string; cor: string; texto: string };
 </script>
 
 <script lang="ts">
@@ -48,6 +51,8 @@
     source,
     width = 580,
     alturaBarra = 22,
+    raio,
+    legenda = 'quadrados',
     svgEl = $bindable(null),
     background = null,
   }: {
@@ -59,11 +64,20 @@
     title: string;
     subtitle?: string;
     formatValue?: (v: number) => string;
-    destaque?: { valor: string; cor: string; texto: string };
+    /** Um ou mais destaques, empilhados na coluna à direita do gráfico. */
+    destaque?: Destaque | Destaque[];
     footnote?: string;
     source?: string;
     width?: number;
     alturaBarra?: number;
+    /** Raio dos cantos da barra; sem ele, a barra é uma pílula (metade da altura). */
+    raio?: number;
+    /**
+     * `quadrados`: a régua de duas cores acima do gráfico, um quadrado por
+     * parcela. `nomes`: o nome de cada parcela escrito na própria cor, sobre
+     * a sua metade do gráfico e ancorado no zero.
+     */
+    legenda?: 'quadrados' | 'nomes';
     svgEl?: SVGSVGElement | null;
     background?: string | null;
   } = $props();
@@ -79,6 +93,7 @@
     valor: scale.sm * k,
     destaqueValor: 19 * k,
     destaqueTexto: scale.md * k,
+    nome: 13 * k,
     nota: scale.sm * k,
   };
 
@@ -91,6 +106,7 @@
   };
 
   const pad = 16 * k;
+  const rx = $derived(raio === undefined ? (alturaBarra * k) / 2 : raio * k);
 
   const textWidth = $derived(width - pad * 2);
   const titleLines = $derived(wrapText(title, type.title, textWidth, 600));
@@ -108,18 +124,24 @@
 
   /** A régua de duas cores, entre o subtítulo e o gráfico. */
   const quadrado = 10 * k;
-  const legendaY = $derived(headerBottom + 14 * k);
+  // Os nomes sobre as metades já pertencem ao gráfico: pedem mais ar acima
+  // deles para não se colarem ao subtítulo.
+  const legendaY = $derived(headerBottom + (legenda === 'nomes' ? 28 : 14) * k);
   const larguraLegendaNegativo = $derived(
     measureLabel(labelNegativo, type.legenda, 500) + quadrado + 6 * k,
   );
   const offsetLegendaPositivo = $derived(larguraLegendaNegativo + 24 * k);
 
+  const destaques = $derived(destaque === undefined ? [] : Array.isArray(destaque) ? destaque : [destaque]);
   const larguraDestaque = $derived(
-    destaque
-      ? Math.min(Math.max(118 * k, measureLabel(destaque.valor, type.destaqueValor, 700)), 150 * k)
+    destaques.length
+      ? Math.min(
+          Math.max(118 * k, ...destaques.map((d) => measureLabel(d.valor, type.destaqueValor, 700))),
+          150 * k,
+        )
       : 0,
   );
-  const plotRight = $derived(width - pad - (destaque ? larguraDestaque + 16 * k : 0));
+  const plotRight = $derived(width - pad - (destaques.length ? larguraDestaque + 16 * k : 0));
 
   const larguraRotulo = $derived(
     Math.max(...linhas.map((l) => measureLabel(l.label, type.rotulo, 600))),
@@ -129,6 +151,22 @@
   const gapLinha = 12 * k;
   const plotTop = $derived(legendaY + 18 * k);
   const plotBottom = $derived(plotTop + linhas.length * alturaBarra * k + (linhas.length - 1) * gapLinha);
+
+  /** Cada destaque começa onde o anterior acabou, com uma folga entre eles. */
+  const destaqueLinha = 14.5 * k;
+  const destaquesPos = $derived.by(() => {
+    let top = plotTop;
+    return destaques.map((d) => {
+      const linhas = wrapText(d.texto, type.destaqueTexto, larguraDestaque, 500);
+      const pos = { ...d, top, linhas };
+      top += 21 * k + linhas.length * destaqueLinha + 16 * k;
+      return pos;
+    });
+  });
+  /** A pilha de destaques pode passar do fim das barras: as notas descem até ela. */
+  const destaquesBottom = $derived(
+    destaquesPos.reduce((fim, d) => Math.max(fim, d.top + 21 * k + d.linhas.length * destaqueLinha), 0),
+  );
 
   const maxPositivo = $derived(Math.max(...linhas.map((l) => l.positivo), 0));
   const maxNegativo = $derived(Math.max(...linhas.map((l) => l.negativo), 0));
@@ -190,7 +228,7 @@
     }),
   );
 
-  const notasTop = $derived(plotBottom + 14 * k);
+  const notasTop = $derived(Math.max(plotBottom, destaquesBottom) + 14 * k);
   const height = $derived(notasTop + (footnoteLines.length + sourceLines.length) * notaLine + pad);
 </script>
 
@@ -227,32 +265,54 @@
     >
   {/each}
 
-  <!-- legenda: um quadrado por direção -->
-  <rect x={pad} y={legendaY - quadrado * 0.8} width={quadrado} height={quadrado} rx={2 * k} fill={corNegativo} />
-  <text
-    x={pad + quadrado + 6 * k}
-    y={legendaY}
-    font-size={type.legenda}
-    font-weight="500"
-    fill={cinza.dado}
-    font-family={fontFamily}>{labelNegativo}</text
-  >
-  <rect
-    x={pad + offsetLegendaPositivo}
-    y={legendaY - quadrado * 0.8}
-    width={quadrado}
-    height={quadrado}
-    rx={2 * k}
-    fill={corPositivo}
-  />
-  <text
-    x={pad + offsetLegendaPositivo + quadrado + 6 * k}
-    y={legendaY}
-    font-size={type.legenda}
-    font-weight="500"
-    fill={cinza.dado}
-    font-family={fontFamily}>{labelPositivo}</text
-  >
+  {#if legenda === 'nomes'}
+    <!-- legenda: o nome de cada parcela na própria cor, sobre a sua metade -->
+    <text
+      x={x0 - 8 * k}
+      y={legendaY}
+      text-anchor="end"
+      font-size={type.nome}
+      font-weight="700"
+      fill={corNegativo}
+      font-family={fontFamily}>{labelNegativo}</text
+    >
+    <text
+      x={x0 + 8 * k}
+      y={legendaY}
+      text-anchor="start"
+      font-size={type.nome}
+      font-weight="700"
+      fill={corPositivo}
+      font-family={fontFamily}>{labelPositivo}</text
+    >
+  {:else}
+    <!-- legenda: um quadrado por direção -->
+    <rect x={pad} y={legendaY - quadrado * 0.8} width={quadrado} height={quadrado} rx={2 * k} fill={corNegativo} />
+    <text
+      x={pad + quadrado + 6 * k}
+      y={legendaY}
+      font-size={type.legenda}
+      font-weight="500"
+      fill={cinza.dado}
+      font-family={fontFamily}>{labelNegativo}</text
+    >
+    <rect
+      x={pad + offsetLegendaPositivo}
+      y={legendaY - quadrado * 0.8}
+      width={quadrado}
+      height={quadrado}
+      rx={2 * k}
+      fill={corPositivo}
+    />
+    <text
+      x={pad + offsetLegendaPositivo + quadrado + 6 * k}
+      y={legendaY}
+      font-size={type.legenda}
+      font-weight="500"
+      fill={cinza.dado}
+      font-family={fontFamily}>{labelPositivo}</text
+    >
+  {/if}
 
   <!-- o zero comum às duas direções -->
   <line x1={x0} y1={plotTop} x2={x0} y2={plotBottom} stroke={cinza.zero} stroke-width={1.2 * k} />
@@ -268,8 +328,8 @@
       font-family={fontFamily}>{l.label}</text
     >
 
-    <rect x={x0} y={l.top} width={Math.max(l.larguraPos, 0)} height={alturaBarra * k} rx={(alturaBarra * k) / 2} fill={corPositivo} />
-    <rect x={l.xNeg} y={l.top} width={Math.max(l.larguraNeg, 0)} height={alturaBarra * k} rx={(alturaBarra * k) / 2} fill={corNegativo} />
+    <rect x={x0} y={l.top} width={Math.max(l.larguraPos, 0)} height={alturaBarra * k} {rx} fill={corPositivo} />
+    <rect x={l.xNeg} y={l.top} width={Math.max(l.larguraNeg, 0)} height={alturaBarra * k} {rx} fill={corNegativo} />
 
     {#if l.posDentro}
       <text
@@ -316,27 +376,27 @@
     {/if}
   {/each}
 
-  {#if destaque}
+  {#each destaquesPos as d (d.valor + d.texto)}
     {@const destaqueX = plotRight + 16 * k}
     <text
       x={destaqueX}
-      y={plotTop + type.destaqueValor}
+      y={d.top + type.destaqueValor}
       font-size={type.destaqueValor}
       font-weight="700"
-      fill={destaque.cor}
-      font-family={fontFamily}>{destaque.valor}</text
+      fill={d.cor}
+      font-family={fontFamily}>{d.valor}</text
     >
-    {#each wrapText(destaque.texto, type.destaqueTexto, larguraDestaque, 500) as linha, i}
+    {#each d.linhas as linha, i (i)}
       <text
         x={destaqueX}
-        y={plotTop + 21 * k + (i + 0.85) * 14.5 * k}
+        y={d.top + 21 * k + (i + 0.85) * destaqueLinha}
         font-size={type.destaqueTexto}
         font-weight="500"
         fill={cinza.dado}
         font-family={fontFamily}>{linha}</text
       >
     {/each}
-  {/if}
+  {/each}
 
   {#each [...footnoteLines, ...sourceLines] as linha, i}
     <text
