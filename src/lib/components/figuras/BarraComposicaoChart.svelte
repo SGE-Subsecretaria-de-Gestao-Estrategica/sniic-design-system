@@ -25,10 +25,12 @@
    * escondê-la.
    *
    * As pontas externas levam o raio curto de `RAIO_BARRA` e as junções não,
-   * como as demais barras da LPG. O valor vai dentro do segmento quando cabe;
+   * como as demais barras de `figuras/`. O valor vai dentro do segmento quando cabe;
    * quando não cabe, desce para baixo da barra, ligado por um traço fino — e
    * os rótulos de fora de uma mesma linha são empurrados para a direita até
-   * não se sobreporem, o que mantém a ordem da barra.
+   * não se sobreporem, o que mantém a ordem da barra. A exceção é a última
+   * parcela de uma barra que não chega à borda (com `total`): seu valor vai
+   * logo à direita dela, na mesma altura.
    *
    * Com `grupo`, as barras de um mesmo grupo encostam umas nas outras e os
    * grupos se separam pelo vão normal — o par "contemplados / recursos" de uma
@@ -39,7 +41,7 @@
    *
    * Desenhada com as medidas de `../eixo1/tokens` (escala de impressão A4,
    * tipografia, quebra de linha) e a faixa de pastilhas de `../eixo1/legend`,
-   * para que as figuras da LPG leiam como parte da mesma coleção.
+   * para que as figuras leiam como parte da mesma coleção do Eixo 1.
    */
   import {
     a4Scale,
@@ -52,13 +54,6 @@
   import { layoutLegend } from '../eixo1/legend';
   import { RAIO_BARRA, segmentoPath } from './forma';
 
-  const cinza = {
-    titulo: '#2F2F2B',
-    subtitulo: '#6E6E68',
-    dado: '#2F2F2B',
-    guia: '#B5B5AE',
-    nota: '#8A8A84',
-  };
 
   interface Props {
     data: LinhaComposicao[];
@@ -85,6 +80,8 @@
     divisoria?: boolean;
     alturaBarra?: number;
     width?: number;
+    /** A cor do texto escuro — título, rótulos e valores. */
+    corTexto?: string;
     background?: string | null;
     svgEl?: SVGSVGElement | null;
   }
@@ -105,9 +102,18 @@
     divisoria = false,
     alturaBarra = 26,
     width = 580,
+    corTexto = '#2F2F2B',
     background = '#ffffff',
     svgEl = $bindable(null),
   }: Props = $props();
+
+  const cinza = $derived({
+    titulo: corTexto,
+    subtitulo: '#6E6E68',
+    dado: corTexto,
+    guia: '#B5B5AE',
+    nota: '#8A8A84',
+  });
 
   const k = $derived(a4Scale(width));
 
@@ -217,6 +223,8 @@
     fora: boolean;
     /** Onde o rótulo de fora fica, depois de afastado dos vizinhos. */
     xFora: number;
+    /** Última parcela da linha, com espaço livre depois dela: o valor vai à direita da barra. */
+    aDireita: boolean;
   };
 
   const linhasPos = $derived.by(() => {
@@ -238,10 +246,24 @@
           dentro,
           fora: !dentro && v > 0 && rotulosFora,
           xFora: x + w / 2,
+          aDireita: false,
         };
         x += w;
         return seg;
       });
+
+      // Com `total` fixo, sobra espaço depois da última parcela: se o valor dela
+      // não cabe no segmento mas cabe ali, vai ao lado da barra, na mesma altura,
+      // em vez de descer para baixo dela.
+      const ultimaParcela = segmentos.findLast((s) => s.w > 0);
+      if (
+        ultimaParcela?.fora &&
+        ultimaParcela.x + ultimaParcela.w + 6 * k + measureLabel(ultimaParcela.texto, type.valor, 700) <=
+          plotRight
+      ) {
+        ultimaParcela.fora = false;
+        ultimaParcela.aDireita = true;
+      }
 
       // Rótulos de fora: primeiro empurrados para a direita até não se
       // sobreporem; depois, da direita para a esquerda, puxados de volta para
@@ -404,6 +426,15 @@
             font-size={type.valor}
             font-weight="700"
             fill={contraste(cor(seg.keyIndex))}
+            font-family={fontFamily}>{seg.texto}</text
+          >
+        {:else if seg.aDireita}
+          <text
+            x={seg.x + seg.w + 6 * k}
+            y={l.top + barH / 2 + type.valor * 0.35}
+            font-size={type.valor}
+            font-weight="700"
+            fill={cinza.dado}
             font-family={fontFamily}>{seg.texto}</text
           >
         {:else if seg.fora}

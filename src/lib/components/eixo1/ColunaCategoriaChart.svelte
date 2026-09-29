@@ -17,13 +17,6 @@
   import { a4Scale, fontFamily, fontSize as scale, labelFitsInBar, measureLabel, wrapText } from './tokens';
   import { layoutLegend } from './legend';
 
-  const cinza = {
-    titulo: '#2F2F2B',
-    subtitulo: '#6E6E68',
-    eixo: '#8A8A84',
-    grade: '#EDEDE9',
-    nota: '#8A8A84',
-  };
 
   interface Props {
     data: CategoriaRow[];
@@ -46,6 +39,11 @@
     width?: number;
     height?: number;
     background?: string | null;
+    /**
+     * A cor do texto escuro — título, nomes e valores. Sem ela, o quase preto
+     * do Eixo 1; a LPG passa o seu cinza-escuro.
+     */
+    corTexto?: string;
     svgEl?: SVGSVGElement | null;
   }
 
@@ -67,8 +65,17 @@
     width = 580,
     height,
     background,
+    corTexto,
     svgEl = $bindable(null),
   }: Props = $props();
+
+  const cinza = $derived({
+    titulo: corTexto ?? '#2F2F2B',
+    subtitulo: '#6E6E68',
+    eixo: '#8A8A84',
+    grade: '#EDEDE9',
+    nota: '#8A8A84',
+  });
 
   const k = $derived(a4Scale(width));
 

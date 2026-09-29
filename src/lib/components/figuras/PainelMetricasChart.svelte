@@ -51,14 +51,6 @@
   import { a4Scale, fontFamily, fontSize as scale, measureLabel, wrapText } from '../eixo1/tokens';
   import { RAIO_BARRA } from './forma';
 
-  const cinza = {
-    titulo: '#2F2F2B',
-    subtitulo: '#6E6E68',
-    dado: '#2F2F2B',
-    nota: '#8A8A84',
-    regua: '#8A8A84',
-    faixa: '#F4F4F1',
-  };
 
   interface Props {
     colunas: ColunaPainel[];
@@ -69,6 +61,8 @@
     source?: string;
     width?: number;
     alturaBarra?: number;
+    /** A cor do texto escuro — título, rótulos e valores. */
+    corTexto?: string;
     background?: string | null;
     svgEl?: SVGSVGElement | null;
   }
@@ -82,9 +76,19 @@
     source,
     width = 580,
     alturaBarra = 18,
+    corTexto = '#2F2F2B',
     background = null,
     svgEl = $bindable(null),
   }: Props = $props();
+
+  const cinza = $derived({
+    titulo: corTexto,
+    subtitulo: '#6E6E68',
+    dado: corTexto,
+    nota: '#8A8A84',
+    regua: '#8A8A84',
+    faixa: '#F4F4F1',
+  });
 
   // svelte-ignore state_referenced_locally -- a largura autoral é fixada na criação
   const k = a4Scale(width);
@@ -227,7 +231,7 @@
         y2={plotBottom}
         stroke={cinza.regua}
         stroke-width={1 * k}
-        stroke-dasharray="{3 * k} {2.5 * k}"
+        stroke-dasharray="{6 * k} {4 * k}"
       />
       <text
         x={xr}

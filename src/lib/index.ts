@@ -213,8 +213,9 @@ export * from './components/eixo6/index.js';
 // Eixo 1 — Gestão e Participação, self-contained print/SVG charts (own palette & type scale)
 export * from './components/eixo1/index.js';
 
-// LPG — boletim da Lei Paulo Gustavo, in the Eixo 1 idiom with the PNAB palette
-export * from './components/lpg/index.js';
+// Figuras — data-agnostic print-scale bases in the Eixo 1 idiom (born for the LPG boletim,
+// whose leaf charts now live in LPG-2026/data-viz and consume these through the package)
+export * from './components/figuras/index.js';
 
 // Tokens
 export * from './tokens.js';

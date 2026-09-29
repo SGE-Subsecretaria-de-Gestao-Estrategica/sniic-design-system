@@ -9,7 +9,15 @@
     detalhes?: Record<string, string>;
   };
 
+  /** `label` aceita `\n` para quebrar o nome em linhas no meio da faixa. */
   export type CategoriaFluxo = { key: string; label: string };
+
+  /**
+   * O destaque sob cada categoria, no estilo do destaque da `BarraRankingChart`
+   * do Eixo 1: o número grande, na cor da barra de baixo, e a frase que o
+   * completa embaixo — "R$ 65,8 mil / é o valor médio por contemplado".
+   */
+  export type NotaFluxo = { valor: string; texto: string };
 </script>
 
 <script lang="ts">
@@ -25,26 +33,22 @@
    *
    * A cor é a da medida, não a da categoria — cada barra numa cor só, as
    * categorias separadas pelo vão e nomeadas pelo rótulo —, então a figura cabe
-   * no par de cores do boletim com qualquer número de categorias. A faixa passa
+   * no par de cores das duas medidas com qualquer número de categorias. A faixa passa
    * de uma cor à outra, esmaecida para não disputar com as barras, e alterna
    * de intensidade entre categorias vizinhas para que cada uma se leia como uma
    * peça; o nome da categoria vai no meio da sua faixa.
    *
-   * Sob a barra de baixo, `notas` põe um texto por categoria (o valor médio por
-   * contemplado, por exemplo): a razão entre as duas barras, dita em número.
+   * Sob a barra de baixo, `notas` põe um destaque por categoria (o valor médio
+   * por contemplado, por exemplo): a razão entre as duas barras, dita em
+   * número.
    *
    * No mesmo idioma das figuras do Eixo 1: medidas e tipografia de
    * `../eixo1/tokens`.
    */
   import { a4Scale, fontFamily, fontSize as scale, measureLabel, wrapText } from '../eixo1/tokens';
   import { RAIO_BARRA, segmentoPath } from './forma';
+  import Destaque, { alturaDestaque, larguraValorDestaque, linhasDestaque } from './Destaque.svelte';
 
-  const cinza = {
-    titulo: '#2F2F2B',
-    subtitulo: '#6E6E68',
-    dado: '#2F2F2B',
-    nota: '#8A8A84',
-  };
 
   interface Props {
     categorias: CategoriaFluxo[];
@@ -53,14 +57,16 @@
     title: string;
     subtitle?: string;
     formatValue?: (v: number) => string;
-    /** Um texto por categoria, sob o seu segmento na barra de baixo. */
-    notas?: Record<string, string>;
+    /** Um destaque por categoria, sob o seu segmento na barra de baixo. */
+    notas?: Record<string, NotaFluxo>;
     footnote?: string;
     source?: string;
     alturaBarra?: number;
     /** Altura da faixa de ligação entre as barras. */
     alturaFluxo?: number;
     width?: number;
+    /** A cor do texto escuro — título, rótulos e valores. */
+    corTexto?: string;
     background?: string | null;
     svgEl?: SVGSVGElement | null;
   }
@@ -77,9 +83,17 @@
     alturaBarra = 30,
     alturaFluxo = 64,
     width = 580,
+    corTexto = '#2F2F2B',
     background = '#ffffff',
     svgEl = $bindable(null),
   }: Props = $props();
+
+  const cinza = $derived({
+    titulo: corTexto,
+    subtitulo: '#6E6E68',
+    dado: corTexto,
+    nota: '#8A8A84',
+  });
 
   const uid = $props.id();
 
@@ -152,12 +166,36 @@
         const completo = b.detalhes?.[c.key] ? `${formatValue(pct)} · ${b.detalhes[c.key]}` : null;
         const cabe = (t: string) => measureLabel(t, type.valor, 700) + 12 * k <= w;
         const texto = completo && cabe(completo) ? completo : cabe(formatValue(pct)) ? formatValue(pct) : null;
-        const seg = { key: c.key, i, x, w, texto };
+        const seg = { key: c.key, i, x, w, pct, texto };
         x += w + vao;
         return seg;
       });
     }),
   );
+
+  const linhaCategoria = type.categoria * 1.2;
+
+  /**
+   * O centro da faixa na altura `y`. As duas bordas são cúbicas com os
+   * controles na altura do meio, e as duas têm a mesma curva em y — então, no
+   * mesmo parâmetro `s`, o centro é a mistura dos centros de cima e de baixo
+   * com o mesmo peso das bordas. `s` sai por bisseção (y cresce com `s`).
+   */
+  function centroNaAltura(topo: number, base: number, y1: number, y2: number, y: number) {
+    const ym = (y1 + y2) / 2;
+    const yEm = (s: number) =>
+      y1 * (1 - s) ** 3 + ym * 3 * (1 - s) * s + y2 * s ** 3;
+    let lo = 0;
+    let hi = 1;
+    for (let n = 0; n < 24; n++) {
+      const meio = (lo + hi) / 2;
+      if (yEm(meio) < y) lo = meio;
+      else hi = meio;
+    }
+    const s = (lo + hi) / 2;
+    const pesoTopo = (1 - s) ** 3 + 3 * (1 - s) ** 2 * s;
+    return topo * pesoTopo + base * (1 - pesoTopo);
+  }
 
   const fluxos = $derived(
     categorias.map((c, i) => {
@@ -166,13 +204,29 @@
       const y1 = topoY + barH;
       const y2 = baseY;
       const ym = (y1 + y2) / 2;
+      // A largura da faixa na altura do nome — no meio das curvas, a média das
+      // larguras dos dois segmentos. O nome que não cabe com folga nas duas
+      // bordas quebra em linhas; um `\n` no rótulo força a quebra ali.
+      const larguraMeio = (t.w + b.w) / 2;
+      const partes = c.label
+        .split('\n')
+        .flatMap((parte) =>
+          wrapText(parte, type.categoria, Math.max(larguraMeio - 20 * k, 40 * k), 700),
+        );
+      // Cada linha do nome centra no meio da faixa na sua própria altura, e não
+      // no meio da faixa inteira: um nome em duas linhas desce acompanhando a
+      // curva, a de cima puxada para o segmento de cima, a de baixo para o de
+      // baixo.
+      const centroTopo = t.x + t.w / 2;
+      const centroBase = b.x + b.w / 2;
+      const linhas = partes.map((texto, n) => {
+        const y = ym + (n - (partes.length - 1) / 2) * linhaCategoria;
+        return { texto, x: centroNaAltura(centroTopo, centroBase, y1, y2, y), y };
+      });
       return {
         key: c.key,
-        label: c.label,
+        linhas,
         opacidade: i % 2 === 0 ? 0.34 : 0.16,
-        // O meio da faixa: a média dos centros dos dois segmentos que ela liga.
-        cx: (t.x + t.w / 2 + b.x + b.w / 2) / 2,
-        cy: ym,
         d: [
           `M${t.x},${y1}`,
           `C${t.x},${ym} ${b.x},${ym} ${b.x},${y2}`,
@@ -184,14 +238,35 @@
     }),
   );
 
-  const notasLinhas = $derived(
-    categorias.map((c, i) =>
-      wrapText(notas?.[c.key] ?? '', type.nota, Math.max(segmentos[1][i].w - 4 * k, 60 * k), 500),
+  // Sob a barra de baixo, o destaque de cada categoria: o número grande e a
+  // frase embaixo, como na `BarraRankingChart`. O percentual que não coube no
+  // segmento entra na frase — o número nunca some. O destaque que passaria da
+  // margem direita alinha pelo fim do segmento.
+  const notasPos = $derived(
+    categorias.map((c, i) => {
+      const s = segmentos[1][i];
+      const nota = notas?.[c.key];
+      const pct = s.texto || s.w <= 0 ? null : `${formatValue(s.pct)} do total`;
+      const texto = [nota?.texto, pct].filter(Boolean).join(' · ');
+      const largura = Math.max(s.w - 8 * k, 96 * k);
+      const larguraValor = nota ? larguraValorDestaque(nota.valor, k) : 0;
+      const fim = s.x + Math.max(largura, larguraValor) > plotRight;
+      return {
+        valor: nota?.valor ?? null,
+        linhas: linhasDestaque(texto, largura, k),
+        x: fim ? s.x + s.w : s.x,
+        anchor: (fim ? 'end' : 'start') as 'end' | 'start',
+      };
+    }),
+  );
+  const notasAltura = $derived(
+    Math.max(
+      0,
+      ...notasPos.map((n) => alturaDestaque(n.linhas.length, k, Boolean(n.valor))),
     ),
   );
-  const notasAltura = $derived(Math.max(0, ...notasLinhas.map((l) => l.length)) * notaLine);
 
-  const notasTop = $derived(baseY + barH + (notasAltura ? 8 * k : 0));
+  const notasTop = $derived(baseY + barH + (notasAltura ? 12 * k : 0));
   const rodapeTop = $derived(notasTop + notasAltura + 14 * k);
   const height = $derived(rodapeTop + (footnoteLines.length + sourceLines.length) * notaLine + pad);
 </script>
@@ -239,15 +314,17 @@
   <!-- As ligações por baixo das barras, na altura inteira do vão entre elas. -->
   {#each fluxos as f (f.key)}
     <path d={f.d} fill="url(#{uid}-fluxo)" opacity={f.opacidade} />
-    <text
-      x={f.cx}
-      y={f.cy + type.categoria * 0.35}
-      text-anchor="middle"
-      font-size={type.categoria}
-      font-weight="700"
-      fill={cinza.dado}
-      font-family={fontFamily}>{f.label}</text
-    >
+    {#each f.linhas as linha, n (n)}
+      <text
+        x={linha.x}
+        y={linha.y + type.categoria * 0.35}
+        text-anchor="middle"
+        font-size={type.categoria}
+        font-weight="700"
+        fill={cinza.dado}
+        font-family={fontFamily}>{linha.texto}</text
+      >
+    {/each}
   {/each}
 
   {#each barras as b, j (b.label)}
@@ -281,16 +358,17 @@
   {/each}
 
   {#each categorias as c, i (c.key)}
-    {#each notasLinhas[i] as linha, n (n)}
-      <text
-        x={segmentos[1][i].x}
-        y={notasTop + (n + 0.8) * notaLine}
-        font-size={type.nota}
-        font-weight="500"
-        fill={cinza.subtitulo}
-        font-family={fontFamily}>{linha}</text
-      >
-    {/each}
+    {@const n = notasPos[i]}
+    <Destaque
+      {corTexto}
+      x={n.x}
+      y={notasTop}
+      valor={n.valor}
+      linhas={n.linhas}
+      cor={barras[1].cor}
+      {k}
+      anchor={n.anchor}
+    />
   {/each}
 
   {#each [...footnoteLines, ...sourceLines] as linha, i (i)}

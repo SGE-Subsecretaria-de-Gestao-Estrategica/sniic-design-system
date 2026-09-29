@@ -53,6 +53,7 @@
     alturaBarra = 22,
     raio,
     legenda = 'quadrados',
+    corTexto,
     svgEl = $bindable(null),
     background = null,
   }: {
@@ -78,6 +79,11 @@
      * a sua metade do gráfico e ancorado no zero.
      */
     legenda?: 'quadrados' | 'nomes';
+    /**
+     * A cor do texto escuro — título, nomes e valores. Sem ela, o quase preto
+     * do Eixo 1; a LPG passa o seu cinza-escuro.
+     */
+    corTexto?: string;
     svgEl?: SVGSVGElement | null;
     background?: string | null;
   } = $props();
@@ -97,13 +103,13 @@
     nota: scale.sm * k,
   };
 
-  const cinza = {
-    titulo: '#2F2F2B',
+  const cinza = $derived({
+    titulo: corTexto ?? '#2F2F2B',
     subtitulo: '#6E6E68',
-    dado: '#2F2F2B',
+    dado: corTexto ?? '#2F2F2B',
     zero: '#B9B9B3',
     nota: '#8A8A84',
-  };
+  });
 
   const pad = 16 * k;
   const rx = $derived(raio === undefined ? (alturaBarra * k) / 2 : raio * k);

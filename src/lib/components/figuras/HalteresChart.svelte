@@ -17,30 +17,21 @@
    * `formatDiff`, o número sobre ele a diz sem que o leitor subtraia.
    *
    * O traço é pintado com a rampa `gradiente`, de `a` para `b`, seja qual for
-   * o lado em que `b` cai: a cor diz a direção. Com a rampa das faixas de
-   * valor (`coresFaixas`), que vai do azul dos contemplados ao roxo dos
-   * recursos, o traço lê como "de onde as pessoas estão para onde o dinheiro
-   * foi".
+   * o lado em que `b` cai: a cor diz a direção. Com uma rampa que vai da cor
+   * de uma medida à da outra (de contemplados a recursos, por exemplo), o
+   * traço lê como "de onde as pessoas estão para onde o dinheiro foi".
    *
    * Os rótulos de valor ficam do lado de fora de cada ponta — o menor à
    * esquerda, o maior à direita —, então não colidem nem quando os dois pontos
    * coincidem. `extra` abre uma coluna à direita do eixo para uma terceira
    * medida que não cabe na escala (o valor médio, por exemplo).
    *
-   * Mesmo cabeçalho, legenda em pastilhas e rodapé das demais figuras da LPG.
+   * Mesmo cabeçalho, legenda em pastilhas e rodapé das demais figuras de `figuras/`.
    */
   import { a4Scale, fontFamily, fontSize as scale, measureLabel, wrapText } from '../eixo1/tokens';
   import { layoutLegend } from '../eixo1/legend';
   import { RAIO_BARRA, segmentoPath } from './forma';
 
-  const cinza = {
-    titulo: '#2F2F2B',
-    subtitulo: '#6E6E68',
-    dado: '#2F2F2B',
-    grade: '#E4E4DF',
-    eixo: '#8A8A84',
-    nota: '#8A8A84',
-  };
 
   interface Props {
     linhas: LinhaHalteres[];
@@ -64,6 +55,8 @@
     source?: string;
     raio?: number;
     width?: number;
+    /** A cor do texto escuro — título, rótulos e valores. */
+    corTexto?: string;
     background?: string | null;
     svgEl?: SVGSVGElement | null;
   }
@@ -85,9 +78,19 @@
     source,
     raio = 6,
     width = 580,
+    corTexto = '#2F2F2B',
     background = '#ffffff',
     svgEl = $bindable(null),
   }: Props = $props();
+
+  const cinza = $derived({
+    titulo: corTexto,
+    subtitulo: '#6E6E68',
+    dado: corTexto,
+    grade: '#E4E4DF',
+    eixo: '#8A8A84',
+    nota: '#8A8A84',
+  });
 
   const k = $derived(a4Scale(width));
 

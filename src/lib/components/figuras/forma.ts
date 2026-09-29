@@ -1,7 +1,8 @@
 /**
- * Geometria comum às figuras da LPG. As barras do boletim têm cantos quase
- * retos — não as pílulas do Eixo 1 —, e o raio mora aqui para que ranking,
- * divergente, colunas, composição e mosaico falem a mesma língua.
+ * Geometria comum às figuras de `figuras/`. As barras têm cantos quase retos
+ * — não as pílulas do Eixo 1 —, e o raio mora aqui para que ranking,
+ * divergente, colunas, composição e mosaico falem a mesma língua: quem usa as
+ * bases do Eixo 1 junto destas passa `raio={RAIO_BARRA}` a elas.
  */
 
 /** Raio dos cantos das barras, em unidades autorais (multiplicar por `k`). */

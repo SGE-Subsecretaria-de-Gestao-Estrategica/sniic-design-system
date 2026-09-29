@@ -55,6 +55,7 @@
     footnote,
     source,
     width = 580,
+    corTexto,
     svgEl = $bindable(null),
     background = null,
   }: {
@@ -105,6 +106,11 @@
     footnote?: string;
     source?: string;
     width?: number;
+    /**
+     * A cor do texto escuro — título, nomes e valores. Sem ela, o quase preto
+     * do Eixo 1; a LPG passa o seu cinza-escuro.
+     */
+    corTexto?: string;
     svgEl?: SVGSVGElement | null;
     background?: string | null;
   } = $props();
@@ -125,16 +131,16 @@
     nota: scale.sm * k,
   };
 
-  const cinza = {
-    titulo: '#2F2F2B',
+  const cinza = $derived({
+    titulo: corTexto ?? '#2F2F2B',
     subtitulo: '#6E6E68',
-    dado: '#3F3F3B',
+    dado: corTexto ?? '#3F3F3B',
     legenda: '#8A8A84',
     nota: '#8A8A84',
     /** O traço entre estados, por cima dos preenchimentos. */
     divisa: '#FFFFFF',
     chamada: '#9A9A94',
-  };
+  });
 
   const pad = 16 * k;
 

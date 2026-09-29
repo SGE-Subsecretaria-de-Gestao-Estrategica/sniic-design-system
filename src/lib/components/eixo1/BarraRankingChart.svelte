@@ -32,6 +32,7 @@
     width = 580,
     alturaBarra = 22,
     raio,
+    corTexto,
     svgEl = $bindable(null),
     background = null,
   }: {
@@ -47,6 +48,11 @@
     alturaBarra?: number;
     /** Raio dos cantos da barra; sem ele, a barra é uma pílula (metade da altura). */
     raio?: number;
+    /**
+     * A cor do texto escuro — título, nomes e valores. Sem ela, o quase preto
+     * do Eixo 1; a LPG passa o seu cinza-escuro.
+     */
+    corTexto?: string;
     svgEl?: SVGSVGElement | null;
     background?: string | null;
   } = $props();
@@ -64,12 +70,12 @@
     nota: scale.sm * k,
   };
 
-  const cinza = {
-    titulo: '#2F2F2B',
+  const cinza = $derived({
+    titulo: corTexto ?? '#2F2F2B',
     subtitulo: '#6E6E68',
-    dado: '#2F2F2B',
+    dado: corTexto ?? '#2F2F2B',
     nota: '#8A8A84',
-  };
+  });
 
   const pad = 16 * k;
   const rx = $derived(raio === undefined ? (alturaBarra * k) / 2 : raio * k);

@@ -35,11 +35,6 @@
   import { layoutLegend } from '../eixo1/legend';
   import { RAIO_BARRA, segmentoPath } from './forma';
 
-  const cinza = {
-    titulo: '#2F2F2B',
-    subtitulo: '#6E6E68',
-    nota: '#8A8A84',
-  };
 
   interface Props {
     pecas: PecaMosaico[];
@@ -52,6 +47,8 @@
     /** Altura do mosaico, antes da escala de impressão. */
     plotHeight?: number;
     width?: number;
+    /** A cor do texto escuro — título, rótulos e valores. */
+    corTexto?: string;
     background?: string | null;
     svgEl?: SVGSVGElement | null;
   }
@@ -66,9 +63,16 @@
     legenda = true,
     plotHeight = 260,
     width = 580,
+    corTexto = '#2F2F2B',
     background = '#ffffff',
     svgEl = $bindable(null),
   }: Props = $props();
+
+  const cinza = $derived({
+    titulo: corTexto,
+    subtitulo: '#6E6E68',
+    nota: '#8A8A84',
+  });
 
   const k = $derived(a4Scale(width));
 
