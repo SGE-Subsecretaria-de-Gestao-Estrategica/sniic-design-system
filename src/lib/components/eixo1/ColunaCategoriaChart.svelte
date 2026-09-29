@@ -17,13 +17,6 @@
   import { a4Scale, fontFamily, fontSize as scale, labelFitsInBar, measureLabel, wrapText } from './tokens';
   import { layoutLegend } from './legend';
 
-  const cinza = {
-    titulo: '#2F2F2B',
-    subtitulo: '#6E6E68',
-    eixo: '#8A8A84',
-    grade: '#EDEDE9',
-    nota: '#8A8A84',
-  };
 
   interface Props {
     data: CategoriaRow[];
@@ -40,10 +33,17 @@
     legenda?: boolean;
     columnRatio?: number;
     radius?: number;
+    /** Filete na cor do fundo entre os segmentos empilhados (rampas de tons próximos). */
+    divisoria?: boolean;
     plotHeight?: number;
     width?: number;
     height?: number;
     background?: string | null;
+    /**
+     * A cor do texto escuro — título, nomes e valores. Sem ela, o quase preto
+     * do Eixo 1; a LPG passa o seu cinza-escuro.
+     */
+    corTexto?: string;
     svgEl?: SVGSVGElement | null;
   }
 
@@ -60,12 +60,22 @@
     legenda = true,
     columnRatio = 0.6,
     radius = 8,
+    divisoria = false,
     plotHeight = 220,
     width = 580,
     height,
     background,
+    corTexto,
     svgEl = $bindable(null),
   }: Props = $props();
+
+  const cinza = $derived({
+    titulo: corTexto ?? '#2F2F2B',
+    subtitulo: '#6E6E68',
+    eixo: '#8A8A84',
+    grade: '#EDEDE9',
+    nota: '#8A8A84',
+  });
 
   const k = $derived(a4Scale(width));
 
@@ -273,7 +283,12 @@
       {#if seg.valor > 0}
         {@const y = yDe(seg.top)}
         {@const h = yDe(seg.bottom) - y}
-        <path d={segmentoPath(x, y, colW, h, seg.keyIndex === topoDaColuna[i] ? radius * k : 0)} fill={cor(seg.keyIndex)} />
+        <path
+          d={segmentoPath(x, y, colW, h, seg.keyIndex === topoDaColuna[i] ? radius * k : 0)}
+          fill={cor(seg.keyIndex)}
+          stroke={divisoria ? (background ?? '#ffffff') : undefined}
+          stroke-width={divisoria ? 1.2 * k : undefined}
+        />
         {#if labelFitsInBar(formatValue(seg.valor), type.xs, colW, 600, 4 * k, 4 * k) && h >= type.xs * 1.3}
           <text
             x={x + colW / 2}
