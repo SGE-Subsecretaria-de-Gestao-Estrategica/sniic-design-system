@@ -1,10 +1,13 @@
 import type { ClassValue, SVGAttributes } from "svelte/elements";
+import type { TextVariant } from "$lib/core/theme/types";
 
 type SVGTSpanProps = SVGAttributes<SVGTSpanElement>;
 type SVGTextProps = SVGAttributes<SVGTextElement>;
 
 type OwnProps = {
   class?: ClassValue;
+  /** Theme text role the unset style props come from. Default "text". */
+  variant?: TextVariant;
   scaleToFit?: boolean | 'shrink-only';
   angle?: number;
   textAnchor?: 'start' | 'middle' | 'end' | 'inherit';
@@ -24,10 +27,6 @@ type OwnProps = {
   fill?: string;
   width?: number;
   text?: string;
-  suffix?: string;
-  suffixScale?: number;
-  suffixXOffset?: number;
-  suffixYOffset?: number;
 };
 
 export type TextProps = OwnProps & Omit<SVGTextProps, keyof OwnProps>;

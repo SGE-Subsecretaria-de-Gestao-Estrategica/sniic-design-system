@@ -44,8 +44,8 @@ export const spacing = {
   md: 10,
   lg: 16,
   xl: 24,
-  xxl: 32,
-  xxxl: 48,
+  '2xl': 32,
+  '3xl': 48,
 }
 
 export const strokeWidth = {
