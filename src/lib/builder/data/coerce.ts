@@ -8,9 +8,12 @@ import type {
   Row,
 } from "./types";
 
+export const DECIMAL_SEPARATORS: readonly DecimalSeparator[] = [",", "."];
+export const DATE_PATTERNS: readonly DatePattern[] = ["dd/mm/yyyy", "mm/yyyy", "yyyy", "yyyy-mm-dd"];
+
 const THOUSANDS: Record<DecimalSeparator, string> = { ",": ".", ".": "," };
 
-const DATE_PATTERNS: Record<DatePattern, { regex: RegExp; order: ("y" | "m" | "d")[] }> = {
+const DATE_FORMATS: Record<DatePattern, { regex: RegExp; order: ("y" | "m" | "d")[] }> = {
   yyyy: { regex: /^(\d{4})$/, order: ["y"] },
   "mm/yyyy": { regex: /^(\d{1,2})\/(\d{4})$/, order: ["m", "y"] },
   "dd/mm/yyyy": { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/, order: ["d", "m", "y"] },
@@ -45,7 +48,7 @@ export function parseDate(
 ): Date | null {
   const text = raw?.trim();
   if (!text) return null;
-  const { regex, order } = DATE_PATTERNS[pattern];
+  const { regex, order } = DATE_FORMATS[pattern];
   const match = text.match(regex);
   if (!match) return null;
 

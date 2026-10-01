@@ -1,0 +1,85 @@
+import { describe, expect, it } from "vitest";
+import { setChart, setEncoding } from "../spec/spec";
+import { BuilderState } from "./BuilderState.svelte";
+
+const latin1File = (text: string, name = "dados.csv") =>
+  new File([Uint8Array.from(text, (c) => c.charCodeAt(0))], name);
+
+// Ten rows, one "n/d": 90% of `total` parses, enough to type it as a number.
+const CSV = [
+  "domínio;total;ano",
+  "Música;1.234,5;2019",
+  "Teatro;n/d;2020",
+  ...Array.from({ length: 8 }, (_, i) => `Domínio ${i};${800 + i};${2021 + i}`),
+].join("\n");
+
+describe("BuilderState", () => {
+  it("loads a file and detects separator, decimal and types", async () => {
+    const state = new BuilderState();
+    await state.loadFile(latin1File(CSV));
+
+    expect(state.error).toBeNull();
+    expect(state.source?.encoding).toBe("windows-1252");
+    expect(state.spec.data).toMatchObject({ fileName: "dados.csv", delimiter: ";", decimal: "," });
+    expect(state.spec.data.columns.map((c) => c.type)).toEqual(["text", "number", "number"]);
+    expect(state.rows[0]).toEqual({ domínio: "Música", total: 1234.5, ano: 2019 });
+    expect(state.issues.total).toEqual({ failed: 1, examples: ["n/d"] });
+  });
+
+  it("reports files it can't load and keeps the previous data", async () => {
+    const state = new BuilderState();
+    await state.loadFile(latin1File(CSV));
+    await state.loadFile(new File(["só cabeçalho"], "vazio.csv"));
+    expect(state.error).toMatch(/linhas de dados/);
+    expect(state.spec.data.fileName).toBe("dados.csv");
+  });
+
+  it("re-reads the table when the separator changes", async () => {
+    const state = new BuilderState();
+    await state.loadFile(latin1File(CSV));
+    state.setDelimiter(",");
+    expect(state.table?.columns).toEqual(["domínio;total;ano"]);
+    state.setDelimiter(";");
+    expect(state.table?.columns).toEqual(["domínio", "total", "ano"]);
+  });
+
+  it("re-infers types when the decimal changes, except ones the user set", async () => {
+    const state = new BuilderState();
+    await state.loadFile(latin1File("v;w\n1,5;1,5\n2,5;2,5"));
+    state.setColumnType("w", "number");
+    state.setDecimal(".");
+    expect(state.spec.data.columns).toEqual([
+      { name: "v", type: "text" },
+      { name: "w", type: "number" },
+    ]);
+    expect(state.issues.w.failed).toBe(2);
+  });
+
+  it("guesses the date pattern and reports mappings a type change clears", async () => {
+    const state = new BuilderState();
+    await state.loadFile(latin1File(CSV));
+    state.apply(setChart(state.spec, "horizontalBars", state.registry));
+    state.apply(setEncoding(state.spec, "value", ["total"], state.registry));
+
+    state.setColumnType("ano", "date");
+    expect(state.spec.data.columns[2]).toEqual({ name: "ano", type: "date", datePattern: "yyyy" });
+    expect(state.rows[0].ano).toEqual(new Date(2019, 0, 1));
+
+    state.setColumnType("total", "text");
+    expect(state.reset).toEqual([{ channel: "value", column: "total", reason: "type-mismatch" }]);
+  });
+
+  it("applies only the latest of overlapping uploads", async () => {
+    class SlowFile extends File {
+      override async arrayBuffer() {
+        await new Promise((resolve) => setTimeout(resolve, 20));
+        return super.arrayBuffer();
+      }
+    }
+    const state = new BuilderState();
+    const slow = state.loadFile(new SlowFile(["a;b\n1;2"], "antigo.csv"));
+    const fast = state.loadFile(latin1File(CSV, "novo.csv"));
+    await Promise.all([slow, fast]);
+    expect(state.spec.data.fileName).toBe("novo.csv");
+  });
+});

@@ -21,3 +21,15 @@ export type ValueOf<T extends ColumnType> = T extends "number"
   : T extends "date" 
     ? Date 
     : string;
+
+export type FileEncoding = "utf-8" | "windows-1252";
+
+export type Table = {
+  columns: string[];
+  rows: RawRow[];
+};
+
+export type ColumnIssues = {
+  failed: number;
+  examples: string[];
+};
