@@ -39,6 +39,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json",
+    "test:unit": "vitest run --project unit",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "dev:demo": "vite --config vite.config.demo.ts",
