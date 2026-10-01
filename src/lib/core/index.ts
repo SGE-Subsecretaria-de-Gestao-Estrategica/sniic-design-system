@@ -28,6 +28,9 @@ export { default as Bar } from './components/shape/Bar.svelte';
 export { default as BarStack } from './components/shape/BarStack.svelte';
 export { default as BarGroup } from './components/shape/BarGroup.svelte';
 export { default as RoundedBar } from './components/shape/RoundedBar.svelte';
+export { default as CapsuleBar } from './components/shape/CapsuleBar.svelte';
+export { default as Dumbbell } from './components/shape/Dumbbell.svelte';
+export { default as CapsuleStack } from './components/shape/CapsuleStack.svelte';
 
 // Markers
 export { default as Marker } from './components/markers/Marker.svelte';

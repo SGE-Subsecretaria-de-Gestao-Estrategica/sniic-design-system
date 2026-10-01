@@ -1,128 +1,157 @@
 /**
- * Data contracts for the Eixo 6 charts.
+ * Data contracts for the interactive, step-controlled charts.
  *
  * The charts take already-parsed rows so a host application stays in control
- * of fetching, caching, and SSR. The `parse*` helpers convert the published
- * semicolon-delimited CSVs into those rows, and the `load*` helpers do the
- * fetch as well for the simple case.
+ * of fetching, caching, and SSR. Parsing a publication's own files into these
+ * shapes is the host's job: the package ships no data and no loaders.
  */
-import * as d3 from 'd3';
 
-/** Year the RAIS series breaks methodologically; segments are drawn apart. */
-export const RAIS_BREAK_YEAR = 2022;
-
-// ---------------------------------------------------------------------------
-// 6.5 — postos de trabalho na Economia Criativa
-// ---------------------------------------------------------------------------
-
-export type TrabalhadoresCulturaDatum = {
+/** One year of `LinhaParticipacaoChart`: an absolute value and its share of a total. */
+export type LinhaParticipacaoDatum = {
 	year: number;
-	/** Formal + informal jobs in the creative economy. */
-	workers: number;
-	/** Share of all Brazilian employment relationships, 0–1. */
+	/** Absolute value — drawn as the line. */
+	value: number;
+	/** Share of a total, 0–1 — drawn as the bubble beneath. */
 	share: number;
 };
 
-export function parseTrabalhadoresCultura(
-	rows: d3.DSVRowArray<string> | d3.DSVRowString<string>[]
-): TrabalhadoresCulturaDatum[] {
-	return Array.from(rows, (row) => ({
-		year: +row.ano!,
-		workers: +row.total_vinculos_formal_informal!,
-		share: +row.participacao_pct!
-	})).sort((a, b) => a.year - b.year);
-}
-
-// ---------------------------------------------------------------------------
-// E6S2 — Economia Criativa comparada a outros setores
-// ---------------------------------------------------------------------------
-
-export type SetorAnoDatum = {
-	/** Sector name, e.g. "Economia Criativa", "Agricultura". */
+/** One group in one year of `LinhasComparadasChart`. */
+export type LinhasComparadasDatum = {
+	/** Series name, written at the line's end. */
 	group: string;
 	year: number;
-	workers: number;
+	value: number;
 };
 
-export function parseSetores(
-	rows: d3.DSVRowArray<string> | d3.DSVRowString<string>[]
-): SetorAnoDatum[] {
-	return Array.from(rows, (row) => ({
-		group: row.grupo!,
-		year: +row.ano!,
-		workers: +row.total_vinculos!
-	})).sort((a, b) => a.year - b.year);
-}
-
-// ---------------------------------------------------------------------------
-// 6.8 — taxa de informalidade
-// ---------------------------------------------------------------------------
-
-export type InformalidadeDatum = {
+/** One group in one year of `LinhasDiferencaChart`. */
+export type LinhasDiferencaDatum = {
+	/** Series name — the `featured` one or the `baseline`. */
 	group: string;
 	year: number;
-	/** Informality rate, 0–1. */
-	rate: number;
+	/** A rate, 0–1; the difference panel reads it in percentage points. */
+	value: number;
 };
 
-export function parseInformalidade(
-	rows: d3.DSVRowArray<string> | d3.DSVRowString<string>[]
-): InformalidadeDatum[] {
-	return Array.from(rows, (row) => ({
-		group: row.grupo!,
-		year: +row.ano!,
-		rate: +row.taxa_informalidade!
-	})).sort((a, b) => a.year - b.year);
-}
+/**
+ * The two columns of `BolhasComparadasChart`: `grupo` is the one being
+ * described, `referencia` the one it is compared against (drawn hatched).
+ */
+export type BolhasComparadasScope = 'grupo' | 'referencia';
 
-// ---------------------------------------------------------------------------
-// 6.13 / 6.21 — composição por cor ou raça
-// ---------------------------------------------------------------------------
-
-/** `EC` is the creative economy; `BR` is the country-wide reference. */
-export type RacaCorScope = 'EC' | 'BR';
-
-export type RacaCorDatum = {
-	scope: RacaCorScope;
-	/** Category label as published, e.g. "Preta/Parda". */
+/** One category in one scope of `BolhasComparadasChart`. */
+export type BolhasComparadasDatum = {
+	scope: BolhasComparadasScope;
 	category: string;
 	/** Share within the scope, 0–1. */
 	share: number;
 };
 
-export function parseRacaCor(
-	rows: d3.DSVRowArray<string> | d3.DSVRowString<string>[]
-): RacaCorDatum[] {
-	return Array.from(rows, (row) => ({
-		scope: row.escopo as RacaCorScope,
-		category: row.raca_cor!,
-		share: +row.participacao_pct!
-	}));
-}
+/** One category of `BarrasRankingChart`. */
+export type BarrasRankingDatum = {
+	/** Category name, written beside its bar. */
+	label: string;
+	/** Bar length; never negative — a ranking measures from zero. */
+	value: number;
+};
 
-// ---------------------------------------------------------------------------
-// Loaders
-// ---------------------------------------------------------------------------
+/**
+ * One category of `BarrasDivergentesChart`: two magnitudes drawn in opposite
+ * directions from a shared zero. Both are positive — direction is the
+ * encoding, not the sign.
+ */
+export type BarrasDivergentesDatum = {
+	label: string;
+	/** Grows leftwards from zero. */
+	left: number;
+	/** Grows rightwards from zero. */
+	right: number;
+};
 
-/** Reads one of the published semicolon-delimited Eixo 6 CSVs. */
-async function loadCsv(url: string) {
-	return d3.dsv(';', url);
-}
+/** One category of `LinhasAntesDepoisChart`: the same measure at two moments. */
+export type LinhasAntesDepoisDatum = {
+	label: string;
+	before: number;
+	after: number;
+};
 
-export async function loadTrabalhadoresCultura(url = '/data/eixo6/6.5.csv') {
-	return parseTrabalhadoresCultura(await loadCsv(url));
-}
+/**
+ * One step of `BarrasCascataChart`. `base` and `total` stand on zero and
+ * measure a stock; `delta` floats from the running total it finds to the one
+ * it leaves, and measures a change (negative values hang downwards).
+ */
+export type BarrasCascataDatum = {
+	label: string;
+	value: number;
+	type: 'base' | 'delta' | 'total';
+	/** Small lines under the label — the breakdown of an aggregated step. */
+	detail?: string[];
+	/** Overrides the default bar gradient for this step, as `CapsuleBar` takes it. */
+	fill?: string | readonly [string, string];
+};
 
-export async function loadSetores(
-	url = '/data/eixo6/E6S2-n-trabalhadores-cultura-e-outros-setores-ano.csv'
-) {
-	return parseSetores(await loadCsv(url));
-}
+/** One column of `ColunasEmpilhadasChart` / `ColunasFitasChart`: a label and a value per series. */
+export type ColunasDatum = {
+	label: string;
+	values: Record<string, number>;
+};
 
-export async function loadInformalidade(url = '/data/eixo6/6.8.csv') {
-	return parseInformalidade(await loadCsv(url));
-}
+/** A stretch of columns marked with a bracket above the plot — "not measured here". */
+export type ColunasSpan = { from: string; to: string; text: string };
 
-export async function loadRacaCor(url = '/data/eixo6/6.13_6.21.csv') {
-	return parseRacaCor(await loadCsv(url));
-}
+/** One panel of `LinhasPaineisChart`: a series over the chart's shared `years`. */
+export type LinhasPainel = {
+	label: string;
+	/** One value per year, in the order of `years`; `null` is a year not measured. */
+	values: (number | null)[];
+	/** Small line under the name — usually the panel's base. */
+	note?: string;
+};
+
+/** A point of a concentration (Lorenz) curve: cumulative % of units, cumulative % of the total. */
+export type CurvaConcentracaoPonto = [units: number, total: number];
+
+/**
+ * A reading marked on the curve. `top` is the share at the end of the
+ * ordering the reading is about — the top 10% — which decides where the
+ * marker lands; `label` is the whole sentence, because the value of a mark
+ * is what lies between that point and the top, not the point's height.
+ */
+export type CurvaConcentracaoMarco = { top: number; label: string };
+
+/** A reading block in the right gutter of `FaixasParticipacaoChart`, anchored on a year. */
+export type FaixasParticipacaoDestaque = {
+	year: number;
+	/** Large value — the year's total, typically. */
+	value?: string;
+	title: string;
+	note?: string;
+};
+
+/** A row of `BolhasMatrizChart`: one value per column, in the order of `columns`. */
+export type BolhasMatrizLinha = {
+	label: string;
+	/** Small line under the name — usually the row's base. */
+	note?: string;
+	values: number[];
+};
+
+/** One slice of a `PontosPaineisChart` panel: `n` dots of one colour. */
+export type PontosFatia = { label: string; n: number; color?: string };
+/** One panel: the same total, divided its own way. */
+export type PontosPainel = { title: string; slices: PontosFatia[] };
+
+/** One ridge of `CristasDensidadeChart`. */
+export type CristaDensidade = {
+	label: string;
+	note?: string;
+	/** Density sampled on an even grid from 0 to `xMax`; the chart normalises its height. */
+	density: number[];
+	/** Text at the ridge's right end — usually the share past the reference. */
+	value?: string;
+};
+
+/** A value per federative unit, by its two-letter code. */
+export type MapaUfValor = { uf: string; value: number };
+
+/** Two values per federative unit for `MapaHexagonalChart`: left and right bars. */
+export type MapaHexagonalValor = { uf: string; a: number; b: number };

@@ -6,6 +6,8 @@ export type LegendItem = {
 	color: string;
 	/** Draws the key as a hatched circle, matching a textured reference mark. */
 	hatched?: boolean;
+	/** Draws the key as a dot, for series marked by points rather than lines. */
+	dot?: boolean;
 };
 
 /** Accessible fallback rendered off-screen by every Eixo 6 chart. */

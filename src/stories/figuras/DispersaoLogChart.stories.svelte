@@ -52,7 +52,7 @@
   </StoryFrame>
 {/snippet}
 
-<!-- `template as never`: ver a nota em src/stories/eixo1/CaboGuerraMunicipalChart.stories.svelte. -->
+<!-- `template as never`: o `Snippet` do addon e o do Svelte não se unificam no svelte-check, então um snippet bem tipado ainda é recusado. O cast fica só na entrega; o snippet segue tipado. -->
 
 <Story name="Padrão" args={{}} template={template as never} />
 
