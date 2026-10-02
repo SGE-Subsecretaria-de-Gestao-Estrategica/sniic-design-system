@@ -8,8 +8,8 @@ import type {
   Row,
 } from "./types";
 
-export const DECIMAL_SEPARATORS: readonly DecimalSeparator[] = [",", "."];
-export const DATE_PATTERNS: readonly DatePattern[] = ["dd/mm/yyyy", "mm/yyyy", "yyyy", "yyyy-mm-dd"];
+export const DECIMAL_SEPARATORS: DecimalSeparator[] = [",", "."];
+export const DATE_PATTERNS: DatePattern[] = ["dd/mm/yyyy", "mm/yyyy", "yyyy", "yyyy-mm-dd"];
 
 const THOUSANDS: Record<DecimalSeparator, string> = { ",": ".", ".": "," };
 

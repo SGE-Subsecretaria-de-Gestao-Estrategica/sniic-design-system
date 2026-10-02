@@ -38,12 +38,6 @@
     {#if table.columns.length === 1}
       <p class="warning">Só uma coluna foi encontrada. Confira o separador de campos.</p>
     {/if}
-    {#if builder.reset.length}
-      <p class="warning">
-        Mapeamentos desfeitos: {builder.reset.map((r) => `${r.column} (${r.channel})`).join(", ")}.
-      </p>
-    {/if}
-
     <DataPreview
       {table}
       columns={data.columns}

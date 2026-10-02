@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { setChart, setEncoding } from "../spec/spec";
+import { setChart, setEncoding, SIZE_LIMITS } from "../spec/spec";
 import { BuilderState } from "./BuilderState.svelte";
 
 const latin1File = (text: string, name = "dados.csv") =>
@@ -81,5 +81,75 @@ describe("BuilderState", () => {
     const fast = state.loadFile(latin1File(CSV, "novo.csv"));
     await Promise.all([slow, fast]);
     expect(state.spec.data.fileName).toBe("novo.csv");
+  });
+
+  it("walks the steps: gated until each step is done", async () => {
+    const state = new BuilderState();
+    expect(state.canEnter("chart")).toBe(false);
+    state.goTo("chart");
+    expect(state.step).toBe("data");
+
+    await state.loadFile(latin1File(CSV));
+    state.next();
+    expect(state.step).toBe("chart");
+    state.next();
+    expect(state.step).toBe("chart");
+
+    state.setChart("horizontalBars");
+    expect(state.spec.encoding).toEqual({ category: ["domínio"], value: ["total"] });
+    expect(state.resolution.status).toBe("ready");
+    state.next();
+    state.next();
+    expect(state.step).toBe("style");
+    state.back();
+    expect(state.step).toBe("mapping");
+  });
+
+  it("clamps sizes and accepts null for the default", async () => {
+    const state = new BuilderState();
+    state.setSize("width", 10);
+    expect(state.spec.style.width).toBe(SIZE_LIMITS.min);
+    state.setSize("width", 99999);
+    expect(state.spec.style.width).toBe(SIZE_LIMITS.max);
+    state.setSize("width", 800.4);
+    expect(state.spec.style.width).toBe(800);
+    state.setSize("width", Number.NaN);
+    expect(state.spec.style.width).toBeNull();
+  });
+
+  it("changes the pillar and remaps after a new file", async () => {
+    const state = new BuilderState();
+    await state.loadFile(latin1File(CSV));
+    state.setChart("horizontalBars");
+    state.setPillar(6);
+    expect(state.spec.style.pillar).toBe(6);
+
+    await state.loadFile(latin1File("uf;valor\nSP;10\nRJ;20"));
+    expect(state.reset.map((r) => r.reason)).toEqual(["column-removed", "column-removed"]);
+    expect(state.spec.encoding).toEqual({ category: ["uf"], value: ["valor"] });
+  });
+
+  it("doesn't swap in another column when a type edit clears a mapping", async () => {
+    const state = new BuilderState();
+    await state.loadFile(latin1File(CSV));
+    state.setChart("horizontalBars");
+    expect(state.spec.encoding.value).toEqual(["total"]);
+
+    state.setColumnType("total", "text");
+    expect(state.spec.encoding.value).toBeUndefined();
+    expect(state.reset).toEqual([{ channel: "value", column: "total", reason: "type-mismatch" }]);
+  });
+
+  it("clears the reset notice when the step changes and explains blocked steps", async () => {
+    const state = new BuilderState();
+    await state.loadFile(latin1File(CSV));
+    state.setChart("horizontalBars");
+    state.setColumnType("total", "text");
+    expect(state.reset).toHaveLength(1);
+    expect(state.blocker("style")).toBe("Escolha uma coluna para: Valor.");
+
+    state.goTo("chart");
+    expect(state.step).toBe("chart");
+    expect(state.reset).toEqual([]);
   });
 });

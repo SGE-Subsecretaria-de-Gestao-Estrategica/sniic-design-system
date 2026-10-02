@@ -4,6 +4,7 @@ import { createRegistry } from "../registry/registry";
 import type { ChartId } from "../registry/layouts";
 import type { AnyChartDefinition } from "../registry/types";
 import {
+  autoEncode,
   compatibleColumns,
   createSpec,
   missingChannels,
@@ -12,9 +13,9 @@ import {
   setData,
   setEncoding,
   setStyle,
+  SIZE_LIMITS,
 } from "./spec";
 
-// Stub charts use ids outside `CHARTS`.
 const id = (chart: string) => chart as ChartId;
 
 const stub = (id: string, channels: AnyChartDefinition["channels"]): AnyChartDefinition => ({
@@ -122,6 +123,12 @@ describe("setStyle", () => {
     expect(reset).toEqual([]);
   });
 
+  it("clamps sizes to SIZE_LIMITS", () => {
+    expect(setStyle(createSpec(), { width: 10 }).spec.style.width).toBe(SIZE_LIMITS.min);
+    expect(setStyle(createSpec(), { height: 99999 }).spec.style.height).toBe(SIZE_LIMITS.max);
+    expect(setStyle(createSpec(), { width: 800.4 }).spec.style.width).toBe(800);
+  });
+
   it("rejects an unknown pillar and non-positive or non-finite sizes", () => {
     expect(() => setStyle(createSpec(), { pillar: 99 })).toThrow(/Unknown pillar/);
     expect(() => setStyle(createSpec(), { width: 0 })).toThrow(/positive/);
@@ -157,5 +164,28 @@ describe("createRegistry", () => {
       { id: "v", label: "", accepts: ["number"], required: true },
     ] as const;
     expect(() => createRegistry([stub("b", dupChannels)])).toThrow(/duplicate channel/);
+  });
+});
+
+describe("autoEncode", () => {
+  const withColumns = () => setData(createSpec(), { ...createSpec().data, columns }, registry).spec;
+
+  it("fills required channels with the first unused compatible column", () => {
+    const spec = setChart(withColumns(), id("bars"), registry).spec;
+    expect(autoEncode(spec, registry).spec.encoding).toEqual({
+      category: ["dominio"],
+      value: ["total"],
+    });
+  });
+
+  it("keeps existing mappings, skips optional channels and doesn't reuse a column", () => {
+    let spec = setChart(withColumns(), id("lines"), registry).spec;
+    spec = setEncoding(spec, "value", ["total"], registry).spec;
+    expect(autoEncode(spec, registry).spec.encoding).toEqual({ value: ["total"], x: ["ano"] });
+  });
+
+  it("does nothing without a chart", () => {
+    const spec = withColumns();
+    expect(autoEncode(spec, registry).spec).toBe(spec);
   });
 });

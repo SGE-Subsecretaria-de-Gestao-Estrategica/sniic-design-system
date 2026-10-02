@@ -76,8 +76,24 @@ describe("resolveChart", () => {
   it("reports a figure smaller than its margins as an error", () => {
     let spec = setEncoding(barsSpec(), "category", ["dominio"], defaultRegistry).spec;
     spec = setEncoding(spec, "value", ["total"], defaultRegistry).spec;
-    spec = setStyle(spec, { width: 100 }).spec;
+    // Bypasses `setStyle`, which would clamp the width (e.g. a hand-edited spec).
+    spec = { ...spec, style: { ...spec.style, width: 100 } };
     expect(resolveChart(spec, rows, defaultRegistry).status).toBe("error");
+  });
+
+  it("explains repeated categories in pt-BR, naming an example", () => {
+    let spec = setEncoding(barsSpec(), "category", ["dominio"], defaultRegistry).spec;
+    spec = setEncoding(spec, "value", ["total"], defaultRegistry).spec;
+    const repeated = coerceRows(
+      [...["Música", "Teatro", "Música"].map((dominio) => ({ dominio, total: "10" }))],
+      columns,
+      ",",
+    );
+    const result = resolveChart(spec, repeated, defaultRegistry);
+    expect(result).toMatchObject({
+      status: "error",
+      message: "Há categorias repetidas (ex.: “Música”). Este gráfico precisa de uma linha por valor.",
+    });
   });
 
   it("reports a chart missing from the registry as an error", () => {

@@ -14,25 +14,27 @@ import type {
 } from "../data/types";
 import { defaultRegistry } from "../registry";
 import type { ChartRegistry } from "../registry/types";
-import { createSpec, setData } from "../spec/spec";
+import type { ChartId } from "../registry/layouts";
+import { resolveChart } from "../resolve/resolveChart";
+import { autoEncode, createSpec, setChart, setData, setEncoding, setStyle } from "../spec/spec";
 import type { ChartSpec, DataSpec, ResetNotice, SpecChange } from "../spec/types";
+import { blockingReason, canEnter, STEPS, stepStatuses, type StepId } from "./steps";
 
 type Source = { text: string; encoding: FileEncoding };
 
-/**
- * The wizard's state: the spec plus the file it was read from. The table,
- * coerced rows and per-column issues follow the spec on their own.
- */
+
+function chain(change: SpecChange, next: (spec: ChartSpec) => SpecChange): SpecChange {
+  const after = next(change.spec);
+  return { spec: after.spec, reset: [...change.reset, ...after.reset] };
+}
+
 export class BuilderState {
   spec = $state<ChartSpec>(createSpec());
   source = $state<Source | null>(null);
-  /** Why the last file couldn't be loaded. */
   error = $state<string | null>(null);
-  /** Mappings the last change cleared. */
   reset = $state<ResetNotice[]>([]);
 
-  // Narrow deriveds: a style or chart change keeps `spec.data` as is, so the
-  // file isn't reparsed and rows aren't re-coerced.
+
   readonly #delimiter = $derived(this.spec.data.delimiter);
   readonly #data = $derived(this.spec.data);
 
@@ -44,9 +46,31 @@ export class BuilderState {
     this.table ? columnIssues(this.table, this.#data.columns, this.#data.decimal) : {},
   );
 
-  /** Columns whose type the user picked; re-detection leaves them alone. */
+  // The layout follows only what shapes it; a pillar change doesn't rebuild it.
+  readonly #chart = $derived(this.spec.chart);
+  readonly #encoding = $derived(this.spec.encoding);
+  readonly #width = $derived(this.spec.style.width);
+  readonly #height = $derived(this.spec.style.height);
+  readonly #options = $derived(this.spec.style.options);
+
+  readonly resolution = $derived.by(() =>
+    resolveChart(
+      {
+        data: this.#data,
+        chart: this.#chart,
+        encoding: this.#encoding,
+        style: { width: this.#width, height: this.#height, options: this.#options },
+      },
+      this.rows,
+      this.registry,
+    ),
+  );
+  readonly steps = $derived(
+    stepStatuses({ table: this.table, chart: this.#chart, resolution: this.resolution }),
+  );
+  step = $state<StepId>("data");
+
   #manual = new Set<string>();
-  /** Only the latest `loadFile` call may apply its result. */
   #loads = 0;
 
   constructor(readonly registry: ChartRegistry = defaultRegistry) {}
@@ -75,12 +99,10 @@ export class BuilderState {
     this.error = null;
     this.#manual.clear();
     this.source = { text: result.text, encoding: result.encoding };
-    this.#setData({
-      fileName: result.fileName,
-      delimiter,
-      decimal,
-      columns: inferSchema(table, decimal),
-    });
+    this.#setData(
+      { fileName: result.fileName, delimiter, decimal, columns: inferSchema(table, decimal) },
+      { autoFill: true },
+    );
   }
 
   setDelimiter(delimiter: FieldSeparator) {
@@ -109,6 +131,49 @@ export class BuilderState {
     this.#replaceColumn({ name, type: "date", datePattern });
   }
 
+  canEnter(step: StepId): boolean {
+    return canEnter(this.steps, step);
+  }
+
+  /** Why `step` can't be entered yet, or `null`. */
+  blocker(step: StepId): string | null {
+    return blockingReason(this.steps, step);
+  }
+
+  goTo(step: StepId) {
+    if (step === this.step || !this.canEnter(step)) return;
+    this.step = step;
+    this.reset = [];
+  }
+
+  next() {
+    const following = STEPS[STEPS.findIndex((s) => s.id === this.step) + 1];
+    if (following) this.goTo(following.id);
+  }
+
+  back() {
+    const previous = STEPS[STEPS.findIndex((s) => s.id === this.step) - 1];
+    if (previous) this.goTo(previous.id);
+  }
+
+  setChart(chartId: ChartId | null) {
+    this.apply(chain(setChart(this.spec, chartId, this.registry), (spec) => autoEncode(spec, this.registry)));
+  }
+
+  setEncoding(channelId: string, columns: readonly string[]) {
+    this.apply(setEncoding(this.spec, channelId, columns, this.registry));
+  }
+
+  setPillar(pillar: number) {
+    this.apply(setStyle(this.spec, { pillar }));
+  }
+
+  /** `null` or an unreadable number = the chart's default size. `setStyle` clamps the rest. */
+  setSize(axis: "width" | "height", size: number | null) {
+    const value = size !== null && Number.isFinite(size) && size > 0 ? size : null;
+    this.apply(setStyle(this.spec, { [axis]: value }));
+  }
+
   #reinfer(table: Table, decimal: DecimalSeparator): ColumnSchema[] {
     const current = new Map(this.spec.data.columns.map((c) => [c.name, c]));
     return table.columns.map((name) => {
@@ -124,7 +189,10 @@ export class BuilderState {
     this.#setData({ ...this.spec.data, columns });
   }
 
-  #setData(data: DataSpec) {
-    this.apply(setData(this.spec, data, this.registry));
+  // Auto-fill runs for a new file (and on chart pick), not for separator or
+  // type edits: a cleared mapping stays cleared instead of swapping columns.
+  #setData(data: DataSpec, { autoFill = false } = {}) {
+    const change = setData(this.spec, data, this.registry);
+    this.apply(autoFill ? chain(change, (spec) => autoEncode(spec, this.registry)) : change);
   }
 }

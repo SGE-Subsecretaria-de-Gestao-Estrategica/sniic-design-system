@@ -3,12 +3,11 @@ import { createChannelReader, dropIncomplete } from "../encoding/accessors";
 import type { ChartLayoutView } from "../registry/layouts";
 import type { ChartRegistry } from "../registry/types";
 import { missingChannels } from "../spec/spec";
-import type { ChartSpec } from "../spec/types";
 import { plotSize } from "./sizing";
-import type { ChartResolution } from "./types";
+import type { ChartResolution, ResolveInput } from "./types";
 
 export function resolveChart(
-  spec: ChartSpec,
+  spec: ResolveInput,
   rows: readonly Row[],
   registry: ChartRegistry,
 ): ChartResolution {

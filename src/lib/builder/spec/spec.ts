@@ -22,7 +22,6 @@ export function createSpec(): ChartSpec {
   };
 }
 
-/** Columns a channel can take, in schema order (for step 3's selects). */
 export function compatibleColumns(
   channel: ChannelDef,
   columns: readonly ColumnSchema[],
@@ -30,7 +29,6 @@ export function compatibleColumns(
   return columns.filter((c) => channel.accepts.includes(c.type));
 }
 
-/** Required channels with no column mapped yet. */
 export function missingChannels(
   channels: readonly ChannelDef[],
   encoding: Encoding,
@@ -38,11 +36,7 @@ export function missingChannels(
   return channels.filter((c) => c.required && !(encoding[c.id]?.length));
 }
 
-/**
- * Keeps only the mappings that still fit: the channel exists, the column
- * exists and its type is accepted. With `channels` null (no chart), nothing
- * fits. Reports each mapping it cleared.
- */
+
 export function pruneEncoding(
   encoding: Encoding,
   channels: readonly ChannelDef[] | null,
@@ -79,7 +73,6 @@ function channelsOf(spec: ChartSpec, registry: ChartRegistry) {
   return spec.chart ? registry.require(spec.chart).channels : null;
 }
 
-/** Step 1 changed: the file, separators or column types. */
 export function setData(
   spec: ChartSpec,
   data: DataSpec,
@@ -89,10 +82,6 @@ export function setData(
   return { spec: { ...spec, data, encoding }, reset };
 }
 
-/**
- * Step 2 changed. Keeps mappings whose channel id exists in the new chart
- * and still fits; chart options are cleared (they are chart-specific).
- */
 export function setChart(
   spec: ChartSpec,
   chartId: ChartId | null,
@@ -107,7 +96,6 @@ export function setChart(
   };
 }
 
-/** Step 3: maps columns to a channel. An empty list clears it. */
 export function setEncoding(
   spec: ChartSpec,
   channelId: string,
@@ -133,16 +121,40 @@ export function setEncoding(
   return { spec: { ...spec, encoding }, reset: [] };
 }
 
-/** Step 4: merges style changes. Throws for an unknown pillar or a size that isn't a positive number. */
+export const SIZE_LIMITS = { min: 240, max: 1600 } as const;
+
+export function clampSize(size: number): number {
+  return Math.round(Math.min(SIZE_LIMITS.max, Math.max(SIZE_LIMITS.min, size)));
+}
+
 export function setStyle(spec: ChartSpec, patch: Partial<StyleSpec>): SpecChange {
   if (patch.pillar !== undefined && !pillarPalettes.some((p) => p.id === patch.pillar)) {
     throw new Error(`Unknown pillar ${patch.pillar}.`);
   }
+  const sizes: Partial<Pick<StyleSpec, "width" | "height">> = {};
   for (const key of ["width", "height"] as const) {
     const size = patch[key];
-    if (size != null && !(Number.isFinite(size) && size > 0)) {
+    if (size === undefined) continue;
+    if (size !== null && !(Number.isFinite(size) && size > 0)) {
       throw new Error(`Style ${key} must be a positive number or null (got ${size}).`);
     }
+    sizes[key] = size === null ? null : clampSize(size);
   }
-  return { spec: { ...spec, style: { ...spec.style, ...patch } }, reset: [] };
+  return { spec: { ...spec, style: { ...spec.style, ...patch, ...sizes } }, reset: [] };
+}
+
+export function autoEncode(spec: ChartSpec, registry: ChartRegistry): SpecChange {
+  const channels = channelsOf(spec, registry);
+  if (!channels) return { spec, reset: [] };
+
+  const encoding = { ...spec.encoding };
+  const used = new Set(Object.values(encoding).flat());
+  for (const channel of channels) {
+    if (!channel.required || encoding[channel.id]?.length) continue;
+    const column = compatibleColumns(channel, spec.data.columns).find((c) => !used.has(c.name));
+    if (!column) continue;
+    encoding[channel.id] = [column.name];
+    used.add(column.name);
+  }
+  return { spec: { ...spec, encoding }, reset: [] };
 }

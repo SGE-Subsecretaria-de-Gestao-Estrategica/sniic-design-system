@@ -7,6 +7,15 @@
   };
 
   let { fileName, onfile }: Props = $props();
+
+  const onChange = (
+    e: Event & { currentTarget: EventTarget & HTMLInputElement },
+  ) => {
+    const input = e.currentTarget as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = "";
+    if (file) onfile(file);
+  };
 </script>
 
 <label class="file-input">
@@ -14,12 +23,7 @@
   <input
     type="file"
     accept={ACCEPTED_EXTENSIONS.join(",")}
-    onchange={(e) => {
-      const file = e.currentTarget.files?.[0];
-      // Cleared so picking the same file again still fires `change`.
-      e.currentTarget.value = "";
-      if (file) onfile(file);
-    }}
+    onchange={onChange}
   />
 </label>
 
