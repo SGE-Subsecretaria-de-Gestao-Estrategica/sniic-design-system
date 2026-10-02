@@ -9,6 +9,7 @@
 	import * as d3 from 'd3';
 	import Group from '$lib/core/components/Group.svelte';
 	import Text from '$lib/core/components/Text.svelte';
+	import LabelMask from '$lib/core/components/annotation/LabelMask.svelte';
 	import Axis from '$lib/core/components/axis/Axis.svelte';
 	import GridColumns from '$lib/core/components/grid/GridColumns.svelte';
 	import LinePath from '$lib/core/components/shape/LinePath.svelte';
@@ -326,24 +327,6 @@
 						/>
 					{/each}
 
-					<!-- Hovered year only by default: every other value lives in the
-					     tooltip and the table, so the plot never carries a number per
-					     point. `valueLabels="all"` restores the dense labelling. -->
-					{#each series.points as point (point.year)}
-						{#if (valueLabels === 'all' || point.year === activeYear) && point.year !== series.last.year}
-							<Text
-								dx={point.x}
-								dy={point.y - Tokens.spacing.md}
-								text={point.label}
-								fontSize={Tokens.fontSize.sm}
-								fontWeight={Tokens.fontWeight.medium}
-								textAnchor="middle"
-								verticalAnchor="end"
-								fill={textColor(series)}
-							/>
-						{/if}
-					{/each}
-
 					<!-- End label in the right gutter. Wide: value over name. Narrow:
 					     the name alone — identity must survive, and the value is a hover
 					     and a table row away. -->
@@ -387,6 +370,31 @@
 								: Tokens.fontWeight.medium}
 						/>
 					</g>
+				</g>
+			{/each}
+
+			<!-- Hovered year only by default: every other value lives in the
+			     tooltip and the table, so the plot never carries a number per
+			     point. `valueLabels="all"` restores the dense labelling. Drawn
+			     after every series so no line crosses over a label's mask. -->
+			{#each groups as series (series.group)}
+				<g class="fade" style:opacity={seriesOpacity(series)}>
+					{#each series.points as point (point.year)}
+						{#if (valueLabels === 'all' || point.year === activeYear) && point.year !== series.last.year}
+							<LabelMask>
+								<Text
+									dx={point.x}
+									dy={point.y - Tokens.spacing.md}
+									text={point.label}
+									fontSize={Tokens.fontSize.sm}
+									fontWeight={Tokens.fontWeight.medium}
+									textAnchor="middle"
+									verticalAnchor="end"
+									fill={textColor(series)}
+								/>
+							</LabelMask>
+						{/if}
+					{/each}
 				</g>
 			{/each}
 

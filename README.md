@@ -56,7 +56,11 @@ There are three layers, all exported from the package root:
 
 All charts use **D3** for scales and layouts, with **SVG rendering**.
 
-Charts tied to a specific project's data and copy live in that project's repository, which consumes the generic bases from here. The LPG boletim figures, for instance, live in `LPG-2026/data-viz`. Storybook mirrors this split: generic components go under `Atoms`, `Molecules`, `Charts` and `Core`, and project compositions under `Cultura em Números/Eixo N`.
+Charts tied to a specific project's data and copy live in that project's repository, which consumes the generic bases from here. The LPG boletim figures, for instance, live in `LPG-2026/data-viz`. Storybook is organised by project, one top-level folder each:
+
+- `Cultura em Números` — `Catálogo por função` (every chart grouped by the question it answers), `Primitivas` (the `src/lib/core` shapes the family is built from) and `Gráficos` (one docs page per chart: when to use it, data shape, props, steps). Stories in `src/stories/cultura-em-numeros/`.
+- `PNAB` — the first-generation layer (`components/atoms`, `molecules`, `ChartFrame` and the charts built on them): `Fundamentos`, `Átomos`, `Moléculas`, `Gráficos`. Stories in `src/stories/pnab/`.
+- `LPG` — `Figuras`, the generic print bases the LPG boletim composes. Stories in `src/stories/lpg/`.
 
 ## Components
 
@@ -87,23 +91,21 @@ Data-agnostic bases in the Eixo 1 print idiom. Everything comes in by prop, incl
 | `MosaicoChart` | Treemap whose area is one measure and whose label can state another |
 | `DispersaoLogChart` | Log–log scatter with iso-product bands (for measures that multiply) and annotations |
 | `Destaque` | The annotation used by the bases: a large value in the measure's color, with a phrase below |
-| `RAIO_BARRA`, `segmentoPath` | Shared bar corner radius and path helper. Pass `raio={RAIO_BARRA}` to the Eixo 1 bases so the corners match |
+| `RAIO_BARRA`, `segmentoPath` | Shared bar corner radius and path helper. Pass `raio={RAIO_BARRA}` to the bar bases below so the corners match |
+| `BarraRankingChart` | Ranking bars, largest first, value past the tip (formerly an Eixo 1 base) |
+| `BarraDivergenteChart` | Two bars per category from a shared zero (formerly an Eixo 1 base) |
+| `ColunaCategoriaChart` | Stacked columns by category, in absolute values (formerly an Eixo 1 base) |
+| `CoropletoUfChart` | Choropleth by state on the IBGE mesh, with callouts (formerly an Eixo 1 base) |
 
-### Eixo 1 — Gestão e Participação
+### Eixo 1 — print tokens
 
-Data-agnostic print bases of Cultura em Números, Eixo 1, with their own palette and type scale. The finished figures, with the publication's data and copy, live in `cultura-em-numeros-eixo-1/data-vis`, which composes these bases:
+The Eixo 1 chart bases are gone: each one has a generic Cultura em Números chart below that does the same job, and the four the LPG bulletin prints with (`BarraRankingChart`, `BarraDivergenteChart`, `ColunaCategoriaChart`, `CoropletoUfChart`) moved to the figure bases above. What remains is the A4 print system those figures use, exported as namespaces so it doesn't clash with the package's generic `colors` and `fontSize`: `eixo1Cores`, `eixo1Tokens` and `eixo1LayoutLegend`.
 
-`FaixaLinhasChart`, `ComposicaoChart`, `CoropletoUfChart`, `HexMapaUfChart`, `BarraRankingChart`, `CascataChart`, `CristasChart`, `MatrizBolhasChart`, `ColunaCategoriaChart`, `HistomapChart`, `LinhaProporcaoChart`, `PequenosMultiplosChart`, `MatrizPontosChart`, `AntesDepoisChart`, `ConcentracaoChart`, `BarraDivergenteChart`, `Eixo1RibbonChart`, `MosaicoMunicipalChart`.
-
-`BarraRankingChart`, `BarraDivergenteChart`, `ColunaCategoriaChart` and `CoropletoUfChart` accept `corTexto`.
-
-The palette and type scale the bases use are exported as namespaces, `eixo1Cores` and `eixo1Tokens` (plus `eixo1LayoutLegend`), so figures built on the bases match them without clashing with the package's generic `colors` and `fontSize`.
-
-The UF mesh ships inside `CoropletoUfChart` and `MosaicoMunicipalChart`. The municipal mesh does not: pass your own to `MosaicoMunicipalChart` as `malhaMunicipios` (type `MalhaMunicipiosProjetada`).
+The UF mesh ships inside `CoropletoUfChart`, `MapaUfChart` and `MapaMunicipiosChart`. The municipal mesh does not: pass your own to `MapaMunicipiosChart` as `mesh` (type `MalhaMunicipiosProjetada`).
 
 ### Interactive, step-controlled charts
 
-`LinhaParticipacaoChart`, `LinhasComparadasChart`, `LinhasDiferencaChart`, `BolhasComparadasChart`, `BarrasRankingChart`, `BarrasDivergentesChart`, `LinhasAntesDepoisChart`, `BarrasCascataChart`, `ColunasEmpilhadasChart`, `LinhasPaineisChart`, `CurvaConcentracaoChart`, `FaixasParticipacaoChart`, `BolhasMatrizChart`, `PontosPaineisChart`, `CristasDensidadeChart`, `MapaUfChart`, `MapaMunicipiosChart` and `MapaHexagonalChart` are interactive charts controlled by a `step` prop, for scrollytelling hosts. Born in Eixo 6, they are the reference for the rest: named by form, with the publication's text and data passed in as props. Their data types, `*_STEPS` and scale helpers are exported alongside them; see `src/lib/components/eixo6/README.md`.
+`LinhaParticipacaoChart`, `LinhasComparadasChart`, `LinhasDiferencaChart`, `BolhasComparadasChart`, `BarrasRankingChart`, `BarrasDivergentesChart`, `LinhasAntesDepoisChart`, `BarrasCascataChart`, `ColunasEmpilhadasChart`, `LinhasPaineisChart`, `CurvaConcentracaoChart`, `FaixasParticipacaoChart`, `BolhasMatrizChart`, `CristasDensidadeChart`, `MapaUfChart`, `MapaMunicipiosChart` and `MapaHexagonalChart` are interactive charts controlled by a `step` prop, for scrollytelling hosts. Born in Eixo 6, they are the reference for the rest: named by form, with the publication's text and data passed in as props. Their data types, `*_STEPS` and scale helpers are exported alongside them; see `src/lib/components/eixo6/README.md`.
 
 ### Legacy atoms and molecules
 

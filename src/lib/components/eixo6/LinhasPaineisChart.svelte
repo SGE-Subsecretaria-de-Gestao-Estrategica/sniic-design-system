@@ -11,6 +11,7 @@
 	 */
 	import * as d3 from 'd3';
 	import Text from '$lib/core/components/Text.svelte';
+	import LabelMask from '$lib/core/components/annotation/LabelMask.svelte';
 	import Axis from '$lib/core/components/axis/Axis.svelte';
 	import GridColumns from '$lib/core/components/grid/GridColumns.svelte';
 	import LinePath from '$lib/core/components/shape/LinePath.svelte';
@@ -73,7 +74,6 @@
 	let plotWidth = $derived(Math.max(0, shellWidth - margin.left - margin.right));
 
 	/** Thinner than the full-size line: a panel is a fraction of the height. */
-	let stroke = $derived(compact ? 5 : 6);
 	let nameSize = $derived(Tokens.fontSize[compact ? 'sm' : 'md']);
 
 	/** A panel is as tall as its plot, or as its wrapped name and note. */
@@ -237,13 +237,12 @@
 							x={(d) => d.x}
 							y={(d) => d.y}
 							stroke={theme.palette.base[300]}
-							strokeWidth={stroke}
 						/>
 					{/each}
 
 					<g class="fade" style:opacity={shows(1) ? 1 : 0}>
 						{#each panel.runs as run, r (r)}
-							<LinePath data={run} x={(d) => d.x} y={(d) => d.y} strokeWidth={stroke} />
+							<LinePath data={run} x={(d) => d.x} y={(d) => d.y} />
 						{/each}
 						{#each panel.points as point (point.year)}
 							{@const isLast = point === panel.last}
@@ -251,37 +250,41 @@
 							<circle
 								cx={point.x}
 								cy={point.y}
-								r={isLast || isActive ? 4.5 : 2.5}
+								r={isActive ? 8 : 5}
 								fill={isLast ? theme.palette.accent : theme.palette.primaryVariant}
 								stroke={isActive ? theme.palette.base[100] : 'none'}
-								stroke-width={isActive ? 1.5 : 0}
+								stroke-width={isActive ? 2 : 0}
 							/>
 						{/each}
 					</g>
 
 					<g class="fade" style:opacity={shows(2) ? 1 : 0}>
 						{#if panel.first && panel.first !== panel.last}
-							<Text
-								dx={panel.first.x}
-								dy={panel.first.y - Tokens.spacing.sm}
-								text={formatValue(panel.first.value)}
-								textAnchor="start"
-								verticalAnchor="end"
-								fontSize={Tokens.fontSize.xs}
-								fill={theme.palette.neutral[200]}
-							/>
+							<LabelMask>
+								<Text
+									dx={panel.first.x}
+									dy={panel.first.y - Tokens.spacing.sm}
+									text={formatValue(panel.first.value)}
+									textAnchor="start"
+									verticalAnchor="end"
+									fontSize={Tokens.fontSize.xs}
+									fill={theme.palette.neutral[200]}
+								/>
+							</LabelMask>
 						{/if}
 						{#if panel.last}
-							<Text
-								dx={panel.last.x + Tokens.spacing.md}
-								dy={panel.last.y}
-								text={formatValue(panel.last.value)}
-								textAnchor="start"
-								verticalAnchor="middle"
-								fontSize={nameSize}
-								fontWeight={Tokens.fontWeight.bold}
-								fill={theme.palette.accent}
-							/>
+							<LabelMask>
+								<Text
+									dx={panel.last.x + Tokens.spacing.md}
+									dy={panel.last.y}
+									text={formatValue(panel.last.value)}
+									textAnchor="start"
+									verticalAnchor="middle"
+									fontSize={nameSize}
+									fontWeight={Tokens.fontWeight.bold}
+									fill={theme.palette.accent}
+								/>
+							</LabelMask>
 						{/if}
 					</g>
 				</g>

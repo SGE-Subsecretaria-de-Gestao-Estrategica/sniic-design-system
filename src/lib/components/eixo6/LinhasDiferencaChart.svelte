@@ -9,6 +9,7 @@
 	import * as d3 from 'd3';
 	import Group from '$lib/core/components/Group.svelte';
 	import Text from '$lib/core/components/Text.svelte';
+	import LabelMask from '$lib/core/components/annotation/LabelMask.svelte';
 	import Axis from '$lib/core/components/axis/Axis.svelte';
 	import GridColumns from '$lib/core/components/grid/GridColumns.svelte';
 	import LinePath from '$lib/core/components/shape/LinePath.svelte';
@@ -293,22 +294,6 @@
 						/>
 					{/each}
 
-					{#each series.points as point, i (point.year)}
-						{#if labelled(series, i)}
-							{@const isLast = i === series.points.length - 1}
-							<Text
-								dx={isLast ? point.x + Tokens.spacing.md : point.x}
-								dy={isLast ? labelY - 2 : point.y - Tokens.spacing.md}
-								text={point.label}
-								fontSize={isLast ? Tokens.fontSize.lg : Tokens.fontSize.sm}
-								fontWeight={isLast ? Tokens.fontWeight.bold : Tokens.fontWeight.medium}
-								textAnchor={isLast ? 'start' : 'middle'}
-								verticalAnchor="end"
-								fill={series.isFeatured ? series.color : undefined}
-							/>
-						{/if}
-					{/each}
-
 					<Text
 						dx={series.last.x + Tokens.spacing.md}
 						dy={labelY + Tokens.spacing.sm}
@@ -322,6 +307,30 @@
 							: Tokens.fontWeight.medium}
 						fill={series.isFeatured ? series.color : undefined}
 					/>
+				</g>
+			{/each}
+
+			<!-- Values after every series, so no line crosses over a label's mask. -->
+			{#each groups as series (series.group)}
+				{@const labelY = endLabelY.get(series.group) ?? series.last.y}
+				<g class="fade" style:opacity={seriesOpacity(series)}>
+					{#each series.points as point, i (point.year)}
+						{#if labelled(series, i)}
+							{@const isLast = i === series.points.length - 1}
+							<LabelMask>
+								<Text
+									dx={isLast ? point.x + Tokens.spacing.md : point.x}
+									dy={isLast ? labelY - 2 : point.y - Tokens.spacing.md}
+									text={point.label}
+									fontSize={isLast ? Tokens.fontSize.lg : Tokens.fontSize.sm}
+									fontWeight={isLast ? Tokens.fontWeight.bold : Tokens.fontWeight.medium}
+									textAnchor={isLast ? 'start' : 'middle'}
+									verticalAnchor="end"
+									fill={series.isFeatured ? series.color : undefined}
+								/>
+							</LabelMask>
+						{/if}
+					{/each}
 				</g>
 			{/each}
 
@@ -354,19 +363,21 @@
 
 						{#if gapLabelled(gap, i)}
 							{@const isLast = i === gaps.length - 1}
-							<Text
-								dx={gap.x}
-								dy={y - 4}
-								text={isLast && !margin.compact
-									? `${gap.label.replace(' pp', '')} pontos percentuais (pp)`
-									: gap.label}
-								fontSize={Tokens.fontSize.xs}
-								fontWeight={Tokens.fontWeight.medium}
-								fill={theme.palette.neutral[200]}
-								textAnchor="middle"
-								verticalAnchor="end"
-								width={margin.right + 60}
-							/>
+							<LabelMask>
+								<Text
+									dx={gap.x}
+									dy={y - 4}
+									text={isLast && !margin.compact
+										? `${gap.label.replace(' pp', '')} pontos percentuais (pp)`
+										: gap.label}
+									fontSize={Tokens.fontSize.xs}
+									fontWeight={Tokens.fontWeight.medium}
+									fill={theme.palette.neutral[200]}
+									textAnchor="middle"
+									verticalAnchor="end"
+									width={margin.right + 60}
+								/>
+							</LabelMask>
 						{/if}
 					{/each}
 				</Group>

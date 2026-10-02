@@ -135,11 +135,6 @@ export type BolhasMatrizLinha = {
 	values: number[];
 };
 
-/** One slice of a `PontosPaineisChart` panel: `n` dots of one colour. */
-export type PontosFatia = { label: string; n: number; color?: string };
-/** One panel: the same total, divided its own way. */
-export type PontosPainel = { title: string; slices: PontosFatia[] };
-
 /** One ridge of `CristasDensidadeChart`. */
 export type CristaDensidade = {
 	label: string;
@@ -153,5 +148,61 @@ export type CristaDensidade = {
 /** A value per federative unit, by its two-letter code. */
 export type MapaUfValor = { uf: string; value: number };
 
-/** Two values per federative unit for `MapaHexagonalChart`: left and right bars. */
-export type MapaHexagonalValor = { uf: string; a: number; b: number };
+/** One category of `MapaUfChart` in categorical mode; `value` is its index. */
+export type MapaUfCategoria = {
+	label: string;
+	/** Without it, the category takes the ramp step of its position. */
+	color?: string;
+};
+
+/**
+ * Two values per federative unit for `MapaHexagonalChart`: left and right bars.
+ * `b` absent (or `null`) draws a single centred bar — a unit where both values
+ * are the same thing, like the Distrito Federal for state and capital.
+ */
+export type MapaHexagonalValor = { uf: string; a: number; b?: number | null };
+
+/**
+ * The copy of `MapaHexagonalLegenda`. Each `*Label` is the bold lead-in, each
+ * `*Text` the explanation after it; `**double asterisks**` set a word in bold.
+ */
+export type MapaHexagonalLegendaTexto = {
+	title: string;
+	/** Name inside the sample hexagon. */
+	sampleLabel: string;
+	totalLabel: string;
+	totalText: string;
+	excessLabel: string;
+	excessText: string;
+	/** Under the reference value, which the legend prints large. */
+	referenceText: string;
+	aLabel: string;
+	aText: string;
+	bLabel: string;
+	bText: string;
+};
+
+/**
+ * A measure of `TabelaBarrasChart`: one column of bars, on a scale of its own —
+ * the columns of a table rarely share a unit.
+ */
+export type TabelaBarrasColuna = {
+	label: string;
+	/** Text of each value in this column; falls back to the chart's `formatValue`. */
+	format?: (value: number) => string;
+	/** A dashed line across the column at this value — a target, a parity. */
+	reference?: number;
+	/** Written under the column, at the reference line. */
+	referenceLabel?: string;
+	/** Copy for this column's stage in `tabelaBarrasSteps`; falls back to `label`. */
+	stepLabel?: string;
+};
+
+/** A row of `TabelaBarrasChart`: one value per column, in the order of `columns`. */
+export type TabelaBarrasLinha = {
+	label: string;
+	/** Small line under the name. */
+	note?: string;
+	/** `null` is a value that was not reported — written, never drawn as zero. */
+	values: (number | null)[];
+};

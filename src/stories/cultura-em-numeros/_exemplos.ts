@@ -12,7 +12,6 @@ import type {
   BarrasCascataDatum,
   BolhasMatrizLinha,
   CristaDensidade,
-  PontosPainel,
   CurvaConcentracaoPonto,
   LinhasPainel,
   ColunasDatum,
@@ -23,6 +22,7 @@ import type {
   LinhaParticipacaoDatum,
   LinhasComparadasDatum,
   LinhasDiferencaDatum,
+  TabelaBarrasLinha,
 } from '$lib/components/eixo6/data';
 
 export { UFS };
@@ -55,6 +55,38 @@ export const pct1 = (v: number) => `${decimal1.format(v)}%`;
 export const bi = (v: number) => `R$ ${decimal1.format(v)} bi`;
 
 export const FONTE = 'Fonte: dados ilustrativos.';
+
+/**
+ * Os dez maiores municípios de exemplo do *Mapa por município*, em ordem: as
+ * capitais mais populosas, espalhadas pelo país para o mapa e o zoom terem o
+ * que mostrar. Os valores são ilustrativos.
+ */
+export const MUNICIPIOS_DESTAQUE = [
+  { c: '3550308', nome: 'São Paulo', uf: 'SP', valor: 1284 },
+  { c: '3304557', nome: 'Rio de Janeiro', uf: 'RJ', valor: 1012 },
+  { c: '5300108', nome: 'Brasília', uf: 'DF', valor: 655 },
+  { c: '2927408', nome: 'Salvador', uf: 'BA', valor: 538 },
+  { c: '3106200', nome: 'Belo Horizonte', uf: 'MG', valor: 497 },
+  { c: '2304400', nome: 'Fortaleza', uf: 'CE', valor: 431 },
+  { c: '4106902', nome: 'Curitiba', uf: 'PR', valor: 402 },
+  { c: '2611606', nome: 'Recife', uf: 'PE', valor: 366 },
+  { c: '1302603', nome: 'Manaus', uf: 'AM', valor: 289 },
+  { c: '5208707', nome: 'Goiânia', uf: 'GO', valor: 241 },
+];
+
+/**
+ * Um valor por município da malha: os de `MUNICIPIOS_DESTAQUE` no topo, o
+ * resto bem abaixo. Devolve também os nomes, para o ranking.
+ */
+export function valoresMunicipios(codigos: string[]) {
+  const r = sorteio(5);
+  const values: Record<string, number> = Object.fromEntries(
+    codigos.map((c) => [c, Math.round(r() ** 3 * 180)]),
+  );
+  for (const m of MUNICIPIOS_DESTAQUE) values[m.c] = m.valor;
+  const names = Object.fromEntries(MUNICIPIOS_DESTAQUE.map((m) => [m.c, m.nome]));
+  return { values, names };
+}
 
 // ---------------------------------------------------------------------------
 // Gráficos interativos controlados por etapa (nascidos no Eixo 6)
@@ -251,14 +283,6 @@ export const matrizLinhas: BolhasMatrizLinha[] = [
   { label: 'Grupo D', note: '1.524 unidades', values: [34.8, 30.1, 21.7, 13.4] },
 ];
 
-/** 600 unidades, repartidas de quatro maneiras. */
-export const pontosPaineis: PontosPainel[] = [
-  { title: 'Painel 1', slices: [{ label: 'Categoria A', n: 330 }, { label: 'Categoria B', n: 246 }, { label: 'Categoria C', n: 24 }] },
-  { title: 'Painel 2', slices: [{ label: 'Categoria A', n: 357 }, { label: 'Categoria B', n: 198 }, { label: 'Categoria C', n: 30 }, { label: 'Categoria D', n: 15 }] },
-  { title: 'Painel 3', slices: [{ label: 'Categoria A', n: 400 }, { label: 'Categoria B', n: 200 }] },
-  { title: 'Painel 4', slices: [{ label: 'Categoria A', n: 180 }, { label: 'Categoria B', n: 156 }, { label: 'Categoria C', n: 104 }, { label: 'Categoria D', n: 88 }, { label: 'Categoria E', n: 72 }] },
-];
-
 /** Densidade lognormal de 0 a `xMax` em `grade` pontos. */
 function lognormal(mediana: number, dispersao: number, xMax: number, grade = 161) {
   const mu = Math.log(mediana);
@@ -292,3 +316,26 @@ export const cristas: CristaDensidade[] = [
     value: `${alemDe(density, CRISTAS_REFERENCIA, CRISTAS_XMAX).toFixed(1).replace('.', ',')}%`,
   };
 });
+
+/** Cinco grupos por três medidas de unidades diferentes, com o total que as fecha. */
+export const tabelaColunas = ['Ações', 'Participantes', 'Unidades envolvidas'];
+export const tabelaLinhas: TabelaBarrasLinha[] = [
+  { label: 'Grupo A', values: [149, 9_412, 44] },
+  { label: 'Grupo B', values: [368, 22_905, 134] },
+  { label: 'Grupo C', values: [170, 5_972, 52] },
+  { label: 'Grupo D', values: [281, 23_658, 83] },
+  { label: 'Grupo E', values: [156, 9_298, 61] },
+];
+export const tabelaTotal: TabelaBarrasLinha = { label: 'Total', values: [1_124, 71_245, 374] };
+
+/** Unidades com uma razão em torno de 1 e valores não informados. */
+export const tabelaRazaoLinhas: TabelaBarrasLinha[] = [
+  { label: 'Unidade A', values: [12_080, 177, 2.0] },
+  { label: 'Unidade B', values: [10_220, 83, 2.0] },
+  { label: 'Unidade C', values: [6_778, 288, 3.0] },
+  { label: 'Unidade D', values: [5_265, 105, 3.2] },
+  { label: 'Unidade E', values: [4_016, 39, 0.7] },
+  { label: 'Unidade F', values: [936, 15, 0.8] },
+  { label: 'Unidade G, de nome mais longo', values: [580, null, 1.2] },
+  { label: 'Unidade H', values: [240, null, 2.1] },
+];

@@ -14,27 +14,71 @@ export const fontWeight = {
   bold: 700,
 }
 
+/**
+ * Cores de fundo — cartão, faixa e linha de grade. Ocupam o lugar do branco
+ * em toda figura: nenhum gráfico pinta `#FFFFFF`.
+ */
+export const basePalette = {
+  100: '#FEFFFC',
+  200: '#F0F2F1',
+  300: '#ECEEED',
+} as const
+
+/**
+ * Tinta — do cinza dos rótulos secundários ao quase-preto. Ocupam o lugar do
+ * preto e dos cinzas: texto, eixos, contornos e dados ausentes.
+ */
+export const neutralPalette = {
+  100: '#808679',
+  200: '#4D5148',
+  300: '#2D2E2B',
+  400: '#1C1C1C',
+} as const
+
 export const sharedPalette = {
   transparent: 'transparent',
-  base: {
-    100: '#FEFFFC',
-    200: '#F0F2F1',
-    300: '#ECEEED',
-  },
-  neutral: {
-    100: '#808679',
-    200: '#4D5148',
-    300: '#2D2E2B',
-    400: '#1C1C1C'
-  },
+  base: basePalette,
+  neutral: neutralPalette,
   // TODO: dados que faltam, dados não enviados
 }
 
+/** As cinco cores de um eixo, na ordem da marca. */
+export type EixoPalette = {
+  primary: string
+  primaryVariant: string
+  secondary: string
+  secondaryVariant: string
+  accent: string
+}
+
+export const eixo1Palette = {
+  primary: '#D5362A',
+  primaryVariant: '#EC6596',
+  secondary: '#4B2F92',
+  secondaryVariant: '#4F68DA',
+  accent: '#4ACA5D',
+} as const satisfies EixoPalette
+
+export const eixo6Palette = {
+  primary: '#F6B60E',
+  primaryVariant: '#F68E0E',
+  secondary: '#265C4F',
+  secondaryVariant: '#3D9142',
+  accent: '#D74D2A',
+} as const satisfies EixoPalette
+
+/** Paletas por eixo, indexadas pelo número do eixo. */
+export const eixoPalettes = {
+  1: eixo1Palette,
+  6: eixo6Palette,
+} as const
+
+/** O eixo cujo tema é o padrão quando nenhum é pedido. */
+export const defaultEixo = 6
+
 export const pillarPalettes = [
-  // Valores exatos da marca do Eixo 1, extraídos de src/lib/components/eixo1/cores.ts
-  // (cultura-em-numeros-eixo-1/data-vis) — fonte da verdade da paleta.
-  { id: 1, primary: '#D5362A', primaryVariant: '#EC6596', secondary: '#4B2F92', secondaryVariant: '#4F68DA', accent: '#68CF27' },
-  { id: 6, primary: '#F6B60E', primaryVariant: '#F68E0E', secondary: '#265C4F', secondaryVariant: '#3D9142', accent: '#D74D2A' },
+  { id: 1, ...eixo1Palette },
+  { id: 6, ...eixo6Palette },
   // PNAB: extraído de public/logos/pnab-logo.svg (azul dominante, verde e amarelo
   // nos blocos principais da marca). Confirme com o guia de marca oficial do PNAB
   // se houver um, antes de considerar definitivo.

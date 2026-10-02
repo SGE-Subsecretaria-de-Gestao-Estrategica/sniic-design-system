@@ -12,6 +12,7 @@
 	 */
 	import * as d3 from 'd3';
 	import Text from '$lib/core/components/Text.svelte';
+	import LabelMask from '$lib/core/components/annotation/LabelMask.svelte';
 	import Axis from '$lib/core/components/axis/Axis.svelte';
 	import LinePath from '$lib/core/components/shape/LinePath.svelte';
 	import HoverLayer from '$lib/core/components/interaction/HoverLayer.svelte';
@@ -189,17 +190,19 @@
 				stroke-width={Tokens.strokeWidth.sm}
 				stroke-dasharray="4,5"
 			/>
-			<Text
-				dx={x(50) - 6}
-				dy={y(50) - 6}
-				width={markLabelWidth}
-				text={diagonalLabel}
-				textAnchor="end"
-				verticalAnchor="end"
-				angle={0}
-				fontSize={Tokens.fontSize.xs}
-				fill={theme.palette.neutral[100]}
-			/>
+			<LabelMask>
+				<Text
+					dx={x(50) - 6}
+					dy={y(50) - 6}
+					width={markLabelWidth}
+					text={diagonalLabel}
+					textAnchor="end"
+					verticalAnchor="end"
+					angle={0}
+					fontSize={Tokens.fontSize.xs}
+					fill={theme.palette.neutral[100]}
+				/>
+			</LabelMask>
 
 			<g class="fade" style:opacity={shows(1) ? 1 : 0}>
 				<path d={gapPath} fill={theme.palette.primary} fill-opacity={0.16} />
@@ -218,17 +221,19 @@
 						stroke={theme.palette.accent}
 						stroke-opacity={0.5}
 					/>
-					<Text
-						dx={m.x - 22}
-						dy={labelY}
-						width={markLabelWidth}
-						text={m.label}
-						textAnchor="end"
-						verticalAnchor="middle"
-						fontSize={Tokens.fontSize.sm}
-						fontWeight={Tokens.fontWeight.semibold}
-						fill={theme.palette.neutral[300]}
-					/>
+					<LabelMask>
+						<Text
+							dx={m.x - 22}
+							dy={labelY}
+							width={markLabelWidth}
+							text={m.label}
+							textAnchor="end"
+							verticalAnchor="middle"
+							fontSize={Tokens.fontSize.sm}
+							fontWeight={Tokens.fontWeight.semibold}
+							fill={theme.palette.neutral[300]}
+						/>
+					</LabelMask>
 				{/each}
 			</g>
 

@@ -42,14 +42,14 @@
     font: 500 12px/1 'General Sans Variable', system-ui, sans-serif;
     color: #4d5148;
     background: transparent;
-    border: 1px solid #cec2bb;
+    border: 1px solid #ECEEED;
     border-radius: 4px;
     padding: 7px 12px;
     cursor: pointer;
   }
 
   .export:hover {
-    color: #33382e;
+    color: #4D5148;
     border-color: #4d5148;
   }
 </style>

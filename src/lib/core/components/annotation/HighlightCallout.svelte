@@ -1,8 +1,9 @@
 <script lang="ts">
+  import { neutralPalette } from '$lib/core/theme/tokens';
   /**
    * A big colored number with a short wrapped sentence under it — the
    * "leia aqui o achado" block that sits in the right-hand gutter of most
-   * Eixo 1 print charts (`FaixaLinhasChart`, `CascataChart`,
+   * former Eixo 1 print charts (`FaixaLinhasChart`, `CascataChart`,
    * `BarraRankingChart`, `ConcentracaoChart`, `AntesDepoisChart`,
    * `BarraDivergenteChart`, `MatrizBolhasChart`...), each of which had its
    * own copy of this exact layout. Reads top-down from `(x, y)`: the value
@@ -43,7 +44,7 @@
     width,
     valueFontSize = 19,
     descriptionFontSize = 13,
-    descriptionColor = "#3F3F3B",
+    descriptionColor = neutralPalette[300],
     fontFamily,
     descriptionFontWeight = 500,
     gap,

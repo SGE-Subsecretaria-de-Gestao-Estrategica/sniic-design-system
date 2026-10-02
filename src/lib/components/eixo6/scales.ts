@@ -8,6 +8,7 @@
 import * as d3 from 'd3';
 import getStringWidth from '$lib/core/utils/getStringWidth';
 import { wrapText } from '$lib/core/utils/wrapText';
+import { basePalette, eixo6Palette } from '$lib/core/theme/tokens';
 
 export type BreakScale = {
 	/** Scale for years before the break. */
@@ -168,8 +169,9 @@ type PaletteLike = {
  * value is the colour.
  */
 export function sequentialRamp(palette: PaletteLike, n: number): string[] {
-	const light = d3.interpolateLab(palette.primary ?? '#F6B60E', '#ffffff')(0.72);
-	const dark = d3.color(palette.primaryVariant ?? '#F68E0E')?.darker(0.9).formatHex() ?? '#9a4f00';
+	const { primary = eixo6Palette.primary, primaryVariant = eixo6Palette.primaryVariant } = palette;
+	const light = d3.interpolateLab(primary, basePalette[100])(0.72);
+	const dark = d3.color(primaryVariant)?.darker(0.9).formatHex() ?? primaryVariant;
 	const ramp = d3.interpolateLab(light, dark);
 	return n <= 1 ? [ramp(1)] : d3.range(n).map((i) => ramp(i / (n - 1)));
 }
@@ -179,7 +181,8 @@ export function sequentialRamp(palette: PaletteLike, n: number): string[] {
  * its three hues first, then their lightness variants.
  */
 export function seriesColors(palette: PaletteLike, n: number): string[] {
-	const base = palette.categorical?.length ? palette.categorical : ['#F6B60E', '#265C4F', '#D74D2A'];
+	const base = palette.categorical?.length ? palette.categorical
+		: [eixo6Palette.primary, eixo6Palette.secondary, eixo6Palette.accent];
 	return d3.range(n).map((i) => base[i % base.length]);
 }
 

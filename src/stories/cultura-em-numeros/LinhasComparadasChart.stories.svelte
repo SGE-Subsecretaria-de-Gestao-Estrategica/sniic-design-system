@@ -1,4 +1,5 @@
 <script lang="ts" module>
+  import type { ComponentProps } from 'svelte';
   import { defineMeta } from '@storybook/addon-svelte-csf';
   import LinhasComparadasChart from '$lib/components/eixo6/LinhasComparadasChart.svelte';
   import { LINHAS_COMPARADAS_STEPS } from '$lib/components/eixo6/steps';
@@ -8,10 +9,39 @@
 
   /**
    * Várias linhas na mesma escala, uma destacada na cor de ênfase e as demais
-   * nomeadas na ponta — a cor só separa o destaque do resto. Exportado como
-   * `LinhasComparadasChart`.
+   * nomeadas na ponta — a cor só separa o destaque do resto. Um dos gráficos de
+   * referência da identidade visual.
+   *
+   * **Função:** evolução no tempo — um grupo diante dos demais.
+   *
+   * **Quando usar:** quando há um sujeito (o setor, a região do texto) e um
+   * conjunto de comparação, todos na mesma unidade e escala.
+   *
+   * **Quando não usar:** se as séries são pares, sem sujeito, use
+   * `colorBy="series"` (*Linhas por série*); com muitas séries que se cruzam,
+   * *Linhas em painéis*.
+   *
+   * **Dados:** `data: LinhasComparadasDatum[]` — `group`, `year`, `value`.
+   * `featured` escolhe o destaque (padrão: o primeiro grupo de `data`);
+   * `breakYear` marca uma quebra metodológica; `othersLabel` nomeia os demais
+   * na legenda.
+   *
+   * **Etapas (`LINHAS_COMPARADAS_STEPS`):** destaque → demais → quebra → onde
+   * cada um chegou. `highlight` recebe um `group`.
+   *
+   * ```ts
+   * import { LinhasComparadasChart, LINHAS_COMPARADAS_STEPS } from 'sniic-design-system';
+   * ```
    */
-  const { Story } = defineMeta({ title: 'Cultura em Números/Linhas comparadas' });
+  const { Story } = defineMeta({
+    title: 'Cultura em Números/Gráficos/Linhas comparadas',
+    globals: { backgrounds: { value: 'cultnum-bg' } },
+    component: LinhasComparadasChart,
+    tags: ['autodocs'],
+    parameters: { controls: { disable: true } },
+  });
+
+  type Args = ComponentProps<typeof LinhasComparadasChart>;
 
   const textos = {
     featured: GRUPO_DESTAQUE,
@@ -28,16 +58,21 @@
   let highlight = $state<string | null>(null);
 </script>
 
-<Story name="Padrão">
-  {#snippet template()}
+<!-- O gráfico completo (`step = -1`). Os controles mexem nas props desta story. -->
+<Story
+  name="Padrão"
+  args={{
+    data: gruposPorAno,
+    ...textos,
+    title: 'Um grupo destacado diante dos demais',
+    subtitle: 'Valor anual por grupo, 2016–2025',
+    source: `${FONTE} A série tem quebra metodológica em ${QUEBRA}.`,
+  }}
+  parameters={{ controls: { disable: false } }}
+>
+  {#snippet template(args)}
     <div style="max-width: 680px;">
-      <LinhasComparadasChart
-        data={gruposPorAno}
-        {...textos}
-        title="Um grupo destacado diante dos demais"
-        subtitle="Valor anual por grupo, 2016–2025"
-        source="{FONTE} A série tem quebra metodológica em {QUEBRA}."
-      />
+      <LinhasComparadasChart {...args as Args} />
     </div>
   {/snippet}
 </Story>
@@ -51,6 +86,7 @@
   {/snippet}
 </Story>
 
+<!-- O slider percorre `LINHAS_COMPARADAS_STEPS`; o seletor passa o valor de `highlight`, que esmaece o resto. -->
 <Story name="Etapas e destaque">
   {#snippet template()}
     <div style="max-width: 680px; display: grid; gap: 1rem;">
@@ -66,7 +102,8 @@
   {/snippet}
 </Story>
 
-<Story name="Scrollytelling">
+<!-- O padrão de consumo: gráfico fixo, uma seção por etapa, o scroll decide o `step`. Fica fora da página de docs, porque precisa da altura da janela. -->
+<Story name="Scrollytelling" tags={['!autodocs']}>
   {#snippet template()}
     <Scrolly {etapas}>
       {#snippet grafico(etapa: number)}

@@ -1,6 +1,6 @@
 # Gráficos interativos controlados por etapa
 
-Dezoito gráficos nascidos no Eixo 6 e hoje a referência para os demais:
+Dezessete gráficos nascidos no Eixo 6 e hoje a referência para os demais:
 interativos, acessíveis e prontos para scrollytelling. Os nomes dizem a
 **forma**, não o tema — o texto e os dados da publicação entram por prop, a
 partir do projeto que consome o pacote.
@@ -19,10 +19,10 @@ partir do projeto que consome o pacote.
 | `CurvaConcentracaoChart` | Curva de concentração (Lorenz) com a diagonal de igualdade e marcos ("os 10% maiores concentram…"). | `CurvaConcentracaoPonto` — `[unidades %, total %]`, `CurvaConcentracaoMarco` |
 | `FaixasParticipacaoChart` | Histomap: anos de cima para baixo, cada um fechando em 100% na horizontal, com blocos de leitura na calha. | `ColunasDatum` (o `label` é o ano), `FaixasParticipacaoDestaque` |
 | `BolhasMatrizChart` | Linhas por colunas, uma bolha de área proporcional por cruzamento, cor pelo valor na rampa do pilar. | `columns` + `BolhasMatrizLinha` — `{ label, note?, values }` |
-| `PontosPaineisChart` | Um ponto por unidade, a mesma grade em cada painel, repartida de um jeito em cada um. | `PontosPainel` — `{ title, slices: { label, n, color? }[] }` |
+| `TabelaBarrasChart` | Uma linha por categoria, uma coluna por medida, cada célula uma `CapsuleBar` na escala da sua coluna; referência tracejada por coluna, `null` escrito como não informado, linha de total escrita. | `TabelaBarrasColuna` — `{ label, format?, reference?, referenceLabel? }` + `TabelaBarrasLinha` — `{ label, note?, values }` |
 | `CristasDensidadeChart` | Cristas de densidade partidas por uma referência; além dela a cor se aprofunda. | `CristaDensidade` — `{ label, note?, density, value? }` |
 | `MapaUfChart` | Coroplético por UF na malha do IBGE, classes na rampa sequencial do pilar. | `MapaUfValor` — `{ uf, value }` + `breaks` |
-| `MapaMunicipiosChart` | Coroplético por município; a malha municipal entra por prop (não vem no pacote). | `values: Record<código IBGE, number>` + `mesh` + `breaks` |
+| `MapaMunicipiosChart` | O território em cinza e só os `top` (10) maiores municípios destacados, numerados, com o ranking ao lado; `zoomTo` voa até um ou mais municípios, para scrollytelling. Com `breaks`, vira mosaico: todos os municípios na cor da classe, com legenda e a divisão por UF no tooltip (etapas de `MAPA_CLASSES_STEPS`). A malha municipal entra por prop (não vem no pacote). | `values: Record<código IBGE, number>` + `names` + `mesh` (+ `breaks`, `classLabels` no mosaico) |
 | `MapaHexagonalChart` | O Brasil esquemático em hexágonos, duas `CapsuleBar` por UF e uma linha de referência; quem a supera ganha o ponto de destaque. | `MapaHexagonalValor` — `{ uf, a, b }` + `reference` |
 | `BolhasComparadasChart` | A mesma repartição em dois escopos — o grupo e a referência (hachurada) —, lado a lado. | `BolhasComparadasDatum` — `{ scope: 'grupo' \| 'referencia', category, share }` |
 

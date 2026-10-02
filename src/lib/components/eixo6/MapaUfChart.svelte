@@ -9,25 +9,40 @@
 	 * left to the tooltip and the table rather than to labels crammed over
 	 * their borders. Every state answers the pointer and the keyboard over its
 	 * own outline.
+	 *
+	 * With `categories`, the map answers "which kind" instead of "how much":
+	 * each value is the index of a category, the state carries only its code,
+	 * and the legend, tooltip and table name the category. Categories without
+	 * a `color` take the ramp in their order, so an ordered set — stages of a
+	 * process — still reads light to deep; give each a `color` for a set
+	 * with no order.
 	 */
 	import * as d3 from 'd3';
 	import Text from '$lib/core/components/Text.svelte';
 	import HitTarget from '$lib/core/components/interaction/HitTarget.svelte';
 	import { HoverState } from '$lib/core/interaction/hover.svelte.js';
 	import { Tokens, getPillarTheme } from '$lib/core/theme';
+	import { basePalette } from '$lib/core/theme/tokens';
 	import { formatLocale } from '$lib/core/format';
 	import { pickContrastInk } from '$lib/core/utils/contrastColor';
 	import malha from '../eixo1/data/malha-ufs.json';
 	import ChartShell from './ChartShell.svelte';
-	import type { MapaUfValor } from './data.js';
+	import type { MapaUfCategoria, MapaUfValor } from './data.js';
 	import { classesFrom, sequentialRamp } from './scales.js';
 	import type { FrameProps, ScrollytellingProps } from './types.js';
 
 	type Props = FrameProps &
 		ScrollytellingProps & {
 			values: MapaUfValor[];
-			/** Ascending lower bounds of every class above the first. */
-			breaks: number[];
+			/** Ascending lower bounds of every class above the first. Ignored with `categories`. */
+			breaks?: number[];
+			/**
+			 * Categorical mode: each `value` is an index into this list. Replaces
+			 * `breaks`, `classLabels` and the value inside the states.
+			 */
+			categories?: MapaUfCategoria[];
+			/** What the categories are — header of the accessible table. */
+			categoryLabel?: string;
 			/** One name per class; without them the legend writes the ranges. */
 			classLabels?: string[];
 			formatValue?: (value: number) => string;
@@ -37,7 +52,9 @@
 
 	let {
 		values,
-		breaks,
+		breaks = [],
+		categories,
+		categoryLabel = 'Categoria',
 		classLabels,
 		formatValue = (value: number) => formatLocale.format(',.1~f')(value),
 		width,
@@ -65,8 +82,22 @@
 	let plotHeight = $derived(malha.altura * k);
 	let figureHeight = $derived(height ?? plotHeight + margin.top + margin.bottom);
 
-	let classes = $derived(classesFrom(breaks, formatValue, classLabels));
-	let ramp = $derived(sequentialRamp(theme.palette, classes.count));
+	let categorical = $derived(categories !== undefined);
+	let classes = $derived(
+		categories
+			? {
+					count: categories.length,
+					classOf: (value: number) => Math.min(categories.length - 1, Math.max(0, Math.round(value))),
+					labels: categories.map((c) => c.label)
+				}
+			: classesFrom(breaks, formatValue, classLabels)
+	);
+	let ramp = $derived.by(() => {
+		const sequential = sequentialRamp(theme.palette, classes.count);
+		return categories ? categories.map((c, i) => c.color ?? sequential[i]) : sequential;
+	});
+	/** The text for a state's value: its category's name, or the formatted number. */
+	const valueText = (value: number) => (categorical ? classes.labels[classes.classOf(value)] : formatValue(value));
 	let byUf = $derived(new Map(values.map((v) => [v.uf, v.value])));
 
 	let states = $derived(
@@ -78,8 +109,8 @@
 				index,
 				value,
 				fill,
-				ink: pickContrastInk(d3.color(fill)?.formatHex() ?? '#ffffff', {
-					light: '#FFFFFF',
+				ink: pickContrastInk(d3.color(fill)?.formatHex() ?? basePalette[100], {
+					light: basePalette[100],
 					dark: theme.palette.neutral[400]
 				}),
 				/** Room for a label inside, in px. */
@@ -103,12 +134,19 @@
 						activeState.value === undefined
 							? [{ label: 'Sem dado', value: '—' }]
 							: [
-									{
-										label: classes.labels[classes.classOf(activeState.value)],
-										value: formatValue(activeState.value),
-										color: activeState.fill,
-										emphasis: true
-									}
+									categorical
+										? {
+												label: categoryLabel,
+												value: valueText(activeState.value),
+												color: activeState.fill,
+												emphasis: true
+											}
+										: {
+												label: classes.labels[classes.classOf(activeState.value)],
+												value: formatValue(activeState.value),
+												color: activeState.fill,
+												emphasis: true
+											}
 								]
 				}
 			: null
@@ -118,12 +156,16 @@
 
 	let table = $derived({
 		caption: title ?? 'Valor por UF',
-		columns: ['UF', 'Valor', 'Classe'],
-		rows: states.map((s) => [
-			s.nome,
-			s.value === undefined ? '—' : formatValue(s.value),
-			s.value === undefined ? '—' : classes.labels[classes.classOf(s.value)]
-		])
+		columns: categorical ? ['UF', categoryLabel] : ['UF', 'Valor', 'Classe'],
+		rows: states.map((s) =>
+			categorical
+				? [s.nome, s.value === undefined ? '—' : valueText(s.value)]
+				: [
+						s.nome,
+						s.value === undefined ? '—' : formatValue(s.value),
+						s.value === undefined ? '—' : classes.labels[classes.classOf(s.value)]
+					]
+		)
 	});
 </script>
 
@@ -163,7 +205,7 @@
 					<g class="fade" style:opacity={stateOpacity(s.uf)}>
 						<Text
 							dx={s.rotulo[0] * k}
-							dy={s.rotulo[1] * k - (shows(1) && s.room >= 18 && s.value !== undefined ? 6 : 0)}
+							dy={s.rotulo[1] * k - (shows(1) && !categorical && s.room >= 18 && s.value !== undefined ? 6 : 0)}
 							text={s.uf}
 							textAnchor="middle"
 							verticalAnchor="middle"
@@ -171,7 +213,7 @@
 							fontWeight={Tokens.fontWeight.bold}
 							fill={shows(1) ? s.ink : theme.palette.neutral[200]}
 						/>
-						{#if shows(1) && s.room >= 18 && s.value !== undefined}
+						{#if shows(1) && !categorical && s.room >= 18 && s.value !== undefined}
 							<Text
 								dx={s.rotulo[0] * k}
 								dy={s.rotulo[1] * k + 7}
@@ -197,7 +239,7 @@
 						y={0}
 						d={s.d}
 						transform="scale({k})"
-						label="{s.nome}: {s.value === undefined ? 'sem dado' : formatValue(s.value)}"
+						label={`${s.nome}: ${s.value === undefined ? 'sem dado' : valueText(s.value)}`}
 					/>
 				{/each}
 			{/if}

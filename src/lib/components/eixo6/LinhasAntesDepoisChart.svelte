@@ -14,6 +14,7 @@
 	 */
 	import * as d3 from 'd3';
 	import Text from '$lib/core/components/Text.svelte';
+	import LabelMask from '$lib/core/components/annotation/LabelMask.svelte';
 	import Axis from '$lib/core/components/axis/Axis.svelte';
 	import GridColumns from '$lib/core/components/grid/GridColumns.svelte';
 	import Dumbbell from '$lib/core/components/shape/Dumbbell.svelte';
@@ -261,26 +262,30 @@
 					/>
 
 					<g class="fade" style:opacity={shows(2) ? 1 : 0}>
-						<Text
-							dx={before.dx}
-							dy={row.middle}
-							text={row.text.before}
-							textAnchor={before.anchor}
-							verticalAnchor="middle"
-							fontSize={Tokens.fontSize.sm}
-							fontWeight={isActive ? Tokens.fontWeight.bold : Tokens.fontWeight.medium}
-							fill={theme.palette.neutral[200]}
-						/>
-						<Text
-							dx={after.dx}
-							dy={row.middle}
-							text={row.text.after}
-							textAnchor={after.anchor}
-							verticalAnchor="middle"
-							fontSize={labelSize}
-							fontWeight={Tokens.fontWeight.bold}
-							fill={theme.palette.accent}
-						/>
+						<LabelMask>
+							<Text
+								dx={before.dx}
+								dy={row.middle}
+								text={row.text.before}
+								textAnchor={before.anchor}
+								verticalAnchor="middle"
+								fontSize={Tokens.fontSize.sm}
+								fontWeight={isActive ? Tokens.fontWeight.bold : Tokens.fontWeight.medium}
+								fill={theme.palette.neutral[200]}
+							/>
+						</LabelMask>
+						<LabelMask>
+							<Text
+								dx={after.dx}
+								dy={row.middle}
+								text={row.text.after}
+								textAnchor={after.anchor}
+								verticalAnchor="middle"
+								fontSize={labelSize}
+								fontWeight={Tokens.fontWeight.bold}
+								fill={theme.palette.accent}
+							/>
+						</LabelMask>
 					</g>
 
 					{#if interactive}

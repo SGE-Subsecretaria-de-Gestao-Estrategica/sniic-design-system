@@ -1,10 +1,10 @@
 /**
- * O formato da malha municipal projetada que `MosaicoMunicipalChart` recebe
+ * O formato da malha municipal projetada que `MapaMunicipiosChart` recebe
  * por prop. A malha (5.570 municípios, ~1,1MB) não vem no pacote: quem
  * consome traz a sua e a passa já resolvida.
  */
 
-import type { Municipio } from './CoropletoUfChart.svelte';
+import type { Municipio } from '../figuras/CoropletoUfChart.svelte';
 
 export type MalhaMunicipiosProjetada = {
   fonte: string;

@@ -18,6 +18,7 @@
 	import HitTarget from '$lib/core/components/interaction/HitTarget.svelte';
 	import { HoverState } from '$lib/core/interaction/hover.svelte.js';
 	import { Tokens, getPillarTheme } from '$lib/core/theme';
+	import { basePalette, neutralPalette } from '$lib/core/theme/tokens';
 	import { formatLocale } from '$lib/core/format';
 	import { pickContrastInk } from '$lib/core/utils/contrastColor';
 	import getStringWidth from '$lib/core/utils/getStringWidth';
@@ -162,8 +163,8 @@
 
 	let inks = $derived(
 		palette.map((c) =>
-			pickContrastInk(d3.color(c)?.formatHex() ?? '#000000', {
-				light: '#FFFFFF',
+			pickContrastInk(d3.color(c)?.formatHex() ?? neutralPalette[400], {
+				light: basePalette[100],
 				dark: theme.palette.neutral[400]
 			})
 		)

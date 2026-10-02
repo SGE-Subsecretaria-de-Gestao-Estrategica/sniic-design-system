@@ -43,7 +43,13 @@ const preview = {
     },
     options: {
       storySort: {
-        order: ['Design System', 'Atoms', 'Molecules', 'Charts'],
+        order: [
+          'Cultura em Números',
+          ['Catálogo por função', 'Primitivas', 'Gráficos'],
+          'PNAB',
+          ['Fundamentos', 'Átomos', 'Moléculas', 'Gráficos'],
+          'LPG',
+        ],
       },
     },
   },

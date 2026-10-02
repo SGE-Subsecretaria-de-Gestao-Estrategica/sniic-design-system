@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { basePalette } from '$lib/core/theme/tokens';
 	/**
 	 * Barras divergentes: duas parcelas por categoria, correndo em direções
 	 * opostas a partir de um zero comum.
@@ -173,7 +174,7 @@
 		const fill = sideColors[side];
 		if (!fill) return undefined;
 		const tipColor = typeof fill === 'string' ? fill : fill[1];
-		return d3.interpolateLab(tipColor, '#ffffff')(0.3);
+		return d3.interpolateLab(tipColor, basePalette[100])(0.3);
 	}
 
 	/** The colour that stands for a side in the header and the tooltip key. */

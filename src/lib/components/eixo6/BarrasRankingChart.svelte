@@ -12,6 +12,10 @@
 	 *
 	 * A bar is never inflated to show its cap: a value smaller than the bar's
 	 * own thickness draws as a sliver of the disc, which is the honest size.
+	 *
+	 * A `reference` — a parity, a target, an average — runs as a dashed line
+	 * across every row, behind the bars, named under the last one. The scale
+	 * stretches to keep it in view even when every bar falls short of it.
 	 */
 	import * as d3 from 'd3';
 	import Text from '$lib/core/components/Text.svelte';
@@ -39,6 +43,10 @@
 			categoryLabel?: string;
 			/** Bar thickness in px; the cap's radius is half of it. */
 			barHeight?: number;
+			/** A dashed line across the rows at this value — a parity, a target. */
+			reference?: number;
+			/** Written under the rows, at the reference line. */
+			referenceLabel?: string;
 			/** Overrides the Eixo 6 palette — used for style previews in other eixos. */
 			pillarId?: number;
 		};
@@ -59,6 +67,8 @@
 		valueLabel = 'Valor',
 		categoryLabel = 'Categoria',
 		barHeight,
+		reference,
+		referenceLabel,
 		pillarId = 6
 	}: Props = $props();
 
@@ -77,7 +87,9 @@
 	let gutter = $derived(compact ? 104 : 176);
 	/** Room past the longest bar for its value. */
 	let valueSpace = $derived(compact ? 52 : 68);
-	let margin = $derived({ top: 4, right: valueSpace, bottom: 4, left: gutter });
+	/** Room under the rows for the reference's name. */
+	let referenceFoot = $derived(reference !== undefined && referenceLabel ? Tokens.fontSize.xs * 1.4 + Tokens.spacing.xs : 0);
+	let margin = $derived({ top: 4, right: valueSpace, bottom: 4 + referenceFoot, left: gutter });
 	let plotWidth = $derived(Math.max(0, shellWidth - margin.left - margin.right));
 
 	let thickness = $derived(barHeight ?? (compact ? 24 : 32));
@@ -107,7 +119,7 @@
 	let xScale = $derived(
 		d3
 			.scaleLinear()
-			.domain([0, d3.max(rows, (d) => d.value) || 1])
+			.domain([0, Math.max(d3.max(rows, (d) => d.value) ?? 0, reference ?? 0) || 1])
 			.range([0, plotWidth])
 	);
 
@@ -193,6 +205,31 @@
 >
 	{#snippet children({ container })}
 		{#if layout.length && plotWidth > 0}
+			{#if reference !== undefined}
+				<!-- Behind the bars: they and their values read over it. -->
+				{@const rx = xScale(reference)}
+				<line
+					x1={rx}
+					y1={0}
+					x2={rx}
+					y2={plotHeight}
+					stroke={theme.palette.neutral[100]}
+					stroke-width={Tokens.strokeWidth.sm}
+					stroke-dasharray="4,5"
+				/>
+				{#if referenceLabel}
+					<Text
+						dx={rx}
+						dy={plotHeight + Tokens.spacing.xs}
+						text={referenceLabel}
+						textAnchor="middle"
+						verticalAnchor="start"
+						fontSize={Tokens.fontSize.xs}
+						fill={theme.palette.neutral[100]}
+					/>
+				{/if}
+			{/if}
+
 			{#each layout as row, i (row.label)}
 				{@const isActive = i === activeIndex}
 				<g class="fade" style:opacity={dimmed(row.label) ? 0.25 : 1}>
@@ -220,6 +257,10 @@
 							fontSize={labelSize}
 							fontWeight={isActive ? Tokens.fontWeight.bold : Tokens.fontWeight.semibold}
 							fill={theme.palette.neutral[isActive ? 400 : 300]}
+							stroke={theme.palette.base[100]}
+							stroke-width={3}
+							stroke-linejoin="round"
+							paint-order="stroke"
 						/>
 					</g>
 

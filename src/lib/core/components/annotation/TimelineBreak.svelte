@@ -1,11 +1,12 @@
 <script lang="ts">
+  import { neutralPalette } from '$lib/core/theme/tokens';
   /**
    * A break in a chart's time axis — for a series with a genuine gap or a
    * methodology change the chart doesn't want read as real, measured
    * change (a missing year, a base-year swap). Draws a rotated label above
    * the axis and a torn-paper chevron glyph on it, at `x`. Lifted from
-   * `FaixaLinhasChart`/`LinhaProporcaoChart` (Eixo 1), which each drew this
-   * by hand identically.
+   * `FaixaLinhasChart`/`LinhaProporcaoChart` (the former Eixo 1 bases), which
+   * each drew this by hand identically.
    *
    * Only marks the axis — it doesn't draw the dashed "bridging" segment
    * through the gap in the series itself, since that's a `<path>` (or
@@ -30,7 +31,7 @@
     x,
     axisY,
     label = "QUEBRA",
-    color = "#8F8F89",
+    color = neutralPalette[100],
     fontSize = 12,
     fontFamily,
     letterSpacing,

@@ -58,8 +58,12 @@ export type ScrollytellingProps = {
 export type FrameProps = {
 	/** Fixed width; omit to fill the container. */
 	width?: number;
+	/** Height in px; each chart has its own default. */
 	height?: number;
+	/** Headline above the plot — what the reader should take away. */
 	title?: string;
+	/** Line under the title: the measure, the unit, the period. */
 	subtitle?: string;
+	/** Footer line — the source and any methodological note. */
 	source?: string;
 };

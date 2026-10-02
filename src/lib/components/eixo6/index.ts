@@ -31,11 +31,12 @@ export { default as LinhasPaineisChart } from './LinhasPaineisChart.svelte';
 export { default as CurvaConcentracaoChart } from './CurvaConcentracaoChart.svelte';
 export { default as FaixasParticipacaoChart } from './FaixasParticipacaoChart.svelte';
 export { default as BolhasMatrizChart } from './BolhasMatrizChart.svelte';
-export { default as PontosPaineisChart } from './PontosPaineisChart.svelte';
+export { default as TabelaBarrasChart } from './TabelaBarrasChart.svelte';
 export { default as CristasDensidadeChart } from './CristasDensidadeChart.svelte';
 export { default as MapaUfChart } from './MapaUfChart.svelte';
 export { default as MapaMunicipiosChart } from './MapaMunicipiosChart.svelte';
 export { default as MapaHexagonalChart } from './MapaHexagonalChart.svelte';
+export { default as MapaHexagonalLegenda } from './MapaHexagonalLegenda.svelte';
 
 export * from './steps.js';
 

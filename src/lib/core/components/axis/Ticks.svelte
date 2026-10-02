@@ -1,4 +1,5 @@
 <script lang="ts" generics="Scale extends AxisScale">
+  import { neutralPalette } from '$lib/core/theme/tokens';
   import type { AxisScale, TicksRendererProps } from "$lib/types/Axis";
   import Orientation from "$lib/core/constants/orientation";
   import Group from "../Group.svelte";
@@ -12,7 +13,7 @@
     tickClassName,
     tickComponent,
     tickLabelProps: allTickLabelProps,
-    tickStroke = "#222",
+    tickStroke = neutralPalette[300],
     tickTransform,
     ticks,
     strokeWidth,

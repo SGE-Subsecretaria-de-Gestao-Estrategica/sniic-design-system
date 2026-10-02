@@ -10,6 +10,7 @@
 	import * as d3 from 'd3';
 	import Group from '$lib/core/components/Group.svelte';
 	import Text from '$lib/core/components/Text.svelte';
+	import LabelMask from '$lib/core/components/annotation/LabelMask.svelte';
 	import Axis from '$lib/core/components/axis/Axis.svelte';
 	import GridColumns from '$lib/core/components/grid/GridColumns.svelte';
 	import LinePath from '$lib/core/components/shape/LinePath.svelte';
@@ -237,15 +238,17 @@
 					{#each points as d, i (d.year)}
 						{#if labelled(i)}
 							{@const isLast = i === points.length - 1}
-							<Text
-								dx={d.x + (isLast ? Tokens.spacing.lg : 0)}
-								dy={d.y - Tokens.spacing[isLast ? 'sm' : 'md']}
-								text={d.valueText}
-								fontSize={Tokens.fontSize[isLast ? 'lg' : 'sm']}
-								fontWeight={Tokens.fontWeight[isLast ? 'bold' : 'medium']}
-								textAnchor={isLast ? 'start' : 'middle'}
-								fill={isLast ? theme.palette.accent : undefined}
-							/>
+							<LabelMask>
+								<Text
+									dx={d.x + (isLast ? Tokens.spacing.lg : 0)}
+									dy={d.y - Tokens.spacing[isLast ? 'sm' : 'md']}
+									text={d.valueText}
+									fontSize={Tokens.fontSize[isLast ? 'lg' : 'sm']}
+									fontWeight={Tokens.fontWeight[isLast ? 'bold' : 'medium']}
+									textAnchor={isLast ? 'start' : 'middle'}
+									fill={isLast ? theme.palette.accent : undefined}
+								/>
+							</LabelMask>
 						{/if}
 					{/each}
 				</g>
@@ -326,19 +329,21 @@
 								{#if labelled(i)}
 									<!-- The last bubble spells out what the share means; the
 									     narrow gutter only has room for the number. -->
-									<Text
-										textAnchor={isLast ? 'start' : 'middle'}
-										text={isLast && !margin.compact
-											? `${d.shareLabel} ${shareSuffix}`
-											: d.shareLabel}
-										dx={isLast ? d.r + Tokens.spacing.md : 0}
-										dy={isLast ? 0 : -(d.r + Tokens.spacing.sm)}
-										fill={theme.palette.neutral[200]}
-										fontSize={Tokens.fontSize.sm}
-										fontWeight={Tokens.fontWeight.medium}
-										width={margin.right - Tokens.spacing.md}
-										verticalAnchor={isLast ? 'middle' : 'end'}
-									/>
+									<LabelMask>
+										<Text
+											textAnchor={isLast ? 'start' : 'middle'}
+											text={isLast && !margin.compact
+												? `${d.shareLabel} ${shareSuffix}`
+												: d.shareLabel}
+											dx={isLast ? d.r + Tokens.spacing.md : 0}
+											dy={isLast ? 0 : -(d.r + Tokens.spacing.sm)}
+											fill={theme.palette.neutral[200]}
+											fontSize={Tokens.fontSize.sm}
+											fontWeight={Tokens.fontWeight.medium}
+											width={margin.right - Tokens.spacing.md}
+											verticalAnchor={isLast ? 'middle' : 'end'}
+										/>
+									</LabelMask>
 								{/if}
 							</Group>
 						{/each}

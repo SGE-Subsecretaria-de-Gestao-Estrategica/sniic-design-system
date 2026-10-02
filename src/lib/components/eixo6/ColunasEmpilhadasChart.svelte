@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { basePalette, neutralPalette } from '$lib/core/theme/tokens';
 	/**
 	 * Colunas empilhadas: uma coluna por categoria (ou por ano), cada série
 	 * uma parcela da pilha.
@@ -89,8 +90,8 @@
 	const nameOf = (key: string) => labels[key] ?? key;
 	let inks = $derived(
 		palette.map((c) =>
-			pickContrastInk(d3.color(c)?.formatHex() ?? '#000000', {
-				light: '#FFFFFF',
+			pickContrastInk(d3.color(c)?.formatHex() ?? neutralPalette[400], {
+				light: basePalette[100],
 				dark: theme.palette.neutral[400]
 			})
 		)
@@ -238,12 +239,22 @@
 	 * A cubic band from a segment's edges in one column to the same series'
 	 * edges in the next — never an elbow, which would suggest an abrupt jump.
 	 * A series absent from either column gets no ribbon rather than one that
-	 * starts or ends in the void.
+	 * starts or ends in the void. Ribbons attach only where a column's side is
+	 * straight: the top of the stack is the capsule's round tip, so an edge
+	 * that would land on it is lowered to where the tip meets the side.
 	 */
 	let ribbonPaths = $derived.by(() => {
 		if (!ribbons) return [];
 		const out: { id: string; key: string; index: number; d: string }[] = [];
 		const inset = 1;
+		const tip = thickness / 2;
+		/** A segment's edges on the column's straight side, top to bottom. */
+		const edges = (c: Column, s: Segment) => {
+			const bot = plotHeight - s.offset - inset;
+			const straightTop = plotHeight - Math.max(0, c.length - tip);
+			const top = Math.min(Math.max(plotHeight - s.offset - s.length + inset, straightTop), bot);
+			return [top, bot];
+		};
 		for (let i = 0; i < columns.length - 1; i++) {
 			const a = columns[i];
 			const b = columns[i + 1];
@@ -253,10 +264,9 @@
 			for (const sa of a.segments) {
 				const sb = b.segments.find((s) => s.key === sa.key);
 				if (!sa.length || !sb?.length) continue;
-				const top0 = plotHeight - sa.offset - sa.length + inset;
-				const bot0 = plotHeight - sa.offset - inset;
-				const top1 = plotHeight - sb.offset - sb.length + inset;
-				const bot1 = plotHeight - sb.offset - inset;
+				const [top0, bot0] = edges(a, sa);
+				const [top1, bot1] = edges(b, sb);
+				if (bot0 - top0 < 1 && bot1 - top1 < 1) continue;
 				out.push({
 					id: `${sa.key}-${i}`,
 					key: sa.key,

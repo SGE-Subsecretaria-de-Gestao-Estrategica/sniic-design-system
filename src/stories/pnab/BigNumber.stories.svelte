@@ -1,0 +1,104 @@
+<script module>
+  import { defineMeta } from '@storybook/addon-svelte-csf';
+  import BigNumber from '$lib/components/BigNumber.svelte';
+  import { orange, blue, teal } from '$lib/tokens.js';
+  import { getPillarTheme } from '$lib/core/theme/index.js';
+
+  const { Story } = defineMeta({
+    title: 'PNAB/Gráficos/BigNumber',
+    component: BigNumber,
+    tags: ['autodocs'],
+    argTypes: {
+      fontSize:    { control: { type: 'range', min: 32, max: 200, step: 8 } },
+      shadowDepth: { control: { type: 'range', min: 0, max: 20, step: 1 } },
+      width:       { control: { type: 'range', min: 200, max: 800, step: 20 } },
+      color:         { control: 'color' },
+      shadowColor:   { control: 'color' },
+      labelColor:    { control: 'color' },
+      subtitleColor: { control: 'color' },
+    },
+  });
+</script>
+
+<Story
+  name="Default"
+  args={{
+    value: 93,
+    suffix: '%',
+    fontSize: 96,
+    shadowDepth: 8,
+  }}
+/>
+
+<Story
+  name="On Orange Background"
+  parameters={{ backgrounds: { default: 'light' } }}
+  args={{
+    value: 93,
+    suffix: '%',
+    fontSize: 120,
+    shadowDepth: 10,
+  }}
+/>
+
+<Story
+  name="With Label"
+  args={{
+    value: 1.2,
+    suffix: 'M',
+    label: 'habitantes',
+    fontSize: 96,
+    shadowDepth: 8,
+  }}
+/>
+
+<Story
+  name="Blue on Dark"
+  args={{
+    value: 47,
+    suffix: '%',
+    label: 'cobertura vacinal',
+    fontSize: 80,
+    color: '#ffffff',
+    shadowColor: blue,
+    shadowDepth: 10,
+  }}
+/>
+
+<Story
+  name="Custom Colors"
+  args={{
+    value: 3.7,
+    suffix: 'x',
+    label: 'crescimento',
+    fontSize: 96,
+    color: '#ffffff',
+    shadowColor: teal,
+    shadowDepth: 8,
+  }}
+/>
+
+<Story
+  name="With Subtitle"
+  args={{
+    value: 93,
+    suffix: '%',
+    label: 'aprovação',
+    subtitle: 'Pesquisa realizada em março de 2025',
+    fontSize: 96,
+    shadowDepth: 8,
+  }}
+/>
+
+<!-- No `color` prop: main fill picks up the active theme's primary colour automatically. -->
+<Story
+  name="Themed"
+  args={{
+    value: 93,
+    suffix: '%',
+    label: 'execução financeira',
+    fontSize: 96,
+    shadowDepth: 8,
+    theme: getPillarTheme(100),
+  }}
+/>

@@ -46,6 +46,7 @@ export { default as LegendChips } from './components/legend/LegendChips.svelte';
 export { default as ValueCallout } from './components/annotation/ValueCallout.svelte';
 export { default as HighlightCallout } from './components/annotation/HighlightCallout.svelte';
 export { default as TimelineBreak } from './components/annotation/TimelineBreak.svelte';
+export { default as LabelMask } from './components/annotation/LabelMask.svelte';
 
 // Interaction — hover, crosshair, tooltip and the optional scrollytelling driver
 export { default as HoverLayer } from './components/interaction/HoverLayer.svelte';

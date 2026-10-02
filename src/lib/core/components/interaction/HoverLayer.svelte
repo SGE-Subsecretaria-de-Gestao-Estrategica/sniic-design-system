@@ -134,7 +134,7 @@
 <style>
 	.hover-layer {
 		outline: none;
-		cursor: crosshair;
+		cursor: pointer;
 		touch-action: pan-y;
 	}
 

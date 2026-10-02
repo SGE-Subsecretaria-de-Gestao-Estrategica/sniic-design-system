@@ -90,11 +90,6 @@ export const BOLHAS_MATRIZ_STEPS: ChartStep[] = [
 	{ id: 'valores', label: 'O valor de cada bolha' }
 ];
 
-export const PONTOS_PAINEIS_STEPS: ChartStep[] = [
-	{ id: 'total', label: 'O conjunto inteiro, um ponto por unidade' },
-	{ id: 'fatias', label: 'O mesmo conjunto, repartido em cada painel' }
-];
-
 export const CRISTAS_DENSIDADE_STEPS: ChartStep[] = [
 	{ id: 'formas', label: 'A forma de cada distribuição' },
 	{ id: 'referencia', label: 'A referência, e quem a ultrapassa' },
@@ -106,8 +101,43 @@ export const MAPA_CLASSES_STEPS: ChartStep[] = [
 	{ id: 'classes', label: 'Cada unidade na cor da sua classe' }
 ];
 
+/**
+ * `MapaMunicipiosChart`. The zoom is not a stage: it follows `zoomTo`, so a
+ * host can fly between municipalities while staying on the last step.
+ */
+export const MAPA_DESTAQUES_STEPS: ChartStep[] = [
+	{ id: 'mapa', label: 'O território, sem destaques' },
+	{ id: 'destaques', label: 'Os maiores, marcados no mapa' },
+	{ id: 'ranking', label: 'O ranking, com o valor de cada um' }
+];
+
+/**
+ * `MapaHexagonalChart`. After the reference, one stage per region — in the
+ * order of `REGIOES` — outlines it and dims the others.
+ */
 export const MAPA_HEXAGONAL_STEPS: ChartStep[] = [
 	{ id: 'a', label: 'O primeiro valor de cada UF' },
 	{ id: 'b', label: 'O segundo valor, ao lado' },
-	{ id: 'referencia', label: 'A referência, e quem a supera' }
+	{ id: 'referencia', label: 'A referência, e quem a supera' },
+	{ id: 'norte', label: 'O Norte' },
+	{ id: 'nordeste', label: 'O Nordeste' },
+	{ id: 'centro-oeste', label: 'O Centro-Oeste' },
+	{ id: 'sudeste', label: 'O Sudeste' },
+	{ id: 'sul', label: 'O Sul' }
 ];
+
+/**
+ * `TabelaBarrasChart`. One stage per column, in order — each brings its
+ * measure in and steps the ones already read back — then the whole table,
+ * with the total when there is one. The stages follow the table's columns,
+ * so they are built from them rather than fixed.
+ */
+export function tabelaBarrasSteps(
+	columns: { label: string; stepLabel?: string }[],
+	options: { total?: boolean } = {}
+): ChartStep[] {
+	return [
+		...columns.map((column, c) => ({ id: `coluna-${c}`, label: column.stepLabel ?? column.label })),
+		{ id: 'tabela', label: options.total ? 'A tabela inteira, com o total' : 'A tabela inteira' }
+	];
+}
