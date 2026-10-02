@@ -58,7 +58,7 @@ export const REGIOES: Record<string, Regiao> = {
   },
   Sul: {
     offset: [700, 880],
-    rotulo: [742, 930],
+    rotulo: [650, 932],
     celulas: { PR: [2, 0], SC: [1, 1], RS: [0, 2] },
   },
 };

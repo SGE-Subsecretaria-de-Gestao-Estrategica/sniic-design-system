@@ -3,7 +3,7 @@
  * todas as figuras são desenhadas.
  *
  * As cinco cores da marca: vermelho `#D5362A`, rosa `#EC6596`, roxo `#4B2F92`,
- * azul `#4F68DA` e verde `#68CF27`. O que este arquivo acrescenta são as
+ * azul `#4F68DA` e verde `#4ACA5D`. O que este arquivo acrescenta são as
  * variações: cada matiz vira uma rampa de cinco degraus, e é dela que saem as
  * cores das categorias. A escala categórica do design system não é usada em
  * nenhuma figura.
@@ -52,16 +52,16 @@ export const rampaRoxa = ['#381579', '#4B2F92', '#755EC5', '#9682EB', '#BAAEFF']
 export const rampaAzul = ['#191A8A', '#3143B1', '#4F68DA', '#6E8BFF', '#A1B7FF'] as const;
 
 /**
- * Do mais escuro ao mais claro, com o `#68CF27` da marca no degrau 4.
+ * Do mais escuro ao mais claro, com o `#4ACA5D` da marca no degrau 4.
  *
  * O verde da marca é claro demais para carregar traço ou texto: sobre o cartão
- * ele rende 1,7:1. E os degraus médios têm um problema só deles: na mesma
+ * ele rende 2,1:1. E os degraus médios têm um problema só deles: na mesma
  * luminosidade de um vermelho, um verde some sob protanopia e deuteranopia.
  * Num traço, o verde desce direto ao degrau 0, que se separa dos vermelhos
  * escuros por luminosidade — a matiz, que é o que identifica a série entre as
  * figuras, não muda.
  */
-export const rampaVerde = ['#183D00', '#2A6201', '#3D8702', '#51AF03', '#68CF27'] as const;
+export const rampaVerde = ['#0F3D16', '#1D6328', '#2B883A', '#3AB04D', '#4ACA5D'] as const;
 
 export const sniic = {
   /** Vermelho da marca — `rampaVermelha[2]`. */
@@ -146,7 +146,7 @@ export const categoricaMarca = [
  * escrevem o nome da série na cor dela.
  *
  * A diferença é o piso de contraste contra o cartão: um preenchimento se
- * sustenta em 1,7:1, um traço de 2 px não. O rosa desce um degrau que ainda é
+ * sustenta em 2:1, um traço de 2 px não. O rosa desce um degrau que ainda é
  * rosa; o verde desce até o degrau mais escuro, porque é o único que não some
  * ao lado de um vermelho sob protanopia ou deuteranopia — os degraus médios
  * rendem ΔE 2,5 a 3,6 contra o vermelho da marca, que é uma cor só.

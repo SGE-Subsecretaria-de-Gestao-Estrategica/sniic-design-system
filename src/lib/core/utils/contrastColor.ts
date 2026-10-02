@@ -1,3 +1,4 @@
+import { basePalette, neutralPalette } from '$lib/core/theme/tokens';
 /**
  * Picks whichever of two ink colors reads with more contrast against a
  * background — using the WCAG 2.x relative-luminance formula (sRGB gamma
@@ -45,12 +46,12 @@ export function contrastRatio(a: string, b: string): number {
  * Whichever of `light`/`dark` contrasts more against `background`.
  *
  * @example
- * pickContrastInk('#a44c7f') // → '#FFFFFF' — a mid-tone purple fill
- * pickContrastInk('#f6c341', { dark: '#2F2F2B' }) // → '#2F2F2B' — a chart's own ink token, not pure black
+ * pickContrastInk('#a44c7f') // → basePalette[100] — a mid-tone purple fill
+ * pickContrastInk('#f6c341', { dark: neutralPalette[300] }) // → neutralPalette[300] — a chart's own ink token, not pure black
  */
 export function pickContrastInk(
   background: string,
-  { light = "#FFFFFF", dark = "#000000" }: { light?: string; dark?: string } = {},
+  { light = basePalette[100], dark = neutralPalette[400] }: { light?: string; dark?: string } = {},
 ): string {
   return contrastRatio(background, light) >= contrastRatio(background, dark)
     ? light

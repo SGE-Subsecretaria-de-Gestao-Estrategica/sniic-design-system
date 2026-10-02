@@ -6,6 +6,8 @@ export type LegendItem = {
 	color: string;
 	/** Draws the key as a hatched circle, matching a textured reference mark. */
 	hatched?: boolean;
+	/** Draws the key as a dot, for series marked by points rather than lines. */
+	dot?: boolean;
 };
 
 /** Accessible fallback rendered off-screen by every Eixo 6 chart. */
@@ -56,8 +58,12 @@ export type ScrollytellingProps = {
 export type FrameProps = {
 	/** Fixed width; omit to fill the container. */
 	width?: number;
+	/** Height in px; each chart has its own default. */
 	height?: number;
+	/** Headline above the plot — what the reader should take away. */
 	title?: string;
+	/** Line under the title: the measure, the unit, the period. */
 	subtitle?: string;
+	/** Footer line — the source and any methodological note. */
 	source?: string;
 };

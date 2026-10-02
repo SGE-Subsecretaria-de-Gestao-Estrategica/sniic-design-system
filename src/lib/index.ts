@@ -23,6 +23,9 @@ export {
 	BarStack,
 	BarGroup,
 	RoundedBar,
+	CapsuleBar,
+	Dumbbell,
+	CapsuleStack,
 	Marker,
 	MarkerCircle,
 	Markers,
@@ -32,8 +35,15 @@ export {
 	ValueCallout,
 	HighlightCallout,
 	TimelineBreak,
+	LabelMask,
 	DefaultTheme,
 	getPillarTheme,
+	basePalette,
+	neutralPalette,
+	eixo1Palette,
+	eixo6Palette,
+	eixoPalettes,
+	defaultEixo,
 	getChartTheme,
 	setChartTheme,
 	resolveThemeStyle,
@@ -71,6 +81,7 @@ export {
 export type {
 	ChartTheme,
 	Palette,
+	EixoPalette,
 	TextStyle,
 	AxisStyle,
 	LineStyle,
@@ -99,6 +110,9 @@ export type {
 	RoundedRectConfig,
 	RoundedBarProps,
 } from './types/RoundedRect.js';
+export type { CapsuleBarProps } from './types/CapsuleBar.js';
+export type { DumbbellProps } from './types/Dumbbell.js';
+export type { CapsuleStackProps, CapsuleStackSegment } from './types/CapsuleStack.js';
 
 // Atoms — single-responsibility SVG <g> fragments
 export { default as XAxis } from './components/atoms/XAxis.svelte';

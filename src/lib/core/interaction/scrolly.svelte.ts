@@ -8,11 +8,11 @@
  *
  * ```svelte
  * <script>
- *   import { ScrollySteps, scrollStep, InformalidadeChart } from 'sniic-design-system';
+ *   import { ScrollySteps, scrollStep, LinhasDiferencaChart } from 'sniic-design-system';
  *   const scrolly = new ScrollySteps();
  * </script>
  *
- * <div class="sticky"><InformalidadeChart {data} step={scrolly.step} /></div>
+ * <div class="sticky"><LinhasDiferencaChart {data} step={scrolly.step} /></div>
  * {#each copy as text, i}
  *   <section use:scrollStep={{ scrolly, index: i }}>{text}</section>
  * {/each}

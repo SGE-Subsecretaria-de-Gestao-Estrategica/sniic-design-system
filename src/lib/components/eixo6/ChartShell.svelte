@@ -107,6 +107,7 @@
 					<span
 						class="key"
 						class:hatched={item.hatched}
+						class:dot={item.dot}
 						style:--key-color={item.color}
 					></span>
 					{item.label}
@@ -232,6 +233,12 @@
 		height: 3px;
 		border-radius: 2px;
 		background: var(--key-color, currentColor);
+	}
+
+	.chart-legend .key.dot {
+		width: 0.625rem;
+		height: 0.625rem;
+		border-radius: 50%;
 	}
 
 	.chart-legend .key.hatched {

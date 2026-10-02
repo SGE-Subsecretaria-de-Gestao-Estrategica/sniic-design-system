@@ -1,0 +1,114 @@
+<script module>
+	import { defineMeta } from '@storybook/addon-svelte-csf';
+	import ProportionalAreaChart from '$lib/components/ProportionalAreaChart.svelte';
+	import RegionSilhouetteChart from '$lib/components/RegionSilhouetteChart.svelte';
+	import StatesSilhouetteChart from '$lib/components/StatesSilhouetteChart.svelte';
+	import { getPillarTheme } from '$lib/core/theme/index.js';
+
+	const { Story } = defineMeta({
+		title: 'PNAB/Gráficos/ProportionalAreaChart',
+		component: ProportionalAreaChart,
+		tags: ['autodocs'],
+		argTypes: {
+			maxRadius: { control: { type: 'range', min: 30, max: 120, step: 5 } },
+			showLabels: { control: 'boolean' },
+		},
+	});
+</script>
+
+<Story
+	name="Default"
+	args={{
+		data: [
+			{ label: 'Sudeste', value: 4200 },
+			{ label: 'Nordeste', value: 2800 },
+			{ label: 'Sul', value: 1500 },
+			{ label: 'Centro-Oeste', value: 900 },
+			{ label: 'Norte', value: 600 },
+		],
+		maxRadius: 80,
+	}}
+/>
+
+<Story
+	name="Many Items"
+	args={{
+		data: [
+			{ label: 'SP', value: 12000 },
+			{ label: 'RJ', value: 6500 },
+			{ label: 'MG', value: 4800 },
+			{ label: 'BA', value: 3200 },
+			{ label: 'RS', value: 2900 },
+			{ label: 'PR', value: 2600 },
+			{ label: 'PE', value: 2100 },
+			{ label: 'CE', value: 1800 },
+		],
+		maxRadius: 70,
+	}}
+/>
+
+<Story
+	name="Small Radius"
+	args={{
+		data: [
+			{ label: 'A', value: 100 },
+			{ label: 'B', value: 80 },
+			{ label: 'C', value: 60 },
+			{ label: 'D', value: 40 },
+			{ label: 'E', value: 20 },
+			{ label: 'F', value: 10 },
+		],
+		maxRadius: 40,
+	}}
+/>
+
+<!-- No `colors` prop: circle colours picked up from the active theme's categorical ramp. -->
+<Story
+	name="Themed"
+	args={{
+		data: [
+			{ label: 'Sudeste', value: 4200 },
+			{ label: 'Nordeste', value: 2800 },
+			{ label: 'Sul', value: 1500 },
+			{ label: 'Centro-Oeste', value: 900 },
+			{ label: 'Norte', value: 600 },
+		],
+		maxRadius: 80,
+		theme: getPillarTheme(100),
+	}}
+/>
+
+<Story name="Region Silhouette">
+	{#snippet template()}
+		<RegionSilhouetteChart
+			data={[
+				{ region: 'Sudeste',     value: 4200 },
+				{ region: 'Nordeste',    value: 2800 },
+				{ region: 'Sul',         value: 1500 },
+				{ region: 'CentroOeste', value: 900 },
+				{ region: 'Norte',       value: 600 },
+			]}
+			maxSize={90}
+			format={(v) => v.toLocaleString('pt-BR')}
+		/>
+	{/snippet}
+</Story>
+
+<Story name="State Silhouette">
+	{#snippet template()}
+		<StatesSilhouetteChart
+			data={[
+				{ state: 'SP', value: 4200 },
+				{ state: 'MG', value: 2800 },
+				{ state: 'RJ', value: 2100 },
+				{ state: 'BA', value: 1500 },
+				{ state: 'RS', value: 1200 },
+				{ state: 'PR', value: 1000 },
+				{ state: 'PE', value: 900 },
+				{ state: 'CE', value: 800 },
+			]}
+			maxSize={80}
+			format={(v) => v.toLocaleString('pt-BR')}
+		/>
+	{/snippet}
+</Story>

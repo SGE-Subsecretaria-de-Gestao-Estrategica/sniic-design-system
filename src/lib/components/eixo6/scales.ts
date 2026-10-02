@@ -1,12 +1,14 @@
 /**
- * X positioning for the RAIS series, which breaks methodologically in 2022.
+ * X positioning for a yearly series that may break methodologically.
  *
  * Pre- and post-break years get their own time scale separated by a visible
  * gap, so the eye never reads across the break as if it were continuous. Both
  * segments stay on one x axis — the gap is the annotation, not a second scale.
  */
 import * as d3 from 'd3';
-import { RAIS_BREAK_YEAR } from './data.js';
+import getStringWidth from '$lib/core/utils/getStringWidth';
+import { wrapText } from '$lib/core/utils/wrapText';
+import { basePalette, eixo6Palette } from '$lib/core/theme/tokens';
 
 export type BreakScale = {
 	/** Scale for years before the break. */
@@ -25,7 +27,8 @@ export type BreakScale = {
 export function createBreakScale(
 	years: number[],
 	width: number,
-	{ breakYear = RAIS_BREAK_YEAR, gapRatio = 0.11 } = {}
+	/** `breakYear` is the first year after the break; omit it for an unbroken series. */
+	{ breakYear = Infinity, gapRatio = 0.11 }: { breakYear?: number; gapRatio?: number } = {}
 ): BreakScale {
 	const sorted = [...new Set(years)].sort((a, b) => a - b);
 	const preYears = sorted.filter((year) => year < breakYear);
@@ -46,12 +49,12 @@ export function createBreakScale(
 
 	const pre = d3
 		.scaleTime()
-		.domain([toDate(preYears[0] ?? breakYear), toDate(preYears.at(-1) ?? breakYear)])
+		.domain([toDate(preYears[0] ?? postYears[0]), toDate(preYears.at(-1) ?? postYears[0])])
 		.range([0, preSpan]);
 
 	const post = d3
 		.scaleTime()
-		.domain([toDate(postYears[0] ?? breakYear), toDate(postYears.at(-1) ?? breakYear)])
+		.domain([toDate(postYears[0] ?? preYears.at(-1)!), toDate(postYears.at(-1) ?? preYears.at(-1)!)])
 		.range([postStart, width]);
 
 	const isPre = (year: number) => year < breakYear;
@@ -139,4 +142,65 @@ export function separateLabels<T extends { key: string; y: number }>(
 	}
 
 	return new Map(sorted.map((item) => [item.key, item.y]));
+}
+
+/**
+ * How many lines a `<Text>` with this `width` will wrap `text` into.
+ *
+ * Row layouts need it before drawing, so a long category name in a narrow
+ * gutter grows its row instead of running into the next one. It measures with
+ * the same unstyled measurer `<Text>` wraps with, so the count agrees with
+ * what gets drawn.
+ */
+export function wrappedLineCount(text: string, width: number) {
+	return wrapText(text, (line) => getStringWidth(line, '') ?? line.length * 7, width).length;
+}
+
+type PaletteLike = {
+	primary?: string;
+	primaryVariant?: string;
+	categorical?: string[];
+};
+
+/**
+ * The family's sequential ramp, light to dark, in `n` steps: from a pale
+ * tint of the pillar's `primary` to a deepened `primaryVariant` — the same
+ * ramp the bubble charts fill by value. For maps and matrices, where the
+ * value is the colour.
+ */
+export function sequentialRamp(palette: PaletteLike, n: number): string[] {
+	const { primary = eixo6Palette.primary, primaryVariant = eixo6Palette.primaryVariant } = palette;
+	const light = d3.interpolateLab(primary, basePalette[100])(0.72);
+	const dark = d3.color(primaryVariant)?.darker(0.9).formatHex() ?? primaryVariant;
+	const ramp = d3.interpolateLab(light, dark);
+	return n <= 1 ? [ramp(1)] : d3.range(n).map((i) => ramp(i / (n - 1)));
+}
+
+/**
+ * One colour per series, in order, from the pillar's categorical palette —
+ * its three hues first, then their lightness variants.
+ */
+export function seriesColors(palette: PaletteLike, n: number): string[] {
+	const base = palette.categorical?.length ? palette.categorical
+		: [eixo6Palette.primary, eixo6Palette.secondary, eixo6Palette.accent];
+	return d3.range(n).map((i) => base[i % base.length]);
+}
+
+/**
+ * Classes from ascending lower bounds: `[10, 20]` makes three classes — below
+ * 10, 10 to 20, 20 and above. Returns the class of a value and a label per
+ * class, from `labels` when given or from the bounds themselves.
+ */
+export function classesFrom(
+	breaks: number[],
+	format: (value: number) => string,
+	labels?: string[]
+) {
+	const classOf = (value: number) => d3.bisectRight(breaks, value);
+	const auto = [
+		`menos de ${format(breaks[0])}`,
+		...breaks.slice(1).map((b, i) => `${format(breaks[i])} a ${format(b)}`),
+		`${format(breaks.at(-1)!)} ou mais`
+	];
+	return { classOf, labels: labels ?? auto, count: breaks.length + 1 };
 }

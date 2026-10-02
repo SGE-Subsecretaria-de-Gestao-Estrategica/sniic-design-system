@@ -1,4 +1,5 @@
 <script lang="ts" generics="Scale extends AxisScale">
+  import { neutralPalette } from '$lib/core/theme/tokens';
   import Orientation from "$lib/core/constants/orientation";
   import type { AxisRendererProps, AxisScale } from "$lib/types/Axis";
   import type { TextProps } from "$lib/types/Text";
@@ -24,14 +25,14 @@
     labelProps,
     orientation = Orientation.bottom,
     scale,
-    stroke = "#222",
+    stroke = neutralPalette[300],
     strokeDasharray,
     strokeWidth = 1,
     tickClassName,
     tickLineProps,
     tickLabelProps,
     tickLength = 8,
-    tickStroke = "#222",
+    tickStroke = neutralPalette[300],
     tickTransform,
     ticks,
     tickComponent,
