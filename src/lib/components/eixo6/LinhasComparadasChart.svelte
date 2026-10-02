@@ -76,7 +76,7 @@
 		pillarId = 6
 	}: Props = $props();
 
-	const theme = getPillarTheme(pillarId);
+	const theme = $derived(getPillarTheme(pillarId));
 
 	/** Without `featured`, the first group in `data` leads. */
 	let featured = $derived(featuredProp ?? data[0]?.group);

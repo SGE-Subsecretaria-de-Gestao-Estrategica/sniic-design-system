@@ -500,7 +500,6 @@
           <SlopeGraph
             items={slopeItems}
             labels={slopeLabels}
-            width={500}
             height={320}
             margin={{ top: 40, right: 120, bottom: 40, left: 120 }}
           />

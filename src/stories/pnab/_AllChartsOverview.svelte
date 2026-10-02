@@ -29,11 +29,12 @@
   import ContourPlot from '$lib/components/ContourPlot.svelte';
   import BoxPlotChart from '$lib/components/BoxPlotChart.svelte';
   import RegionSilhouetteChart from '$lib/components/RegionSilhouetteChart.svelte';
+  import type { BrazilRegion } from '$lib/charts/brazilRegions.js';
   import StatesSilhouetteChart from '$lib/components/StatesSilhouetteChart.svelte';
   import AnnotationBox from '$lib/components/molecules/AnnotationBox.svelte';
   import SimpleBox from '$lib/components/molecules/SimpleBox.svelte';
   import DataTable from '$lib/components/molecules/DataTable.svelte';
-  import type { TableColumn } from '$lib/components/molecules/DataTable.svelte';
+  import type { TableColumn } from '$lib/types.js';
   import { colorScales, orange, teal, blue, purple, lime } from '$lib/tokens.js';
 
   // ── Shared sample data ──────────────────────────────────────────────────
@@ -580,7 +581,6 @@
       <SlopeGraph
         items={slopeItems}
         labels={slopeLabels}
-        width={500}
         height={320}
         margin={{ top: 40, right: 120, bottom: 40, left: 120 }}
       />
@@ -764,7 +764,7 @@
       <span class="label">Area Proporcional por Silhueta de Regiao</span>
       <RegionSilhouetteChart
         data={proportionalData.map((d) => ({
-          region: d.label === 'Centro-Oeste' ? 'CentroOeste' : d.label,
+          region: (d.label === 'Centro-Oeste' ? 'CentroOeste' : d.label) as BrazilRegion,
           value: d.value,
         }))}
         maxSize={80}

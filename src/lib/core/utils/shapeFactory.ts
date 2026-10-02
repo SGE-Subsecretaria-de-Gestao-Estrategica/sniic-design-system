@@ -104,3 +104,16 @@ export function roundedRect({
     .filter(Boolean)
     .join(" ");
 }
+
+/**
+ * A flat-topped hexagon path centred on the origin, vertices at `radius` —
+ * the tile shape of the hex map layouts (columns 1.5·r apart, rows √3/2·r).
+ * Translate it to each tile's position.
+ */
+export function generateHexagon(radius: number): string {
+  const points = [0, 60, 120, 180, 240, 300].map((deg) => {
+    const rad = (deg * Math.PI) / 180;
+    return `${radius * Math.cos(rad)},${radius * Math.sin(rad)}`;
+  });
+  return `M${points.join("L")}Z`;
+}

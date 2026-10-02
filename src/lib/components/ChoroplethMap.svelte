@@ -224,11 +224,11 @@
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────
 
-  onMount(async () => {
+  onMount(() => {
     width = containerEl!.clientWidth;
     const ro = new ResizeObserver(([e]) => { width = e.contentRect.width; });
     ro.observe(containerEl!);
-    geojson = await loadBrazilGeoJSON();
+    loadBrazilGeoJSON().then((geo) => { geojson = geo; });
     return () => ro.disconnect();
   });
 </script>

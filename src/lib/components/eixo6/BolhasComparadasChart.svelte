@@ -53,7 +53,7 @@
 		pillarId = 6
 	}: Props = $props();
 
-	const theme = getPillarTheme(pillarId);
+	const theme = $derived(getPillarTheme(pillarId));
 	const pctFormat = formatLocale.format('.1%');
 	const hover = new HoverState();
 	const uid = $props.id();

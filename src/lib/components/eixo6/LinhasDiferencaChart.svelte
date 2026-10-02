@@ -59,7 +59,7 @@
 		pillarId = 6
 	}: Props = $props();
 
-	const theme = getPillarTheme(pillarId);
+	const theme = $derived(getPillarTheme(pillarId));
 
 	/** Without them, the first group in `data` is featured and the second is the baseline. */
 	let groupNames = $derived([...new Set(data.map((d) => d.group))]);

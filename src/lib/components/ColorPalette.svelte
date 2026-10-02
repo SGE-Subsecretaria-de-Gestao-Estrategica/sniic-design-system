@@ -59,7 +59,7 @@
   {#if view === 'cross'}
     <div class="cross-grid">
       <!-- Column headers -->
-      <div class="cross-corner"></div>
+      <div class="cross-corner"></div><!-- empty top-left cell -->
       {#each baseColors as col (col.label)}
         <div class="cross-col-label">
           <div class="cross-dot" style="background: {col.color};"></div>
@@ -282,10 +282,6 @@
     display: grid;
     grid-template-columns: 72px repeat(8, 1fr);
     gap: 4px;
-  }
-
-  .cross-corner {
-    /* empty top-left cell */
   }
 
   .cross-col-label {

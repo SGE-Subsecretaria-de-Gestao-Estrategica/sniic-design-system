@@ -16,7 +16,7 @@ export function parseFormattedNumber(
   formatted: string,
   options: ParseOptions = {}
 ): ParsedNumber {
-  const { decimalSeparator = ',', thousandsSeparator = '.' } = options;
+  const { decimalSeparator = ',' } = options;
   const trimmedInput = formatted.trim();
   const match = trimmedInput.match(/^([^\d-]*)(-?[\d.,]+)([^\d]*)$/);
   if (!match) {

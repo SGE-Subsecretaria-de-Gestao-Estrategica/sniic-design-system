@@ -76,7 +76,6 @@
   // ── State detail map ──────────────────────────────────────────────────────
 
   const LABEL_MARGIN = 90;   // horizontal space reserved for labels on each side
-  const DETAIL_PAD_Y = 12;
   const detailHeight = $derived(detailWidth * 1.3);
   const mapTop       = $derived(detailHeight * 0.1);  // space above map for labels
   const mapLeft      = $derived(LABEL_MARGIN);
@@ -248,7 +247,7 @@
 
             <!-- Selected state highlight (rendered on top) -->
             {#if selectedSigla}
-              {#each brazilGeo.features.filter((f) => f.properties.sigla === selectedSigla) as feature (feature.properties.sigla + '-sel')}
+              {#each brazilGeo.features.filter((f: any) => f.properties.sigla === selectedSigla) as feature (feature.properties.sigla + '-sel')}
                 <path
                   d={brazilPathGen(feature) ?? ''}
                   fill="none"
