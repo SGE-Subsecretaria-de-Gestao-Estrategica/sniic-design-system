@@ -7,11 +7,20 @@ export type FileReadResult =
   | { ok: true; fileName: string; text: string; encoding: FileEncoding }
   | { ok: false; error: string };
 
-export function decodeBytes(bytes: ArrayBuffer): { text: string; encoding: FileEncoding } {
+export function decodeBytes(bytes: ArrayBuffer): {
+  text: string;
+  encoding: FileEncoding;
+} {
   try {
-    return { text: new TextDecoder("utf-8", { fatal: true }).decode(bytes), encoding: "utf-8" };
+    return {
+      text: new TextDecoder("utf-8", { fatal: true }).decode(bytes),
+      encoding: "utf-8",
+    };
   } catch {
-    return { text: new TextDecoder("windows-1252").decode(bytes), encoding: "windows-1252" };
+    return {
+      text: new TextDecoder("windows-1252").decode(bytes),
+      encoding: "windows-1252",
+    };
   }
 }
 

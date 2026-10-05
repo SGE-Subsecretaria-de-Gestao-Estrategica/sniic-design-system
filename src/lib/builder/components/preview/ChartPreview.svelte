@@ -1,52 +1,113 @@
 <script lang="ts">
   import { formatLocale } from "$lib/core/format";
   import type { ChartResolution } from "../../resolve/types";
+  import type { StyleSpec } from "../../spec/types";
   import ChartView from "../ChartView.svelte";
+  import "../ui/tokens.css";
+  import { describeOverflow, measureOverflow, type Overflow } from "./overflow";
 
   type Props = {
     resolution: ChartResolution;
-    pillar: number;
+    style: StyleSpec;
     id: string;
   };
 
-  let { resolution, pillar, id }: Props = $props();
+  let { resolution, style, id }: Props = $props();
 
   const formatCount = formatLocale.format(",");
+
+  let holder = $state<HTMLDivElement>();
+  let overflow = $state<Overflow | null>(null);
+
+  // Measured after each redraw, and again once the font has loaded (it changes text widths).
+  $effect(() => {
+    void resolution;
+    void style;
+    const svg = holder?.querySelector("svg");
+    if (!svg) {
+      overflow = null;
+      return;
+    }
+    const measure = () => (overflow = measureOverflow(svg));
+    const frame = requestAnimationFrame(measure);
+    document.fonts?.ready.then(measure);
+    return () => cancelAnimationFrame(frame);
+  });
+
+  const overflowNote = $derived(describeOverflow(overflow));
 </script>
 
 <figure class="chart-preview">
   {#if resolution.status === "ready"}
-    <ChartView chart={resolution} {id} {pillar} />
+    <!-- Padded by what sticks out on the left and top, which a scroll area can't reach. -->
+    <div
+      class="holder"
+      bind:this={holder}
+      style:padding-left="{Math.ceil(overflow?.left ?? 0)}px"
+      style:padding-top="{Math.ceil(overflow?.top ?? 0)}px"
+    >
+      <ChartView chart={resolution} {id} {style} />
+    </div>
+    {#if overflowNote}
+      <figcaption class="warning" role="status">{overflowNote}</figcaption>
+    {/if}
+    {#each resolution.warnings as warning (warning)}
+      <figcaption class="warning">{warning}</figcaption>
+    {/each}
     {#if resolution.dropped}
       <figcaption>
         {formatCount(resolution.dropped)}
-        {resolution.dropped === 1 ? "linha ignorada" : "linhas ignoradas"} por valores ausentes.
+        {resolution.dropped === 1 ? "linha ignorada" : "linhas ignoradas"} por valores
+        ausentes.
       </figcaption>
     {/if}
   {:else if resolution.status === "incomplete"}
-    <p>Escolha uma coluna para: {resolution.missing.map((c) => c.label).join(", ")}.</p>
+    <p>
+      Escolha uma coluna para: {resolution.missing
+        .map((c) => c.label)
+        .join(", ")}.
+    </p>
   {:else if resolution.status === "error"}
     <p class="error" role="alert">{resolution.message}</p>
   {:else}
-    <p>{resolution.reason === "no-data" ? "Carregue um arquivo CSV." : "Escolha um gráfico."}</p>
+    <p>
+      {resolution.reason === "no-data"
+        ? "Carregue um arquivo CSV."
+        : "Escolha um gráfico."}
+    </p>
   {/if}
 </figure>
 
 <style>
   .chart-preview {
+    position: sticky;
+    top: 16px;
     margin: 0;
-    padding: 16px;
+    padding: 20px;
     overflow: auto;
+    font-family: var(--builder-font);
     background: #fff;
-    border: 1px solid #d9d9d9;
-    border-radius: 6px;
+    border: 1px solid var(--builder-line);
+    border-radius: var(--builder-radius);
+  }
+  .holder {
+    width: max-content;
+  }
+  /* The dashed frame is the figure's exact size. It belongs to the preview, not to the SVG. */
+  .holder > :global(svg) {
+    display: block;
+    outline: 1px dashed var(--builder-line);
   }
   figcaption,
   p {
-    color: #555;
-    font-size: 13px;
+    margin: 8px 0 0;
+    color: var(--builder-muted);
+    font-size: var(--builder-text-sm);
+  }
+  .warning {
+    color: var(--builder-warning);
   }
   .error {
-    color: #b42318;
+    color: var(--builder-danger);
   }
 </style>

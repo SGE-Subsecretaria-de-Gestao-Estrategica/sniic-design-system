@@ -1,27 +1,45 @@
 <script lang="ts">
+  import { chartCompatibility } from "../../registry/compatibility";
+  import type { ColumnSchema } from "../../data/types";
   import type { ChartId } from "../../registry/layouts";
   import type { AnyChartDefinition } from "../../registry/types";
+  import "../ui/tokens.css";
 
   type Props = {
     charts: readonly AnyChartDefinition[];
+    columns: readonly ColumnSchema[];
     selected: ChartId | null;
     onselect: (chartId: ChartId) => void;
   };
 
-  let { charts, selected, onselect }: Props = $props();
+  let { charts, columns, selected, onselect }: Props = $props();
+
+  // Charts the data can feed come first; the rest say what is missing.
+  const items = $derived(
+    charts
+      .map((chart) => ({
+        chart,
+        ...chartCompatibility(chart.channels, columns),
+      }))
+      .sort((a, b) => Number(b.compatible) - Number(a.compatible)),
+  );
 </script>
 
 <ul class="chart-gallery">
-  {#each charts as chart (chart.id)}
+  {#each items as { chart, compatible, reason } (chart.id)}
     <li>
       <button
         type="button"
         class:selected={chart.id === selected}
         aria-pressed={chart.id === selected}
+        disabled={!compatible}
         onclick={() => onselect(chart.id as ChartId)}
       >
         <strong>{chart.label}</strong>
         <span>{chart.description}</span>
+        {#if reason}
+          <span class="reason">{reason}</span>
+        {/if}
       </button>
     </li>
   {/each}
@@ -30,35 +48,66 @@
 <style>
   .chart-gallery {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 12px;
     padding: 0;
     margin: 0;
     list-style: none;
+    font-family: var(--builder-font);
   }
   button {
     display: flex;
     flex-direction: column;
     gap: 6px;
+    box-sizing: border-box;
     width: 100%;
     height: 100%;
     padding: 16px;
+    color: var(--builder-ink);
     text-align: left;
     font: inherit;
-    background: #fff;
-    border: 1px solid #d9d9d9;
-    border-radius: 8px;
+    background: var(--builder-surface);
+    border: 1px solid var(--builder-line);
+    border-radius: var(--builder-radius);
     cursor: pointer;
   }
-  button:hover {
-    border-color: #999;
+  button:hover:not(:disabled) {
+    border-color: var(--builder-faint);
+    background: var(--builder-wash);
   }
-  .selected {
-    border: 2px solid #333;
-    padding: 15px;
+  button:focus-visible {
+    outline: 2px solid var(--builder-ink-strong);
+    outline-offset: 2px;
+  }
+  button:disabled {
+    background: var(--builder-wash);
+    border-color: var(--builder-line-soft);
+    cursor: not-allowed;
+  }
+  button:disabled strong,
+  button:disabled span {
+    color: var(--builder-faint);
+  }
+  button:disabled .reason {
+    color: var(--builder-warning);
+  }
+  /* The picked chart is the one filled card. */
+  button.selected,
+  button.selected:hover:not(:disabled) {
+    color: var(--builder-surface);
+    background: var(--builder-ink);
+    border-color: var(--builder-ink);
+  }
+  button.selected span {
+    color: var(--builder-line-soft);
+  }
+  strong {
+    font-size: 15px;
+    font-weight: 600;
   }
   span {
-    color: #555;
-    font-size: 13px;
+    color: var(--builder-muted);
+    font-size: var(--builder-text-sm);
+    line-height: 1.4;
   }
 </style>

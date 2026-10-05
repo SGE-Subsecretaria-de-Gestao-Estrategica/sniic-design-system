@@ -9,15 +9,29 @@ import type {
 } from "./types";
 
 export const DECIMAL_SEPARATORS: DecimalSeparator[] = [",", "."];
-export const DATE_PATTERNS: DatePattern[] = ["dd/mm/yyyy", "mm/yyyy", "yyyy", "yyyy-mm-dd"];
+export const DATE_PATTERNS: DatePattern[] = [
+  "dd/mm/yyyy",
+  "mm/yyyy",
+  "yyyy",
+  "yyyy-mm-dd",
+];
 
 const THOUSANDS: Record<DecimalSeparator, string> = { ",": ".", ".": "," };
 
-const DATE_FORMATS: Record<DatePattern, { regex: RegExp; order: ("y" | "m" | "d")[] }> = {
+const DATE_FORMATS: Record<
+  DatePattern,
+  { regex: RegExp; order: ("y" | "m" | "d")[] }
+> = {
   yyyy: { regex: /^(\d{4})$/, order: ["y"] },
   "mm/yyyy": { regex: /^(\d{1,2})\/(\d{4})$/, order: ["m", "y"] },
-  "dd/mm/yyyy": { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/, order: ["d", "m", "y"] },
-  "yyyy-mm-dd": { regex: /^(\d{4})-(\d{1,2})-(\d{1,2})$/, order: ["y", "m", "d"] },
+  "dd/mm/yyyy": {
+    regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/,
+    order: ["d", "m", "y"],
+  },
+  "yyyy-mm-dd": {
+    regex: /^(\d{4})-(\d{1,2})-(\d{1,2})$/,
+    order: ["y", "m", "d"],
+  },
 };
 
 export function parseNumber(
@@ -33,7 +47,8 @@ export function parseNumber(
   const groups = integer.split(THOUSANDS[decimal]);
   const grouped =
     groups.length === 1 ||
-    (/^[-+]?\d{1,3}$/.test(groups[0]) && groups.slice(1).every((g) => /^\d{3}$/.test(g)));
+    (/^[-+]?\d{1,3}$/.test(groups[0]) &&
+      groups.slice(1).every((g) => /^\d{3}$/.test(g)));
   if (!grouped) return null;
   const digits = groups.join("");
   if (fraction.length && fraction[0].includes(THOUSANDS[decimal])) return null;
@@ -72,7 +87,9 @@ export function coerceCell(
       return parseNumber(raw, decimal);
     case "date":
       if (!column.datePattern) {
-        throw new Error(`Column "${column.name}" is a date but has no datePattern.`);
+        throw new Error(
+          `Column "${column.name}" is a date but has no datePattern.`,
+        );
       }
       return parseDate(raw, column.datePattern);
     case "text": {

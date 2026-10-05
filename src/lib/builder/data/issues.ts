@@ -1,6 +1,12 @@
 import { formatLocale } from "$lib/core/format";
 import { coerceCell } from "./coerce";
-import type { ColumnIssues, ColumnSchema, ColumnType, DecimalSeparator, Table } from "./types";
+import type {
+  ColumnIssues,
+  ColumnSchema,
+  ColumnType,
+  DecimalSeparator,
+  Table,
+} from "./types";
 
 const ISSUE_EXAMPLES = 2;
 
@@ -36,13 +42,20 @@ export function columnIssues(
   return issues;
 }
 
-const FAILURE_LABEL: Record<Exclude<ColumnType, "text">, [one: string, many: string]> = {
+const FAILURE_LABEL: Record<
+  Exclude<ColumnType, "text">,
+  [one: string, many: string]
+> = {
   number: ["valor não numérico", "valores não numéricos"],
   date: ["valor que não é data", "valores que não são datas"],
 };
 
 /** e.g. `12 valores não numéricos: “–”, “n/d”` */
-export function describeIssues(type: ColumnType, failed: number, examples: readonly string[]): string {
+export function describeIssues(
+  type: ColumnType,
+  failed: number,
+  examples: readonly string[],
+): string {
   if (type === "text" || !failed) return "";
   const [one, many] = FAILURE_LABEL[type];
   const quoted = examples.map((e) => `“${e}”`).join(", ");

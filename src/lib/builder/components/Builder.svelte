@@ -1,11 +1,14 @@
 <script lang="ts">
+  import type { OptionStep } from "../registry/types";
   import { BuilderState } from "../state/BuilderState.svelte";
   import { STEPS } from "../state/steps";
   import ChartGallery from "./chart/ChartGallery.svelte";
   import DataStep from "./data/DataStep.svelte";
+  import ChartOptions from "./options/ChartOptions.svelte";
   import MappingStep from "./mapping/MappingStep.svelte";
   import ChartPreview from "./preview/ChartPreview.svelte";
   import StyleStep from "./style/StyleStep.svelte";
+  import Button from "./ui/Button.svelte";
 
   let { builder = new BuilderState() }: { builder?: BuilderState } = $props();
 
@@ -17,7 +20,9 @@
   );
   const current = $derived(builder.steps.find((s) => s.id === builder.step)!);
   const isLast = $derived(builder.step === STEPS[STEPS.length - 1].id);
-  const showPreview = $derived(builder.step === "mapping" || builder.step === "style");
+  const showPreview = $derived(
+    builder.step === "mapping" || builder.step === "style",
+  );
 
   function channelLabel(channelId: string): string {
     for (const chart of builder.registry.list()) {
@@ -27,6 +32,22 @@
     return channelId;
   }
 </script>
+
+{#snippet optionsPanel(step: OptionStep)}
+  {#if definition}
+    <ChartOptions
+      {step}
+      {definition}
+      resolution={builder.resolution}
+      rows={builder.rows}
+      encoding={builder.spec.encoding}
+      aggregate={builder.spec.aggregate}
+      options={builder.spec.style.options}
+      onaggregate={(aggregate) => builder.setAggregate(aggregate)}
+      onoption={(id, value) => builder.setOption(id, value)}
+    />
+  {/if}
+{/snippet}
 
 <div class="builder">
   <nav aria-label="Etapas">
@@ -40,7 +61,7 @@
             title={builder.blocker(step.id) ?? undefined}
             onclick={() => builder.goTo(step.id)}
           >
-            {i + 1}. {step.label}{step.done ? " ✓" : ""}
+            {i + 1}. {step.label}
           </button>
         </li>
       {/each}
@@ -50,7 +71,9 @@
   {#if builder.reset.length}
     <p class="reset" role="status">
       Mapeamentos desfeitos:
-      {builder.reset.map((r) => `${r.column} (${channelLabel(r.channel)})`).join(", ")}.
+      {builder.reset
+        .map((r) => `${r.column} (${channelLabel(r.channel)})`)
+        .join(", ")}.
     </p>
   {/if}
 
@@ -61,6 +84,7 @@
       {:else if builder.step === "chart"}
         <ChartGallery
           charts={builder.registry.list()}
+          columns={builder.spec.data.columns}
           selected={builder.spec.chart}
           onselect={(id) => builder.setChart(id)}
         />
@@ -69,39 +93,48 @@
           channels={definition.channels}
           columns={builder.spec.data.columns}
           encoding={builder.spec.encoding}
-          onchange={(channel, columns) => builder.setEncoding(channel, columns)}
+          onchange={(channel, column) => builder.setEncoding(channel, column)}
         />
+        {@render optionsPanel("mapping")}
       {:else if builder.step === "style" && definition}
         <StyleStep
-          pillar={builder.spec.style.pillar}
-          width={builder.spec.style.width}
-          height={builder.spec.style.height}
-          sizing={definition.sizing}
-          defaultSize={definition.defaultSize}
-          figure={builder.resolution.status === "ready" ? builder.resolution.figure : null}
+          {definition}
+          style={builder.spec.style}
+          resolution={builder.resolution}
           onpillar={(pillar) => builder.setPillar(pillar)}
           onsize={(axis, size) => builder.setSize(axis, size)}
-        />
+          onmargin={(margin) => builder.setMargin(margin)}
+          onparam={(id, value) => builder.setParam(id, value)}
+          onformat={(patch, formatId) => builder.setFormat(patch, formatId)}
+        >
+          {#snippet chartOptions()}
+            {@render optionsPanel("style")}
+          {/snippet}
+        </StyleStep>
       {/if}
     </section>
 
     {#if showPreview}
       <ChartPreview
         resolution={builder.resolution}
-        pillar={builder.spec.style.pillar}
+        style={builder.spec.style}
         id="{uid}-preview"
       />
     {/if}
   </div>
 
   <footer>
-    <button type="button" onclick={() => builder.back()} disabled={builder.step === "data"}>
+    <Button onclick={() => builder.back()} disabled={builder.step === "data"}>
       Voltar
-    </button>
+    </Button>
     {#if !isLast}
-      <button type="button" onclick={() => builder.next()} disabled={!current.done}>
+      <Button
+        variant="primary"
+        onclick={() => builder.next()}
+        disabled={!current.done}
+      >
         Próximo
-      </button>
+      </Button>
       {#if current.reason}
         <span class="reason">{current.reason}</span>
       {/if}
@@ -113,50 +146,88 @@
   .builder {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    font-family: system-ui, sans-serif;
+    gap: 20px;
+    color: var(--builder-ink);
+    font-family: var(--builder-font);
+    font-size: var(--builder-text);
   }
+
+  /* The steps are a sequence: a rule joins them, and the current one is filled. */
   ol {
     display: flex;
-    gap: 8px;
+    gap: 0;
     padding: 0;
     margin: 0;
     list-style: none;
+    border-bottom: 1px solid var(--builder-line);
   }
   nav button {
-    padding: 6px 12px;
-    font: inherit;
-    background: #fff;
-    border: 1px solid #d9d9d9;
-    border-radius: 999px;
+    position: relative;
+    height: 40px;
+    padding: 0 18px;
+    color: var(--builder-muted);
+    font: 500 var(--builder-text) / 1 var(--builder-font);
+    background: none;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
     cursor: pointer;
   }
+  nav li:first-child button {
+    padding-left: 2px;
+  }
+  nav button:hover:not(:disabled) {
+    color: var(--builder-ink-strong);
+  }
   nav button[aria-current="step"] {
-    color: #fff;
-    background: #333;
-    border-color: #333;
+    color: var(--builder-ink-strong);
+    font-weight: 600;
+    border-bottom-color: var(--builder-ink-strong);
+  }
+  nav button:focus-visible {
+    outline: 2px solid var(--builder-ink-strong);
+    outline-offset: -2px;
   }
   nav button:disabled {
-    color: #aaa;
+    color: var(--builder-faint);
+    opacity: 0.6;
     cursor: not-allowed;
+  }
+
+  .step {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 0;
   }
   .body.with-preview {
     display: grid;
-    grid-template-columns: minmax(240px, 320px) 1fr;
-    gap: 24px;
+    grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
+    gap: 32px;
     align-items: start;
   }
   footer {
     display: flex;
     gap: 8px;
     align-items: center;
+    padding-top: 16px;
+    border-top: 1px solid var(--builder-line-soft);
   }
   .reason {
-    color: #555;
-    font-size: 13px;
+    margin-left: 8px;
+    color: var(--builder-muted);
+    font-size: var(--builder-text-sm);
   }
   .reset {
     margin: 0;
-    color: #b54708;
+    padding: 8px 12px;
+    color: var(--builder-warning);
+    font-size: var(--builder-text-sm);
+    background: color-mix(
+      in srgb,
+      var(--builder-warning) 8%,
+      var(--builder-surface)
+    );
+    border-radius: var(--builder-radius);
   }
 </style>

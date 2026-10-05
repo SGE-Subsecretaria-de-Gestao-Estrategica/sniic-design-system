@@ -31,29 +31,47 @@ function mappingReason(resolution: ChartResolution): string | null {
     case "incomplete":
       return `Escolha uma coluna para: ${resolution.missing.map((c) => c.label).join(", ")}.`;
     case "error":
-      return resolution.message;
+      // A size that doesn't fit is fixed in the style step, so it doesn't lock it.
+      return resolution.step === "style" ? null : resolution.message;
     case "empty":
-      return resolution.reason === "no-data" ? "Carregue um arquivo CSV." : "Escolha um gráfico.";
+      return resolution.reason === "no-data"
+        ? "Carregue um arquivo CSV."
+        : "Escolha um gráfico.";
   }
 }
 
-export function stepStatuses({ table, chart, resolution }: StepInput): StepStatus[] {
+export function stepStatuses({
+  table,
+  chart,
+  resolution,
+}: StepInput): StepStatus[] {
   const reasons: Record<StepId, string | null> = {
     data: table?.rows.length ? null : "Carregue um arquivo CSV.",
     chart: chart ? null : "Escolha um gráfico.",
     mapping: mappingReason(resolution),
     style: mappingReason(resolution),
   };
-  return STEPS.map(({ id, label }) => ({ id, label, done: !reasons[id], reason: reasons[id] }));
+  return STEPS.map(({ id, label }) => ({
+    id,
+    label,
+    done: !reasons[id],
+    reason: reasons[id],
+  }));
 }
 
-export function canEnter(statuses: readonly StepStatus[], step: StepId): boolean {
+export function canEnter(
+  statuses: readonly StepStatus[],
+  step: StepId,
+): boolean {
   const index = statuses.findIndex((s) => s.id === step);
   return statuses.slice(0, index).every((s) => s.done);
 }
 
 /** Why `step` can't be entered yet: the reason of the first earlier step that isn't done. */
-export function blockingReason(statuses: readonly StepStatus[], step: StepId): string | null {
+export function blockingReason(
+  statuses: readonly StepStatus[],
+  step: StepId,
+): string | null {
   const index = statuses.findIndex((s) => s.id === step);
   return statuses.slice(0, index).find((s) => !s.done)?.reason ?? null;
 }

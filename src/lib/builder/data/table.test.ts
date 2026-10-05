@@ -10,7 +10,9 @@ describe("detectDelimiter", () => {
   });
 
   it("ignores separators inside quotes", () => {
-    expect(detectDelimiter('nome,valor\n"Silva; Souza",10\n"Lima; Reis",20')).toBe(",");
+    expect(
+      detectDelimiter('nome,valor\n"Silva; Souza",10\n"Lima; Reis",20'),
+    ).toBe(",");
   });
 
   it("falls back to ; when nothing splits the lines", () => {

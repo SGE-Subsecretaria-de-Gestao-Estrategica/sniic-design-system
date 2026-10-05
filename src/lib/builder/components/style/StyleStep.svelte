@@ -1,101 +1,81 @@
 <script lang="ts">
-  import { pillarPalettes } from "$lib/core/theme/tokens";
-  import type { LayoutBox } from "$lib/core/layouts/types";
-  import type { ChartSizing } from "../../registry/types";
-  import { SIZE_LIMITS } from "../../spec/spec";
+  import type { Snippet } from "svelte";
+  import type { MarginPresetId } from "../../registry/margins";
+  import { resolveFormat } from "../../registry/params";
+  import type { AnyChartDefinition } from "../../registry/types";
+  import type { ChartResolution } from "../../resolve/types";
+  import type { NumberFormat, StyleSpec } from "../../spec/types";
+  import NumberFormatFields from "./NumberFormatFields.svelte";
+  import ParamFields from "./ParamFields.svelte";
+  import PillarPicker from "./PillarPicker.svelte";
+  import SizeFields from "./SizeFields.svelte";
 
   type Props = {
-    pillar: number;
-    width: number | null;
-    height: number | null;
-    sizing: ChartSizing;
-    defaultSize: LayoutBox;
-    figure: LayoutBox | null;
+    definition: AnyChartDefinition;
+    style: StyleSpec;
+    resolution: ChartResolution;
     onpillar: (pillar: number) => void;
     onsize: (axis: "width" | "height", size: number | null) => void;
+    onmargin: (margin: MarginPresetId) => void;
+    /** `null` restores the layout's default. */
+    onparam: (paramId: string, value: number | null) => void;
+    /** `formatId`: one of the chart's extra formats; without it, the main format. */
+    onformat: (patch: Partial<NumberFormat>, formatId?: string) => void;
+    /** The chart's own style options, drawn right after the pillar. */
+    chartOptions?: Snippet;
   };
 
   let {
-    pillar,
-    width,
-    height,
-    sizing,
-    defaultSize,
-    figure,
+    definition,
+    style,
+    resolution,
     onpillar,
     onsize,
+    onmargin,
+    onparam,
+    onformat,
+    chartOptions,
   }: Props = $props();
 
-  const uid = $props.id();
-
-  const WIDTH_PRESETS = [480, 640, 938];
-
-  const sizes = $derived({ width, height });
-
-  function read(value: string): number | null {
-    return value.trim() === "" ? null : Number(value);
-  }
-
-  function commit(axis: "width" | "height", input: HTMLInputElement) {
-    onsize(axis, read(input.value));
-    input.value = String(sizes[axis] ?? "");
-  }
+  const ready = $derived(resolution.status === "ready" ? resolution : null);
+  const formats = $derived(definition.formats ?? []);
 </script>
 
 <div class="style-step">
-  <fieldset>
-    <legend>Pilar</legend>
-    <div class="swatches">
-      {#each pillarPalettes as palette (palette.id)}
-        <label class="swatch" class:selected={palette.id === pillar}>
-          <input
-            type="radio"
-            name="{uid}-pillar"
-            value={palette.id}
-            checked={palette.id === pillar}
-            onchange={() => onpillar(palette.id)}
-          />
-          <span class="colors" aria-hidden="true">
-            {#each [palette.primary, palette.primaryVariant, palette.secondary, palette.accent] as color (color)}
-              <span style:background={color}></span>
-            {/each}
-          </span>
-          Pilar {palette.id}
-        </label>
-      {/each}
-    </div>
-  </fieldset>
+  <PillarPicker pillar={style.pillar} {onpillar} />
 
-  {#each ["width", "height"] as const as axis (axis)}
-    {@const label = axis === "width" ? "Largura" : "Altura"}
-    {#if sizing[axis] === "free"}
-      <label class="size">
-        {label} (px)
-        <input
-          type="number"
-          min={SIZE_LIMITS.min}
-          max={SIZE_LIMITS.max}
-          step="1"
-          placeholder={String(defaultSize[axis])}
-          value={sizes[axis] ?? ""}
-          onchange={(e) => commit(axis, e.currentTarget)}
-        />
-      </label>
-      {#if axis === "width"}
-        <div class="presets">
-          {#each WIDTH_PRESETS as preset (preset)}
-            <button type="button" onclick={() => onsize("width", preset)}
-              >{preset} px</button
-            >
-          {/each}
-        </div>
-      {/if}
-    {:else}
-      <p class="size-note">
-        {label}: {figure ? `${Math.round(figure[axis])} px` : "—"},
-        {sizing[axis] === "derived" ? "calculada a partir dos dados" : "fixa"}.
-      </p>
-    {/if}
+  {@render chartOptions?.()}
+
+  <SizeFields
+    {definition}
+    {style}
+    figure={ready?.figure ?? null}
+    {onsize}
+    {onmargin}
+  />
+
+  {#if definition.params?.length}
+    <ParamFields
+      params={definition.params}
+      {style}
+      solved={ready?.solved ?? {}}
+      {onparam}
+    />
+  {/if}
+
+  <NumberFormatFields
+    legend={formats.length
+      ? "Formato dos valores principais"
+      : "Formato dos números"}
+    format={style.format}
+    onformat={(patch) => onformat(patch)}
+  />
+  {#each formats as def (def.id)}
+    <NumberFormatFields
+      legend={def.label}
+      format={resolveFormat(def, style.formats[def.id])}
+      onformat={(patch) => onformat(patch, def.id)}
+    />
   {/each}
 </div>
 
@@ -103,66 +83,6 @@
   .style-step {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-  }
-  fieldset {
-    margin: 0;
-    padding: 0;
-    border: 0;
-  }
-  legend {
-    margin-bottom: 8px;
-  }
-  .swatches {
-    display: flex;
-    gap: 8px;
-  }
-  .swatch {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding: 8px;
-    border: 1px solid #d9d9d9;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 13px;
-  }
-  .swatch.selected {
-    border: 2px solid #333;
-    padding: 7px;
-  }
-  .swatch input {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-  }
-  .swatch:focus-within {
-    outline: 2px solid #4f68da;
-  }
-  .colors {
-    display: flex;
-  }
-  .colors span {
-    width: 20px;
-    height: 20px;
-  }
-  .size {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  .size input {
-    width: 120px;
-  }
-  .presets {
-    display: flex;
-    gap: 6px;
-    margin-top: -8px;
-  }
-  .size-note {
-    margin: 0;
-    color: #555;
+    gap: 20px;
   }
 </style>

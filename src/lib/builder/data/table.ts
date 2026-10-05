@@ -1,16 +1,32 @@
 import * as d3 from "d3";
 import type { FieldSeparator, RawRow, Table } from "./types";
 
-export const FIELD_SEPARATORS: readonly FieldSeparator[] = [";", ",", "\t", "|"];
+export const FIELD_SEPARATORS: readonly FieldSeparator[] = [
+  ";",
+  ",",
+  "\t",
+  "|",
+];
 
 const SAMPLE_LINES = 20;
 
 export function detectDelimiter(text: string): FieldSeparator {
-  const sample = text.split(/\r?\n/).filter((l) => l.trim()).slice(0, SAMPLE_LINES).join("\n");
-  let best: { separator: FieldSeparator; consistency: number; columns: number } | null = null;
+  const sample = text
+    .split(/\r?\n/)
+    .filter((l) => l.trim())
+    .slice(0, SAMPLE_LINES)
+    .join("\n");
+  let best: {
+    separator: FieldSeparator;
+    consistency: number;
+    columns: number;
+  } | null = null;
 
   for (const separator of FIELD_SEPARATORS) {
-    const counts = d3.dsvFormat(separator).parseRows(sample).map((r) => r.length);
+    const counts = d3
+      .dsvFormat(separator)
+      .parseRows(sample)
+      .map((r) => r.length);
     const mode = d3.mode(counts) ?? 0;
     if (mode < 2) continue;
     const consistency = counts.filter((c) => c === mode).length / counts.length;

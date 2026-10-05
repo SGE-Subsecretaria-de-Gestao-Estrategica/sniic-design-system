@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { coerceCell, coerceData, coerceRows, parseDate, parseNumber } from "./coerce";
+import {
+  coerceCell,
+  coerceData,
+  coerceRows,
+  parseDate,
+  parseNumber,
+} from "./coerce";
 
 describe("parseNumber", () => {
   it("reads pt-BR numbers with a comma decimal", () => {
@@ -37,8 +43,12 @@ describe("parseDate", () => {
   it("parses each pattern as a local date", () => {
     expect(parseDate("2023", "yyyy")).toEqual(new Date(2023, 0, 1));
     expect(parseDate("3/2023", "mm/yyyy")).toEqual(new Date(2023, 2, 1));
-    expect(parseDate("15/03/2023", "dd/mm/yyyy")).toEqual(new Date(2023, 2, 15));
-    expect(parseDate("2023-03-15", "yyyy-mm-dd")).toEqual(new Date(2023, 2, 15));
+    expect(parseDate("15/03/2023", "dd/mm/yyyy")).toEqual(
+      new Date(2023, 2, 15),
+    );
+    expect(parseDate("2023-03-15", "yyyy-mm-dd")).toEqual(
+      new Date(2023, 2, 15),
+    );
   });
 
   it("rejects the wrong shape and impossible dates", () => {
@@ -57,7 +67,9 @@ describe("coerceCell / coerceRows", () => {
   });
 
   it("throws for a date column without a pattern", () => {
-    expect(() => coerceCell("2023", { name: "ano", type: "date" }, ",")).toThrow(/datePattern/);
+    expect(() =>
+      coerceCell("2023", { name: "ano", type: "date" }, ","),
+    ).toThrow(/datePattern/);
   });
 
   it("coerces every schema column and drops the rest", () => {
@@ -70,13 +82,18 @@ describe("coerceCell / coerceRows", () => {
       ],
       ",",
     );
-    expect(rows).toEqual([{ uf: "SP", total: 1234, ano: new Date(2023, 0, 1) }]);
+    expect(rows).toEqual([
+      { uf: "SP", total: 1234, ano: new Date(2023, 0, 1) },
+    ]);
   });
 });
 
 describe("coerceData", () => {
   it("coerces with the spec's columns and decimal", () => {
-    const data = { columns: [{ name: "v", type: "number" as const }], decimal: "." as const };
+    const data = {
+      columns: [{ name: "v", type: "number" as const }],
+      decimal: "." as const,
+    };
     expect(coerceData([{ v: "1,234.5" }], data)).toEqual([{ v: 1234.5 }]);
   });
 });

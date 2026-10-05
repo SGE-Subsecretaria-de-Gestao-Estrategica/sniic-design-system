@@ -20,9 +20,21 @@ describe("BuilderState", () => {
 
     expect(state.error).toBeNull();
     expect(state.source?.encoding).toBe("windows-1252");
-    expect(state.spec.data).toMatchObject({ fileName: "dados.csv", delimiter: ";", decimal: "," });
-    expect(state.spec.data.columns.map((c) => c.type)).toEqual(["text", "number", "number"]);
-    expect(state.rows[0]).toEqual({ domínio: "Música", total: 1234.5, ano: 2019 });
+    expect(state.spec.data).toMatchObject({
+      fileName: "dados.csv",
+      delimiter: ";",
+      decimal: ",",
+    });
+    expect(state.spec.data.columns.map((c) => c.type)).toEqual([
+      "text",
+      "number",
+      "number",
+    ]);
+    expect(state.rows[0]).toEqual({
+      domínio: "Música",
+      total: 1234.5,
+      ano: 2019,
+    });
     expect(state.issues.total).toEqual({ failed: 1, examples: ["n/d"] });
   });
 
@@ -59,14 +71,20 @@ describe("BuilderState", () => {
     const state = new BuilderState();
     await state.loadFile(latin1File(CSV));
     state.apply(setChart(state.spec, "horizontalBars", state.registry));
-    state.apply(setEncoding(state.spec, "value", ["total"], state.registry));
+    state.apply(setEncoding(state.spec, "value", "total", state.registry));
 
     state.setColumnType("ano", "date");
-    expect(state.spec.data.columns[2]).toEqual({ name: "ano", type: "date", datePattern: "yyyy" });
+    expect(state.spec.data.columns[2]).toEqual({
+      name: "ano",
+      type: "date",
+      datePattern: "yyyy",
+    });
     expect(state.rows[0].ano).toEqual(new Date(2019, 0, 1));
 
     state.setColumnType("total", "text");
-    expect(state.reset).toEqual([{ channel: "value", column: "total", reason: "type-mismatch" }]);
+    expect(state.reset).toEqual([
+      { channel: "value", column: "total", reason: "type-mismatch" },
+    ]);
   });
 
   it("applies only the latest of overlapping uploads", async () => {
@@ -96,7 +114,10 @@ describe("BuilderState", () => {
     expect(state.step).toBe("chart");
 
     state.setChart("horizontalBars");
-    expect(state.spec.encoding).toEqual({ category: ["domínio"], value: ["total"] });
+    expect(state.spec.encoding).toEqual({
+      category: "domínio",
+      value: "total",
+    });
     expect(state.resolution.status).toBe("ready");
     state.next();
     state.next();
@@ -111,8 +132,8 @@ describe("BuilderState", () => {
     expect(state.spec.style.width).toBe(SIZE_LIMITS.min);
     state.setSize("width", 99999);
     expect(state.spec.style.width).toBe(SIZE_LIMITS.max);
-    state.setSize("width", 800.4);
-    expect(state.spec.style.width).toBe(800);
+    state.setSize("width", 581.14);
+    expect(state.spec.style.width).toBe(581.1);
     state.setSize("width", Number.NaN);
     expect(state.spec.style.width).toBeNull();
   });
@@ -125,19 +146,24 @@ describe("BuilderState", () => {
     expect(state.spec.style.pillar).toBe(6);
 
     await state.loadFile(latin1File("uf;valor\nSP;10\nRJ;20"));
-    expect(state.reset.map((r) => r.reason)).toEqual(["column-removed", "column-removed"]);
-    expect(state.spec.encoding).toEqual({ category: ["uf"], value: ["valor"] });
+    expect(state.reset.map((r) => r.reason)).toEqual([
+      "column-removed",
+      "column-removed",
+    ]);
+    expect(state.spec.encoding).toEqual({ category: "uf", value: "valor" });
   });
 
   it("doesn't swap in another column when a type edit clears a mapping", async () => {
     const state = new BuilderState();
     await state.loadFile(latin1File(CSV));
     state.setChart("horizontalBars");
-    expect(state.spec.encoding.value).toEqual(["total"]);
+    expect(state.spec.encoding.value).toBe("total");
 
     state.setColumnType("total", "text");
     expect(state.spec.encoding.value).toBeUndefined();
-    expect(state.reset).toEqual([{ channel: "value", column: "total", reason: "type-mismatch" }]);
+    expect(state.reset).toEqual([
+      { channel: "value", column: "total", reason: "type-mismatch" },
+    ]);
   });
 
   it("clears the reset notice when the step changes and explains blocked steps", async () => {
@@ -151,5 +177,121 @@ describe("BuilderState", () => {
     state.goTo("chart");
     expect(state.step).toBe("chart");
     expect(state.reset).toEqual([]);
+  });
+
+  it("combines repeated keys the chosen way and keeps chart options", async () => {
+    const state = new BuilderState();
+    await state.loadFile(
+      latin1File("domínio;total\nMúsica;10\nMúsica;30\nTeatro;5"),
+    );
+    state.setChart("horizontalBars");
+    const values = () => {
+      const { resolution } = state;
+      if (
+        resolution.status !== "ready" ||
+        resolution.view.chart !== "horizontalBars"
+      )
+        throw new Error();
+      return resolution.view.layout.bars.map((bar) => [
+        bar.category,
+        bar.value,
+      ]);
+    };
+    expect(state.resolution).toMatchObject({ status: "ready", combined: 1 });
+    expect(values()).toEqual([
+      ["Música", 40],
+      ["Teatro", 5],
+    ]);
+
+    state.setAggregate("mean");
+    expect(values()).toEqual([
+      ["Música", 20],
+      ["Teatro", 5],
+    ]);
+
+    state.setOption("categoryOrder", ["Teatro", "Música"]);
+    state.setOption("sort", "manual");
+    expect(values().map(([category]) => category)).toEqual([
+      "Teatro",
+      "Música",
+    ]);
+    expect(() => state.setOption("mainGroup", "x")).toThrow(/Unknown option/);
+  });
+
+  it("on a chart change, only notes the columns that ended up unused", async () => {
+    const state = new BuilderState();
+    await state.loadFile(
+      latin1File("setor;ano;valor\nA;2020;1\nB;2020;2\nA;2021;3\nB;2021;4"),
+    );
+    state.setChart("lineSeries");
+    state.setEncoding("series", "setor");
+    expect(state.spec.encoding).toEqual({
+      x: "ano",
+      y: "valor",
+      series: "setor",
+    });
+
+    // Bars take setor and valor again; ano is the one left out.
+    state.setChart("horizontalBars");
+    expect(state.spec.encoding).toEqual({ category: "setor", value: "valor" });
+    expect(state.reset.map((r) => r.column)).toEqual(["ano"]);
+  });
+
+  it("changes the margin preset and layout params", async () => {
+    const state = new BuilderState();
+    await state.loadFile(latin1File(CSV));
+    state.setChart("horizontalBars");
+    const ready = () => {
+      if (state.resolution.status !== "ready")
+        throw new Error(state.resolution.status);
+      return state.resolution;
+    };
+    const height = ready().figure.height;
+
+    state.setMargin("even");
+    expect(ready().margin.left).toBe(24);
+    state.setMargin(null);
+    expect(ready().margin.left).toBe(150);
+
+    state.setParam("barThickness", 16);
+    expect(state.spec.style.params).toEqual({ barThickness: 16 });
+    expect(ready().figure.height).toBeLessThan(height);
+    state.setParam("barThickness", null);
+    expect(ready().figure.height).toBe(height);
+  });
+
+  it("patches the number format without touching the rest", () => {
+    const state = new BuilderState();
+    state.setFormat({ decimals: 1, prefix: "R$ " });
+    state.setFormat({ compact: true });
+    expect(state.spec.style.format).toEqual({
+      decimals: 1,
+      compact: true,
+      percent: false,
+      prefix: "R$ ",
+      suffix: "",
+    });
+    expect(() => state.setFormat({ decimals: 9 })).toThrow();
+  });
+
+  it("keeps a chart's extra formats apart from the main one", async () => {
+    const state = new BuilderState();
+    await state.loadFile(
+      latin1File("ano;a;b\n2020;1;0,1\n2021;2;0,2\n2022;3;0,3"),
+    );
+    state.setChart("lineBubbleRow");
+    state.setFormat({ percent: true, suffix: "%" }, "bubbles");
+    expect(state.spec.style.formats.bubbles).toMatchObject({
+      percent: true,
+      suffix: "%",
+      decimals: null,
+    });
+    expect(state.spec.style.format.percent).toBe(false);
+    expect(() => state.setFormat({ compact: true }, "nope")).toThrow(
+      /Unknown format/,
+    );
+
+    state.setChart("lineSeries");
+    expect(state.spec.style.formats).toEqual({});
   });
 });

@@ -18,8 +18,8 @@ export type Row = Record<string, CellValue>;
 
 export type ValueOf<T extends ColumnType> = T extends "number"
   ? number
-  : T extends "date" 
-    ? Date 
+  : T extends "date"
+    ? Date
     : string;
 
 export type FileEncoding = "utf-8" | "windows-1252";

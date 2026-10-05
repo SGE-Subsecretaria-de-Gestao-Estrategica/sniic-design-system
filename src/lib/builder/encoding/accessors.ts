@@ -40,10 +40,8 @@ export function columnAccessor<T extends ColumnType>(
 
 export type ChannelReader = {
   has(channel: string): boolean;
-  columns(channel: string): string[];
   text(channel: string): Accessor<Row, string>;
   number(channel: string): Accessor<Row, number>;
-  date(channel: string): Accessor<Row, Date>;
   x(channel: string): Accessor<Row, XValue>;
 };
 
@@ -54,12 +52,10 @@ export function createChannelReader(
   const schema = new Map(columns.map((c) => [c.name, c]));
 
   const single = (channel: string): ColumnSchema => {
-    const mapped = encoding[channel] ?? [];
-    if (mapped.length !== 1) {
-      throw new Error(`Channel "${channel}" needs exactly one column (has ${mapped.length}).`);
-    }
-    const column = schema.get(mapped[0]);
-    if (!column) throw new Error(`Column "${mapped[0]}" is not in the schema.`);
+    const name = encoding[channel];
+    if (!name) throw new Error(`Channel "${channel}" has no column.`);
+    const column = schema.get(name);
+    if (!column) throw new Error(`Column "${name}" is not in the schema.`);
     return column;
   };
 
@@ -74,15 +70,15 @@ export function createChannelReader(
   };
 
   return {
-    has: (channel) => (encoding[channel]?.length ?? 0) > 0,
-    columns: (channel) => [...(encoding[channel] ?? [])],
+    has: (channel) => !!encoding[channel],
     text: (channel) => typed(channel, "text"),
     number: (channel) => typed(channel, "number"),
-    date: (channel) => typed(channel, "date"),
     x: (channel) => {
       const column = single(channel);
       if (column.type === "text") {
-        throw new Error(`Channel "${channel}" needs numbers or dates; "${column.name}" is text.`);
+        throw new Error(
+          `Channel "${channel}" needs numbers or dates; "${column.name}" is text.`,
+        );
       }
       return columnAccessor(column.name, column.type);
     },
@@ -94,6 +90,8 @@ export function dropIncomplete(
   rows: readonly Row[],
   columns: readonly string[],
 ): { rows: Row[]; dropped: number } {
-  const complete = rows.filter((row) => columns.every((c) => readCell(row, c) !== null));
+  const complete = rows.filter((row) =>
+    columns.every((c) => readCell(row, c) !== null),
+  );
   return { rows: complete, dropped: rows.length - complete.length };
 }

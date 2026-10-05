@@ -4,7 +4,9 @@ import type { Table } from "./types";
 
 const table = (columns: string[], ...rows: string[][]): Table => ({
   columns,
-  rows: rows.map((cells) => Object.fromEntries(columns.map((c, i) => [c, cells[i]]))),
+  rows: rows.map((cells) =>
+    Object.fromEntries(columns.map((c, i) => [c, cells[i]])),
+  ),
 });
 
 describe("cellFails", () => {
@@ -20,8 +22,22 @@ describe("cellFails", () => {
 
 describe("columnIssues", () => {
   it("counts failed cells with distinct examples", () => {
-    const t = table(["uf", "total"], ["SP", "1.234"], ["RJ", "n/d"], ["MG", "–"], ["ES", ""], ["BA", "n/d"]);
-    const issues = columnIssues(t, [{ name: "uf", type: "text" }, { name: "total", type: "number" }], ",");
+    const t = table(
+      ["uf", "total"],
+      ["SP", "1.234"],
+      ["RJ", "n/d"],
+      ["MG", "–"],
+      ["ES", ""],
+      ["BA", "n/d"],
+    );
+    const issues = columnIssues(
+      t,
+      [
+        { name: "uf", type: "text" },
+        { name: "total", type: "number" },
+      ],
+      ",",
+    );
     expect(issues).toEqual({
       uf: { failed: 0, examples: [] },
       total: { failed: 3, examples: ["n/d", "–"] },
@@ -31,8 +47,12 @@ describe("columnIssues", () => {
 
 describe("describeIssues", () => {
   it("pluralizes and quotes examples", () => {
-    expect(describeIssues("number", 1, ["n/d"])).toBe("1 valor não numérico: “n/d”");
-    expect(describeIssues("date", 1200, ["x", "y"])).toBe("1.200 valores que não são datas: “x”, “y”");
+    expect(describeIssues("number", 1, ["n/d"])).toBe(
+      "1 valor não numérico: “n/d”",
+    );
+    expect(describeIssues("date", 1200, ["x", "y"])).toBe(
+      "1.200 valores que não são datas: “x”, “y”",
+    );
     expect(describeIssues("text", 3, ["x"])).toBe("");
     expect(describeIssues("number", 0, [])).toBe("");
   });

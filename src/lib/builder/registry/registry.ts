@@ -1,5 +1,9 @@
 import type { LayoutBox } from "$lib/core/layouts/types";
-import type { AnyChartDefinition, ChartDefinition, ChartRegistry } from "./types";
+import type {
+  AnyChartDefinition,
+  ChartDefinition,
+  ChartRegistry,
+} from "./types";
 
 export function defineChart<const K extends string, L extends LayoutBox>(
   definition: ChartDefinition<L> & { id: K },
@@ -7,7 +11,9 @@ export function defineChart<const K extends string, L extends LayoutBox>(
   return definition;
 }
 
-export function createRegistry(definitions: readonly AnyChartDefinition[]): ChartRegistry {
+export function createRegistry(
+  definitions: readonly AnyChartDefinition[],
+): ChartRegistry {
   const byId = new Map<string, AnyChartDefinition>();
   for (const def of definitions) {
     if (byId.has(def.id)) throw new Error(`Duplicate chart id "${def.id}".`);

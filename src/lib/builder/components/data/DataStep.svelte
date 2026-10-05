@@ -4,6 +4,7 @@
   import DataOptions from "./DataOptions.svelte";
   import DataPreview from "./DataPreview.svelte";
   import FileInput from "./FileInput.svelte";
+  import "../ui/tokens.css";
 
   let { builder }: { builder: BuilderState } = $props();
 
@@ -14,7 +15,10 @@
 </script>
 
 <section class="data-step">
-  <FileInput fileName={data.fileName} onfile={(file) => builder.loadFile(file)} />
+  <FileInput
+    fileName={data.fileName}
+    onfile={(file) => builder.loadFile(file)}
+  />
 
   {#if builder.error}
     <p class="error" role="alert">{builder.error}</p>
@@ -22,7 +26,9 @@
 
   {#if table}
     {#if builder.source?.encoding === "windows-1252"}
-      <p class="note">O arquivo não estava em UTF-8; foi lido como Windows-1252.</p>
+      <p class="note">
+        O arquivo não estava em UTF-8; foi lido como Windows-1252.
+      </p>
     {/if}
 
     <DataOptions
@@ -33,10 +39,14 @@
     />
 
     <p class="summary">
-      {formatCount(table.rows.length)} linhas · {formatCount(table.columns.length)} colunas
+      {formatCount(table.rows.length)} linhas · {formatCount(
+        table.columns.length,
+      )} colunas
     </p>
     {#if table.columns.length === 1}
-      <p class="warning">Só uma coluna foi encontrada. Confira o separador de campos.</p>
+      <p class="warning">
+        Só uma coluna foi encontrada. Confira o separador de campos.
+      </p>
     {/if}
     <DataPreview
       {table}
@@ -54,16 +64,22 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
-    font-family: system-ui, sans-serif;
+    color: var(--builder-ink);
+    font-family: var(--builder-font);
+    font-size: var(--builder-text);
+  }
+  p {
+    margin: 0;
   }
   .error {
-    color: #b42318;
+    color: var(--builder-danger);
   }
   .warning {
-    color: #b54708;
+    color: var(--builder-warning);
   }
   .note,
   .summary {
-    color: #555;
+    color: var(--builder-muted);
+    font-size: var(--builder-text-sm);
   }
 </style>

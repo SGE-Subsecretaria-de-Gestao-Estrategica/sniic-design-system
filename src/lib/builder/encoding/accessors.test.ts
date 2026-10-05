@@ -22,12 +22,17 @@ describe("readCell / columnAccessor", () => {
 
   it("returns typed values and throws on missing ones", () => {
     expect(columnAccessor("total", "number")(row)).toBe(10);
-    expect(() => columnAccessor("total", "number")({ total: null })).toThrow(MissingValueError);
+    expect(() => columnAccessor("total", "number")({ total: null })).toThrow(
+      MissingValueError,
+    );
   });
 });
 
 describe("createChannelReader", () => {
-  const read = createChannelReader({ category: ["dominio"], value: ["total"], x: ["ano"] }, columns);
+  const read = createChannelReader(
+    { category: "dominio", value: "total", x: "ano" },
+    columns,
+  );
 
   it("builds accessors by channel", () => {
     expect(read.text("category")(row)).toBe("Música");
@@ -35,7 +40,6 @@ describe("createChannelReader", () => {
     expect(read.x("x")(row)).toEqual(new Date(2020, 0, 1));
     expect(read.has("value")).toBe(true);
     expect(read.has("group")).toBe(false);
-    expect(read.columns("value")).toEqual(["total"]);
   });
 
   it("refuses a channel read with the wrong type", () => {
@@ -43,17 +47,22 @@ describe("createChannelReader", () => {
     expect(() => read.x("category")).toThrow(/numbers or dates/);
   });
 
-  it("refuses unmapped or multi-column channels for single reads", () => {
-    expect(() => read.text("group")).toThrow(/exactly one column/);
-    const multi = createChannelReader({ series: ["total", "total"] }, columns);
-    expect(() => multi.number("series")).toThrow(/exactly one column/);
+  it("refuses a channel with no column", () => {
+    expect(() => read.text("group")).toThrow(/has no column/);
   });
 });
 
 describe("dropIncomplete", () => {
   it("drops rows with a missing value in the given columns", () => {
-    const rows: Row[] = [row, { dominio: null, total: 3 }, { dominio: "Teatro", total: null }];
-    expect(dropIncomplete(rows, ["dominio"])).toEqual({ rows: [row, rows[2]], dropped: 1 });
+    const rows: Row[] = [
+      row,
+      { dominio: null, total: 3 },
+      { dominio: "Teatro", total: null },
+    ];
+    expect(dropIncomplete(rows, ["dominio"])).toEqual({
+      rows: [row, rows[2]],
+      dropped: 1,
+    });
     expect(dropIncomplete(rows, ["dominio", "total"]).dropped).toBe(2);
   });
 });

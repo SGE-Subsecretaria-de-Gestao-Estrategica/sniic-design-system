@@ -9,6 +9,7 @@
     DecimalSeparator,
     Table,
   } from "../../data/types";
+  import Select from "../ui/Select.svelte";
 
   type Props = {
     table: Table;
@@ -40,28 +41,35 @@
           {@const issue = issues[column.name]}
           <th class:number={column.type === "number"}>
             <div class="name">{column.name}</div>
-            <select
-              aria-label="Tipo de {column.name}"
-              value={column.type}
-              onchange={(e) =>
-                ontype(column.name, e.currentTarget.value as ColumnType)}
-            >
-              {#each TYPES as type (type.value)}
-                <option value={type.value}>{type.label}</option>
-              {/each}
-            </select>
-            {#if column.type === "date"}
-              <select
-                aria-label="Formato de data de {column.name}"
-                value={column.datePattern}
+            <div class="controls">
+              <Select
+                size="sm"
+                aria-label="Tipo de {column.name}"
+                value={column.type}
                 onchange={(e) =>
-                  onpattern(column.name, e.currentTarget.value as DatePattern)}
+                  ontype(column.name, e.currentTarget.value as ColumnType)}
               >
-                {#each DATE_PATTERNS as pattern (pattern)}
-                  <option value={pattern}>{pattern}</option>
+                {#each TYPES as type (type.value)}
+                  <option value={type.value}>{type.label}</option>
                 {/each}
-              </select>
-            {/if}
+              </Select>
+              {#if column.type === "date"}
+                <Select
+                  size="sm"
+                  aria-label="Formato de data de {column.name}"
+                  value={column.datePattern}
+                  onchange={(e) =>
+                    onpattern(
+                      column.name,
+                      e.currentTarget.value as DatePattern,
+                    )}
+                >
+                  {#each DATE_PATTERNS as pattern (pattern)}
+                    <option value={pattern}>{pattern}</option>
+                  {/each}
+                </Select>
+              {/if}
+            </div>
             {#if issue?.failed}
               <div class="issue">
                 {describeIssues(column.type, issue.failed, issue.examples)}
@@ -95,58 +103,65 @@
   .data-preview {
     max-height: 480px;
     overflow: auto;
-    border: 1px solid #d9d9d9;
-    border-radius: 6px;
+    font-family: var(--builder-font);
+    border: 1px solid var(--builder-line);
+    border-radius: var(--builder-radius);
   }
   table {
     border-collapse: separate;
     border-spacing: 0;
     width: 100%;
-    font-size: 13px;
+    color: var(--builder-ink);
+    font-size: var(--builder-text-sm);
     font-variant-numeric: tabular-nums;
   }
   th,
   td {
-    padding: 6px 10px;
+    padding: 7px 12px;
     text-align: left;
     vertical-align: top;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--builder-line-soft);
     white-space: nowrap;
-    background: #fff;
+    background: var(--builder-surface);
   }
   th {
     position: sticky;
     top: 0;
-    background: #f5f5f5;
-    border-bottom: 1px solid #d9d9d9;
+    z-index: 1;
+    padding: 10px 12px;
+    background: var(--builder-wash);
+    border-bottom: 1px solid var(--builder-line);
     font-weight: 400;
   }
-  th select {
-    display: block;
-    margin-top: 4px;
-  }
-  tbody tr:nth-child(even) td {
-    background: #fafafa;
+  .controls {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 112px;
+    margin-top: 6px;
   }
   tbody tr:hover td {
-    background: #f0f4ff;
+    background: var(--builder-wash);
   }
   .name {
+    color: var(--builder-ink-strong);
     font-weight: 600;
   }
   .issue {
-    margin-top: 4px;
-    color: #b42318;
+    max-width: 220px;
+    margin-top: 6px;
+    color: var(--builder-danger);
+    font-size: var(--builder-text-xs);
     white-space: normal;
   }
   .number {
     text-align: right;
   }
-  th.number select {
+  th.number .controls {
     margin-left: auto;
   }
   .invalid {
-    color: #b42318;
+    color: var(--builder-danger);
     font-style: italic;
   }
 </style>
