@@ -241,6 +241,3 @@ export * from './utils/callouts.js';
 // Chart draw functions (for headless / custom-shell usage)
 export * from './charts/choroplethMap.js';
 export * from './charts/tierSmallMultiples.js';
-
-// Storybook utilities
-export { default as SvgExportDecorator } from './storybook/SvgExportDecorator.svelte';

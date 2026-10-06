@@ -5,9 +5,24 @@
   type Props = {
     fileName: string | null;
     onfile: (file: File) => void;
+    label?: string;
+    accept?: string;
+    /** The button's text; by default it follows `fileName`. */
+    action?: string;
+    /** Shown while no file is chosen. */
+    hint?: string;
+    variant?: "primary" | "secondary";
   };
 
-  let { fileName, onfile }: Props = $props();
+  let {
+    fileName,
+    onfile,
+    label = "Arquivo CSV",
+    accept = ACCEPTED_EXTENSIONS.join(","),
+    action,
+    hint = "Nenhum arquivo escolhido (.csv ou .txt, até 5 MB)",
+    variant = "primary",
+  }: Props = $props();
 
   const onChange = (
     e: Event & { currentTarget: EventTarget & HTMLInputElement },
@@ -20,20 +35,16 @@
 </script>
 
 <label class="file-input">
-  <span class="label">Arquivo CSV</span>
+  <span class="label">{label}</span>
   <span class="row">
-    <span class="button"
-      >{fileName ? "Trocar arquivo" : "Escolher arquivo"}</span
+    <span class="button {variant}"
+      >{action ?? (fileName ? "Trocar arquivo" : "Escolher arquivo")}</span
     >
     <span class="name" class:empty={!fileName}>
-      {fileName ?? "Nenhum arquivo escolhido (.csv ou .txt, até 5 MB)"}
+      {fileName ?? hint}
     </span>
   </span>
-  <input
-    type="file"
-    accept={ACCEPTED_EXTENSIONS.join(",")}
-    onchange={onChange}
-  />
+  <input type="file" {accept} onchange={onChange} />
 </label>
 
 <style>
@@ -70,6 +81,16 @@
   }
   .file-input:hover .button {
     background: var(--builder-ink-strong);
+  }
+  .button.secondary {
+    box-sizing: border-box;
+    color: var(--builder-ink);
+    background: var(--builder-surface);
+    border: 1px solid var(--builder-line);
+  }
+  .file-input:hover .button.secondary {
+    background: var(--builder-wash);
+    border-color: var(--builder-faint);
   }
   .name {
     overflow: hidden;

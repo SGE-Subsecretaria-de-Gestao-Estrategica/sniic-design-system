@@ -3,6 +3,7 @@ import { coerceRows } from "../data/coerce";
 import type { ColumnSchema } from "../data/types";
 import { createRegistry, defaultRegistry, defineChart } from "../registry";
 import type { ChartId } from "../registry/layouts";
+import { marginOf } from "../registry/margins";
 import { resolveChart } from "./resolveChart";
 import {
   createSpec,
@@ -204,16 +205,14 @@ describe("resolveChart", () => {
 
     it("uses the chart's margin preset, or the one in the spec", () => {
       const standard = bars(mapped());
-      expect(standard.margin).toEqual({
-        top: 24,
-        right: 24,
-        bottom: 24,
-        left: 150,
-      });
+      const left = marginOf("left");
+      expect(standard.margin).toEqual(left);
       const even = bars(setStyle(mapped(), { margin: "even" }).spec);
-      expect(even.margin).toEqual({ top: 24, right: 24, bottom: 24, left: 24 });
+      expect(even.margin).toEqual(marginOf("even"));
       expect(even.figure.width).toBe(standard.figure.width);
-      expect(even.layout.width).toBe(standard.layout.width + 150 + 24 - 48);
+      expect(even.layout.width).toBe(
+        standard.layout.width + (left.left - marginOf("even").left),
+      );
     });
 
     it("passes layout params, with defaults for the ones not set", () => {

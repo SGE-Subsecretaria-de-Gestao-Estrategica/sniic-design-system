@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { OptionStep } from "../registry/types";
+  import { savedChartName } from "../spec/saved";
   import { BuilderState } from "../state/BuilderState.svelte";
   import { STEPS } from "../state/steps";
   import ChartGallery from "./chart/ChartGallery.svelte";
@@ -7,6 +8,7 @@
   import ChartOptions from "./options/ChartOptions.svelte";
   import MappingStep from "./mapping/MappingStep.svelte";
   import ChartPreview from "./preview/ChartPreview.svelte";
+  import SaveChart from "./save/SaveChart.svelte";
   import StyleStep from "./style/StyleStep.svelte";
   import Button from "./ui/Button.svelte";
 
@@ -119,6 +121,7 @@
         resolution={builder.resolution}
         style={builder.spec.style}
         id="{uid}-preview"
+        fileName={builder.spec.data.fileName}
       />
     {/if}
   </div>
@@ -139,6 +142,11 @@
         <span class="reason">{current.reason}</span>
       {/if}
     {/if}
+    <SaveChart
+      fileName={savedChartName(builder.spec.data.fileName)}
+      content={(withData) => builder.save(withData)}
+      disabled={!builder.spec.chart}
+    />
   </footer>
 </div>
 

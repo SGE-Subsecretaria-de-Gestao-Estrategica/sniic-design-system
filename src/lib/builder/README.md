@@ -80,6 +80,22 @@ It changes only through the pure setters in `spec.ts`, which return a
 an ordinary suffix that `togglePercent` writes into an empty suffix field, so
 it can be edited (e.g. to "pp").
 
+### Saving and reopening (`saved.ts`)
+
+A saved chart is a JSON file: `{ kind: "sniic-chart", spec, data? }`, where
+`data` is the CSV's text when the user asks to include it.
+
+- `saveChart(spec, data?)` writes it; `savedChartName` names it after the CSV
+  (`vinculos.csv` → `vinculos.grafico.json`).
+- `readSavedChart(text)` checks the envelope and the version, with a pt-BR
+  error. Nothing inside `spec` is trusted at that point.
+- `restoreSpec(saved, data, registry)` rebuilds the spec over a `DataSpec` by
+  sending every saved choice through its setter. A choice that no longer fits
+  (an unknown chart, option, margin or pillar; a number out of range) is left
+  out, and `reset` lists the mappings whose column is gone or changed type.
+- `savedColumns` and `savedSeparators` read the data settings worth keeping:
+  column types by name, and the separators.
+
 ## `registry/`
 
 One `ChartDefinition` per chart (`charts/`), declared with `defineChart` and
@@ -202,6 +218,22 @@ cell as written.
 
 `aggregate.ts`: `aggregateRows(rows, keys, measures, how)`.
 
+## `export/`
+
+Downloading the finished chart. These run in the browser, on the `<svg>` the
+preview drew.
+
+| File | What it does |
+|---|---|
+| `names.ts` | `exportName(fileName, format, scale)`: the file is named after the CSV (`vinculos.svg`, `vinculos.png`, `vinculos@2x.png`) |
+| `svg.ts` | `svgMarkup(svg, css?)`: a standalone copy. The drawing carries its look in attributes, so it needs no stylesheet; fonts stay referenced by name |
+| `fonts.ts` | `embeddedFontCss(svg)`: the `@font-face` rules of the fonts the chart uses, with each font file inside the rule |
+| `png.ts` | `pngBlob(svg, scale)`: draws the SVG, fonts embedded, on a transparent canvas of the figure's size × `scale` |
+| `download.ts` | `download(content, name, type?)` |
+
+A PNG embeds the fonts because an SVG drawn as an image can't reach the
+page's fonts. The SVG file doesn't: whoever opens it needs the font installed.
+
 ## `state/`
 
 `BuilderState` (a rune class): `$state` for `spec`, `source` (file text and
@@ -215,6 +247,13 @@ Auto-fill runs when a chart is picked and when a new file is loaded, never on
 separator or type edits. After a chart change the notice lists only the
 columns that ended up unused.
 
+`save(withData)` gives the saved chart's text. `openSaved(file)` reopens one:
+with its data inside, everything comes back; without, its choices go onto
+the CSV already loaded, or wait in `pending` for the next one. Either way the
+saved column types and separators are kept where the columns still exist,
+`reset` lists the mappings that were lost, and the wizard lands on the
+furthest step it can enter.
+
 `steps.ts`: `STEPS`, `stepStatuses`, `canEnter`, `blockingReason`.
 
 ## `components/`
@@ -222,11 +261,13 @@ columns that ended up unused.
 | Path | What it is |
 |---|---|
 | `Builder.svelte` | The wizard: stepper, back / next, reset notice, preview beside steps 3 and 4 |
-| `data/` | Step 1: `DataStep`, `FileInput`, `DataOptions`, `DataPreview` (raw values, never reformatted) |
+| `data/` | Step 1: `DataStep`, `FileInput` (the CSV, and a saved chart to reopen), `DataOptions`, `DataPreview` (raw values, never reformatted) |
+| `save/SaveChart.svelte` | In the wizard's footer: downloads the chart as a file, with the data inside when ticked |
 | `chart/ChartGallery.svelte` | Step 2: the named groups as a list, each with its charts side by side; a chart the data can't feed is disabled and says what is missing |
 | `mapping/MappingStep.svelte` | Step 3: one select per channel |
 | `options/` | `ChartOptions` shows the options of one step (`step="mapping"` under the mapping, `step="style"` as the first group of the style step). One component per option kind, plus `AggregationField`. |
 | `style/` | Step 4: `StyleStep` composes `PillarPicker`, the chart options, `SizeFields` (page-grid width, sizes, margins), `ParamFields`, and one `NumberFormatFields` per format |
+| `export/ExportChart.svelte` | Under the preview: "Baixar" SVG, PNG 1× and PNG 2× |
 | `preview/` | `ChartPreview` draws any resolution. The dashed frame is the figure's exact size; `overflow.ts` measures what is drawn outside it and says so. |
 | `ChartView.svelte` | `<ChartView chart id style>`: theme from the pillar, the `<Svg>`, and one branch per chart (a chart without a branch fails the type check) |
 | `views/` | One `<Name>View` per chart, props `ViewProps<L>`. It owns the chart's look, taken from its Eixo 6 story. Shared: `colors.ts` (series and group colours, the choropleth ramp, the label colour on a filled tile), `lines.ts`, `XAxisFrame.svelte`. |
@@ -244,6 +285,6 @@ columns that ended up unused.
 
 - Unit tests sit beside the code (`*.test.ts`): `npm run test:unit`.
 - There is one story, `Builder` › `Criar gráfico`
-  (`src/stories/dist/builder/Builder.stories.svelte`): the whole wizard,
+  (`src/stories/builder/Builder.stories.svelte`): the whole wizard,
   empty, for making charts from a file. It holds no sample data and no
   `play` test.

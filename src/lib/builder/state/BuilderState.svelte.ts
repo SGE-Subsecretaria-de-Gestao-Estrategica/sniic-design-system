@@ -1,5 +1,5 @@
 import { coerceData } from "../data/coerce";
-import { readCsvFile } from "../data/file";
+import { MAX_FILE_BYTES, readCsvFile } from "../data/file";
 import {
   columnAs,
   detectDecimal,
@@ -24,6 +24,15 @@ import { layoutOptions } from "../registry/options";
 import type { ChartRegistry } from "../registry/types";
 import type { ChartId } from "../registry/layouts";
 import { resolveChart } from "../resolve/resolveChart";
+import {
+  readSavedChart,
+  restoreSpec,
+  SAVED_CHART_EXTENSION,
+  saveChart,
+  savedColumns,
+  savedFileName,
+  savedSeparators,
+} from "../spec/saved";
 import {
   autoEncode,
   createSpec,
@@ -54,6 +63,10 @@ import {
 } from "./steps";
 
 type Source = { text: string; encoding: FileEncoding };
+type SavedSpec = Record<string, unknown>;
+
+// A saved chart may carry its data: twice the CSV limit leaves room for both.
+const MAX_SAVED_BYTES = 2 * MAX_FILE_BYTES;
 
 function chain(
   change: SpecChange,
@@ -68,6 +81,8 @@ export class BuilderState {
   source = $state<Source | null>(null);
   error = $state<string | null>(null);
   reset = $state<ResetNotice[]>([]);
+  /** A chart opened without its data, waiting for the CSV. */
+  pending = $state<{ name: string; spec: SavedSpec } | null>(null);
 
   readonly #delimiter = $derived(this.spec.data.delimiter);
   readonly #data = $derived(this.spec.data);
@@ -148,26 +163,88 @@ export class BuilderState {
       this.error = result.error;
       return;
     }
-    const delimiter = detectDelimiter(result.text);
-    const table = parseTable(result.text, delimiter);
+    this.#open(
+      result.text,
+      result.encoding,
+      result.fileName,
+      this.pending?.spec,
+    );
+  }
+
+  /**
+   * Opens a chart saved with `save`. With its data inside, everything comes
+   * back. Without, its choices go onto the CSV already loaded, or wait for
+   * the next one.
+   */
+  async openSaved(file: File) {
+    const load = ++this.#loads;
+    if (!file.name.toLowerCase().endsWith(SAVED_CHART_EXTENSION)) {
+      this.error = `Envie um arquivo ${SAVED_CHART_EXTENSION} salvo por este construtor.`;
+      return;
+    }
+    if (file.size > MAX_SAVED_BYTES) {
+      this.error = "O arquivo é grande demais para um gráfico salvo.";
+      return;
+    }
+    const result = readSavedChart(await file.text());
+    if (load !== this.#loads) return;
+    if (!result.ok) {
+      this.error = result.error;
+      return;
+    }
+    const { spec, data } = result.saved;
+    if (data !== undefined) {
+      this.#open(data, "utf-8", savedFileName(spec) ?? file.name, spec);
+    } else if (this.source) {
+      const { text, encoding } = this.source;
+      this.#open(text, encoding, this.spec.data.fileName, spec);
+    } else {
+      this.error = null;
+      this.pending = { name: file.name, spec };
+    }
+  }
+
+  /** The chart as a file's text; `withData` puts the CSV's text inside it. */
+  save(withData = false): string {
+    return saveChart(this.spec, withData ? this.source?.text : undefined);
+  }
+
+  #open(
+    text: string,
+    encoding: FileEncoding,
+    fileName: string | null,
+    saved?: SavedSpec,
+  ) {
+    const types = saved ? savedColumns(saved) : new Map<string, ColumnSchema>();
+    const kept = saved ? savedSeparators(saved) : {};
+    // The saved separators were checked by hand: they stand while they still find a saved column.
+    const keep =
+      kept.delimiter !== undefined &&
+      parseTable(text, kept.delimiter).columns.some((c) => types.has(c));
+    const delimiter = keep ? kept.delimiter! : detectDelimiter(text);
+    const table = parseTable(text, delimiter);
     if (!table.rows.length) {
       this.error = "O arquivo não tem linhas de dados.";
       return;
     }
-    const decimal = detectDecimal(table);
+    const decimal = (keep && kept.decimal) || detectDecimal(table);
+    const columns = inferSchema(table, decimal).map(
+      (column) => types.get(column.name) ?? column,
+    );
 
     this.error = null;
-    this.#manual.clear();
-    this.source = { text: result.text, encoding: result.encoding };
-    this.#setData(
-      {
-        fileName: result.fileName,
-        delimiter,
-        decimal,
-        columns: inferSchema(table, decimal),
-      },
-      table,
+    this.pending = null;
+    this.#manual = new Set(
+      columns.filter((c) => types.has(c.name)).map((c) => c.name),
     );
+    this.source = { text, encoding };
+    const data = { fileName, delimiter, decimal, columns };
+    if (saved) {
+      this.apply(restoreSpec(saved, data, this.registry));
+      this.step = [...STEPS].reverse().find((s) => this.canEnter(s.id))!.id;
+    } else {
+      this.#setData(data, table);
+    }
   }
 
   setDelimiter(delimiter: FieldSeparator) {

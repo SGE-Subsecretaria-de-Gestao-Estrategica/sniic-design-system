@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { marginOf } from "../registry/margins";
 import { setChart, setEncoding, SIZE_LIMITS } from "../spec/spec";
 import { BuilderState } from "./BuilderState.svelte";
 
@@ -249,9 +250,9 @@ describe("BuilderState", () => {
     const height = ready().figure.height;
 
     state.setMargin("even");
-    expect(ready().margin.left).toBe(24);
+    expect(ready().margin.left).toBe(marginOf("even").left);
     state.setMargin(null);
-    expect(ready().margin.left).toBe(150);
+    expect(ready().margin.left).toBe(marginOf("left").left);
 
     state.setParam("barThickness", 16);
     expect(state.spec.style.params).toEqual({ barThickness: 16 });
@@ -293,5 +294,89 @@ describe("BuilderState", () => {
 
     state.setChart("lineSeries");
     expect(state.spec.style.formats).toEqual({});
+  });
+  describe("saving and reopening", () => {
+    const jsonFile = (text: string, name = "dados.grafico.json") =>
+      new File([text], name);
+
+    async function styledBars() {
+      const state = new BuilderState();
+      await state.loadFile(latin1File(CSV));
+      state.setChart("horizontalBars");
+      state.setColumnType("ano", "text");
+      state.setOption("sort", "ascending");
+      state.setPillar(6);
+      return state;
+    }
+
+    it("brings everything back from a chart saved with its data", async () => {
+      const original = await styledBars();
+      const reopened = new BuilderState();
+      await reopened.openSaved(jsonFile(original.save(true)));
+
+      expect(reopened.error).toBeNull();
+      expect(reopened.spec).toEqual(original.spec);
+      expect(reopened.rows).toEqual(original.rows);
+      expect(reopened.resolution.status).toBe("ready");
+      expect(reopened.step).toBe("style");
+      // A type set by hand in the saved chart survives a re-detection.
+      reopened.setDecimal(".");
+      expect(reopened.spec.data.columns[2]).toEqual({
+        name: "ano",
+        type: "text",
+      });
+    });
+
+    it("waits for the CSV when the chart was saved without data", async () => {
+      const original = await styledBars();
+      const reopened = new BuilderState();
+      await reopened.openSaved(jsonFile(original.save()));
+
+      expect(reopened.pending?.name).toBe("dados.grafico.json");
+      expect(reopened.table).toBeNull();
+      expect(reopened.step).toBe("data");
+
+      await reopened.loadFile(latin1File(CSV, "dados-revisados.csv"));
+      expect(reopened.pending).toBeNull();
+      expect(reopened.spec).toEqual({
+        ...original.spec,
+        data: { ...original.spec.data, fileName: "dados-revisados.csv" },
+      });
+      expect(reopened.step).toBe("style");
+    });
+
+    it("applies a saved chart to the CSV already loaded", async () => {
+      const original = await styledBars();
+      const state = new BuilderState();
+      await state.loadFile(latin1File(CSV));
+      await state.openSaved(jsonFile(original.save()));
+      expect(state.pending).toBeNull();
+      expect(state.spec).toEqual(original.spec);
+    });
+
+    it("lists the choices an updated CSV can't take", async () => {
+      const original = await styledBars();
+      const updated = CSV.replace("total", "vínculos");
+      const reopened = new BuilderState();
+      await reopened.openSaved(jsonFile(original.save()));
+      await reopened.loadFile(latin1File(updated));
+
+      expect(reopened.reset).toEqual([
+        { channel: "value", column: "total", reason: "column-removed" },
+      ]);
+      expect(reopened.spec.encoding).toEqual({ category: "domínio" });
+      expect(reopened.spec.style.options).toEqual({ sort: "ascending" });
+      expect(reopened.step).toBe("mapping");
+    });
+
+    it("says why a file can't be opened and keeps what was there", async () => {
+      const state = await styledBars();
+      const before = state.spec;
+      await state.openSaved(jsonFile("{}", "dados.csv"));
+      expect(state.error).toMatch(/\.json/);
+      await state.openSaved(jsonFile("{}"));
+      expect(state.error).toMatch(/não é um gráfico salvo/);
+      expect(state.spec).toBe(before);
+    });
   });
 });

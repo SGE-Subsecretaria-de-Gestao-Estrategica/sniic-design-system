@@ -3,6 +3,7 @@
   import type { ChartResolution } from "../../resolve/types";
   import type { StyleSpec } from "../../spec/types";
   import ChartView from "../ChartView.svelte";
+  import ExportChart from "../export/ExportChart.svelte";
   import "../ui/tokens.css";
   import { describeOverflow, measureOverflow, type Overflow } from "./overflow";
 
@@ -10,9 +11,11 @@
     resolution: ChartResolution;
     style: StyleSpec;
     id: string;
+    /** The CSV's name, for the exported files. */
+    fileName: string | null;
   };
 
-  let { resolution, style, id }: Props = $props();
+  let { resolution, style, id, fileName }: Props = $props();
 
   const formatCount = formatLocale.format(",");
 
@@ -60,6 +63,10 @@
         ausentes.
       </figcaption>
     {/if}
+    <ExportChart
+      svg={() => holder?.querySelector<SVGSVGElement>(":scope > svg")}
+      {fileName}
+    />
   {:else if resolution.status === "incomplete"}
     <p>
       Escolha uma coluna para: {resolution.missing

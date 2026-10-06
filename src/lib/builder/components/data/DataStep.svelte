@@ -1,5 +1,6 @@
 <script lang="ts">
   import { formatLocale } from "$lib/core/format";
+  import { SAVED_CHART_EXTENSION } from "../../spec/saved";
   import type { BuilderState } from "../../state/BuilderState.svelte";
   import DataOptions from "./DataOptions.svelte";
   import DataPreview from "./DataPreview.svelte";
@@ -15,10 +16,28 @@
 </script>
 
 <section class="data-step">
-  <FileInput
-    fileName={data.fileName}
-    onfile={(file) => builder.loadFile(file)}
-  />
+  <div class="files">
+    <FileInput
+      fileName={data.fileName}
+      onfile={(file) => builder.loadFile(file)}
+    />
+    <FileInput
+      label="Gráfico salvo"
+      accept={SAVED_CHART_EXTENSION}
+      action="Abrir gráfico salvo"
+      hint="Arquivo .json salvo por este construtor"
+      variant="secondary"
+      fileName={builder.pending?.name ?? null}
+      onfile={(file) => builder.openSaved(file)}
+    />
+  </div>
+
+  {#if builder.pending}
+    <p class="note" role="status">
+      Gráfico salvo aberto. Escolha agora o arquivo CSV com os dados: as
+      escolhas valem para as colunas que ainda existirem.
+    </p>
+  {/if}
 
   {#if builder.error}
     <p class="error" role="alert">{builder.error}</p>
@@ -67,6 +86,11 @@
     color: var(--builder-ink);
     font-family: var(--builder-font);
     font-size: var(--builder-text);
+  }
+  .files {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px 48px;
   }
   p {
     margin: 0;
