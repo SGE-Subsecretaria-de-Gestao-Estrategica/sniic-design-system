@@ -31,8 +31,14 @@ export const sharedPalette = {
 }
 
 export const pillarPalettes = [
-  { id: 1, primary: '#D5362A', primaryVariant: '#EC6596', secondary: '#4B2F92', secondaryVariant: '#4F68DA', accent: '#4ACA5D' },
+  // Valores exatos da marca do Eixo 1, extraídos de src/lib/components/eixo1/cores.ts
+  // (cultura-em-numeros-eixo-1/data-vis) — fonte da verdade da paleta.
+  { id: 1, primary: '#D5362A', primaryVariant: '#EC6596', secondary: '#4B2F92', secondaryVariant: '#4F68DA', accent: '#68CF27' },
   { id: 6, primary: '#F6B60E', primaryVariant: '#F68E0E', secondary: '#265C4F', secondaryVariant: '#3D9142', accent: '#D74D2A' },
+  // PNAB: extraído de public/logos/pnab-logo.svg (azul dominante, verde e amarelo
+  // nos blocos principais da marca). Confirme com o guia de marca oficial do PNAB
+  // se houver um, antes de considerar definitivo.
+  { id: 100, primary: '#173EFC', primaryVariant: '#173EFC', secondary: '#0DCB03', secondaryVariant: '#0DCB03', accent: '#FCCC02' },
 ]
 
 export type PillarPalette = (typeof pillarPalettes)[number]

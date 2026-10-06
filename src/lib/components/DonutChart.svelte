@@ -3,6 +3,8 @@
 	import { pie, arc, type PieArcDatum } from 'd3';
 	import { typography } from '../tokens.js';
 	import { categorical8 } from '../palettes.js';
+	import { getCategoricalColor, getChartTheme } from '$lib/core/theme';
+	import type { ChartTheme } from '$lib/core/theme/types';
 	import { getContrastColor } from '../utils/colorContrast.js';
 	import ChartFrame from './molecules/ChartFrame.svelte';
 	import Legend from './atoms/Legend.svelte';
@@ -15,7 +17,10 @@
 		centerLabel?: string;
 		centerValue?: string;
 		height?: number;
+		/** Slice colours; defaults to the active theme's categorical ramp. */
 		colors?: readonly string[];
+		/** Sets the theme for this chart; inherits an ancestor theme context when omitted. */
+		theme?: ChartTheme;
 		format?: (v: number) => string;
 		showLegend?: boolean;
 	}
@@ -27,10 +32,14 @@
 		centerLabel = '',
 		centerValue = '',
 		height = 360,
-		colors = categorical8,
+		colors,
+		theme,
 		format = (v: number) => v.toLocaleString(),
 		showLegend = true,
 	}: Props = $props();
+
+	const inheritedTheme = getChartTheme();
+	const activeTheme = $derived(theme ?? inheritedTheme);
 
 	const chartFont = typography.chartValueFontFamily;
 	const MARGIN = { top: 16, right: 16, bottom: 16, left: 16 };
@@ -60,7 +69,11 @@
 	const legendH = $derived(legendNumRows * LEGEND_ROW_H + (legendNumRows - 1) * LEGEND_ROW_GAP);
 
 	function sliceColor(d: DonutDatum, i: number): string {
-		return d.color ?? colors[i % colors.length];
+		if (d.color) return d.color;
+		if (colors?.length) return colors[i % colors.length];
+		return activeTheme?.palette?.categorical?.length
+			? getCategoricalColor(i, activeTheme)
+			: categorical8[i % categorical8.length];
 	}
 
 	const outerR = $derived(Math.min(innerW, innerH - (showLegend ? legendH : 0)) * radiusFraction);
@@ -153,7 +166,7 @@
 
 			{#if showLegend && legendItems.length > 0}
 				<g transform="translate(0, {innerH - legendH})">
-					{#each legendRows as rowItems, rowIndex}
+					{#each legendRows as rowItems, rowIndex (rowIndex)}
 						{@const rowSpacing = Math.min(120, innerW / Math.max(1, rowItems.length))}
 						{@const rowX = Math.max(0, (innerW - rowItems.length * rowSpacing) / 2)}
 						<g transform="translate({rowX}, {rowIndex * (LEGEND_ROW_H + LEGEND_ROW_GAP)})">

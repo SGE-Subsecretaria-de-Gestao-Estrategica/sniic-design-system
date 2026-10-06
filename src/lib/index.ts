@@ -22,6 +22,7 @@ export {
 	Bar,
 	BarStack,
 	BarGroup,
+	RoundedBar,
 	Marker,
 	MarkerCircle,
 	Markers,
@@ -29,6 +30,8 @@ export {
 	Legend as ChartLegend,
 	LegendChips,
 	ValueCallout,
+	HighlightCallout,
+	TimelineBreak,
 	DefaultTheme,
 	getPillarTheme,
 	getChartTheme,
@@ -46,7 +49,23 @@ export {
 	line,
 	area,
 	arc,
+	roundedRect,
+	wrapText,
+	relativeLuminance,
+	contrastRatio,
+	pickContrastInk,
 	Orientation,
+	HoverLayer,
+	HitTarget,
+	Crosshair,
+	ChartTooltip,
+	HoverState,
+	relativeTo,
+	nearestIndex,
+	nearestIndexWithin,
+	nearestPoint,
+	ScrollySteps,
+	scrollStep,
 } from './core/index.js';
 
 export type {
@@ -62,6 +81,9 @@ export type {
 	LegendStyle,
 	MarkerStyle,
 	OrientationType,
+	TooltipRow,
+	TooltipContent,
+	ScrollyOptions,
 } from './core/index.js';
 
 export type { ChartDimensions, ChartProps, Margin as ChartMargin } from './types/Chart.js';
@@ -72,6 +94,11 @@ export type { LegendItem, LegendProps } from './types/Legend.js';
 export type { GridProps, GridRowsProps, GridColumnsProps } from './types/Grid.js';
 export type { AxisScale, SharedAxisProps } from './types/Axis.js';
 export type { TextProps } from './types/Text.js';
+export type {
+	RoundedRectCorners,
+	RoundedRectConfig,
+	RoundedBarProps,
+} from './types/RoundedRect.js';
 
 // Atoms — single-responsibility SVG <g> fragments
 export { default as XAxis } from './components/atoms/XAxis.svelte';
@@ -179,6 +206,16 @@ export { BRAZIL_REGION_PATHS, BRAZIL_REGION_LABELS, type BrazilRegion } from './
 export { default as StatesSilhouetteChart } from './components/StatesSilhouetteChart.svelte';
 export type { StateDatum } from './charts/brazilStates.js';
 export { BRAZIL_STATE_PATHS, BRAZIL_STATE_LABELS, type BrazilState } from './charts/brazilStates.js';
+
+// Eixo 6 — interactive charts driven by a `step` prop, for scrollytelling hosts
+export * from './components/eixo6/index.js';
+
+// Eixo 1 — Gestão e Participação, self-contained print/SVG charts (own palette & type scale)
+export * from './components/eixo1/index.js';
+
+// Figuras — data-agnostic print-scale bases in the Eixo 1 idiom (born for the LPG boletim,
+// whose leaf charts now live in LPG-2026/data-viz and consume these through the package)
+export * from './components/figuras/index.js';
 
 // Tokens
 export * from './tokens.js';

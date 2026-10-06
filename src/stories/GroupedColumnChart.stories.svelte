@@ -1,6 +1,7 @@
 <script module>
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 	import GroupedColumnChart from '../lib/components/GroupedColumnChart.svelte';
+	import { getPillarTheme } from '../lib/core/theme/index.js';
 
 	const { Story } = defineMeta({
 		title: 'Charts/GroupedColumnChart',
@@ -57,5 +58,22 @@
 		keys: ['a', 'b', 'c', 'd'],
 		labels: { a: 'Serie A', b: 'Serie B', c: 'Serie C', d: 'Serie D' },
 		height: 420,
+	}}
+/>
+
+<!-- No `colors` prop: series colours picked up from the active theme's categorical ramp. -->
+<Story
+	name="Themed"
+	args={{
+		data: [
+			{ label: '2020', music: 3200, film: 2100, theater: 1400 },
+			{ label: '2021', music: 3800, film: 2400, theater: 1600 },
+			{ label: '2022', music: 4200, film: 2800, theater: 1900 },
+			{ label: '2023', music: 4800, film: 3100, theater: 2200 },
+		],
+		keys: ['music', 'film', 'theater'],
+		labels: { music: 'Musica', film: 'Cinema', theater: 'Teatro' },
+		height: 400,
+		theme: getPillarTheme(100),
 	}}
 />

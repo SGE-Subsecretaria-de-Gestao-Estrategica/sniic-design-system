@@ -53,6 +53,9 @@ export { default as RangeRows } from './components/rangeRows/RangeRows.svelte';
 // Gradients
 export { default as LinearGradient } from './components/gradient/LinearGradient.svelte';
 
+
+export { default as RoundedBar } from './components/shape/RoundedBar.svelte';
+
 // Markers
 export { default as Marker } from './components/markers/Marker.svelte';
 export { default as MarkerCircle } from './components/markers/MarkerCircle.svelte';
@@ -66,6 +69,19 @@ export { default as LegendSteps } from './components/legend/LegendSteps.svelte';
 
 // Annotation
 export { default as ValueCallout } from './components/annotation/ValueCallout.svelte';
+export { default as HighlightCallout } from './components/annotation/HighlightCallout.svelte';
+export { default as TimelineBreak } from './components/annotation/TimelineBreak.svelte';
+
+// Interaction — hover, crosshair, tooltip and the optional scrollytelling driver
+export { default as HoverLayer } from './components/interaction/HoverLayer.svelte';
+export { default as HitTarget } from './components/interaction/HitTarget.svelte';
+export { default as Crosshair } from './components/interaction/Crosshair.svelte';
+export { default as ChartTooltip } from './components/interaction/ChartTooltip.svelte';
+export { HoverState, relativeTo } from './interaction/hover.svelte.js';
+export type { TooltipRow, TooltipContent } from './interaction/hover.svelte.js';
+export { nearestIndex, nearestIndexWithin, nearestPoint, distance } from './interaction/nearest.js';
+export { ScrollySteps, scrollStep } from './interaction/scrolly.svelte.js';
+export type { ScrollyOptions } from './interaction/scrolly.svelte.js';
 
 // Theme — tokens, palettes, context and the props > theme > default cascade
 export * from './theme/index.js';
@@ -81,7 +97,7 @@ export { default as getScaleBandwidth } from './utils/getScaleBandwidth.js';
 export { default as getStringWidth } from './utils/getStringWidth.js';
 export { default as getTicks } from './utils/getTicks.js';
 export { default as getLabelTransform } from './utils/getLabelTransform.js';
-export { line, area, arc } from './utils/shapeFactory.js';
+export { line, area, arc, roundedRect } from './utils/shapeFactory.js';
 export { default as applyExplicitOrder } from './utils/applyExplicitOrder.js';
 export { default as getGradientRamp } from './utils/getGradientRamp.js';
 export type { GradientStops } from './utils/getGradientRamp.js';
@@ -218,6 +234,8 @@ export type {
   ChoroplethDatum,
   ChoroplethLayout,
 } from './layouts/hexMap/types.js';
+export { wrapText } from './utils/wrapText.js';
+export { relativeLuminance, contrastRatio, pickContrastInk } from './utils/contrastColor.js';
 
 // Constants
 export { default as Orientation } from './constants/orientation.js';

@@ -3,6 +3,8 @@
 	import { scaleBand, scaleLinear, max } from 'd3';
 	import { typography, type Margin } from '../tokens.js';
 	import { categorical8 } from '../palettes.js';
+	import { getChartTheme } from '$lib/core/theme';
+	import type { ChartTheme } from '$lib/core/theme/types';
 	import { buildColorMap, buildLegendItems } from '../utils/colorMapHelpers.js';
 	import { gridPositions, yLinearTicks } from '../utils/scaleHelpers.js';
 	import { deriveEffectiveKeys } from '../utils/stackHelpers.js';
@@ -21,8 +23,11 @@
 		labels?: Record<string, string>;
 		height?: number;
 		margin?: Margin;
+		/** Series colours; defaults to the active theme's categorical ramp. */
 		colors?: readonly string[];
 		format?: (v: number) => string;
+		/** Sets the theme for this chart; inherits an ancestor theme context when omitted. */
+		theme?: ChartTheme;
 	}
 
 	let {
@@ -32,9 +37,16 @@
 		labels = {},
 		height = 400,
 		margin = { top: 16, right: 28, bottom: 68, left: 48 },
-		colors = categorical8,
+		colors,
 		format = (v: number) => v.toLocaleString(),
+		theme,
 	}: Props = $props();
+
+	const inheritedTheme = getChartTheme();
+	const activeTheme = $derived(theme ?? inheritedTheme);
+	const resolvedColors = $derived(
+		colors ?? (activeTheme?.palette?.categorical?.length ? activeTheme.palette.categorical : categorical8),
+	);
 
 	const chartFont = typography.chartValueFontFamily;
 	const STROKE_W = 0.5;
@@ -45,7 +57,7 @@
 
 	const effectiveKeys = $derived(deriveEffectiveKeys(data, keys, categoryKey));
 
-	const colorMap = $derived(buildColorMap(effectiveKeys, colors));
+	const colorMap = $derived(buildColorMap(effectiveKeys, resolvedColors));
 	const legendItems = $derived(buildLegendItems(effectiveKeys, colorMap, labels));
 
 	const barAreaH = $derived(innerH - LEGEND_BAR_H - 18);

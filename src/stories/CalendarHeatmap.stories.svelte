@@ -2,6 +2,7 @@
   import { defineMeta } from '@storybook/addon-svelte-csf';
   import CalendarHeatmap from '../lib/components/CalendarHeatmap.svelte';
   import { colorScales } from '../lib/tokens.js';
+  import { getPillarTheme } from '../lib/core/theme/index.js';
 
   const { Story } = defineMeta({
     title: 'Charts/CalendarHeatmap',
@@ -62,5 +63,16 @@
     showLegend: true,
     colorRange: colorScales.purple,
     data: makeYear(2024, 7),
+  }}
+/>
+
+<!-- No `colorRange` prop: sequential ramp built from the active theme's primary hue. -->
+<Story
+  name="Themed"
+  args={{
+    height: 160,
+    showLegend: true,
+    theme: getPillarTheme(100),
+    data: makeYear(2025),
   }}
 />

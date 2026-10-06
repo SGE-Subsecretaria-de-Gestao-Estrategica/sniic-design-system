@@ -2,6 +2,8 @@
   import { scaleLinear } from 'd3';
   import { typography } from '../tokens.js';
   import { categorical8 } from '../palettes.js';
+  import { getCategoricalColor, getChartTheme } from '$lib/core/theme';
+  import type { ChartTheme } from '$lib/core/theme/types';
   import Legend from './atoms/Legend.svelte';
   import type { Component } from 'svelte';
 
@@ -28,9 +30,12 @@
     showLevelLabels?: boolean;
     showLegend?: boolean;
     fillOpacity?: number;
+    /** Series colours; defaults to the active theme's categorical ramp. */
     colors?: readonly string[];
     icons?: Record<string, Component<{ size?: number; color?: string; title?: string }>>;
     iconSize?: number;
+    /** Sets the theme for this chart; inherits an ancestor theme context when omitted. */
+    theme?: ChartTheme;
   }
 
   let {
@@ -45,12 +50,23 @@
     showLevelLabels = true,
     showLegend = true,
     fillOpacity = 0.15,
-    colors = categorical8,
+    colors,
     icons = {},
     iconSize = 32,
+    theme,
   }: Props = $props();
 
-  const defaultColors = $derived(colors);
+  const inheritedTheme = getChartTheme();
+  const activeTheme = $derived(theme ?? inheritedTheme);
+
+  function seriesColor(s: Series, si: number): string {
+    if (s.color) return s.color;
+    if (colors?.length) return colors[si % colors.length];
+    return activeTheme?.palette?.categorical?.length
+      ? getCategoricalColor(si, activeTheme)
+      : categorical8[si % categorical8.length];
+  }
+
   const chartFont = typography.chartValueFontFamily;
 
   const hasIcons = $derived(Object.keys(icons).length > 0);
@@ -121,7 +137,7 @@
 
   const seriesShapes = $derived(
     series.map((s, si) => {
-      const color = s.color ?? defaultColors[si % defaultColors.length];
+      const color = seriesColor(s, si);
       const points = axes.map((axis, i) => {
         const d = s.values.find(v => v.axis === axis);
         const r = rScale(d?.value ?? 0);

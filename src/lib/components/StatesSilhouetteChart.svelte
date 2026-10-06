@@ -6,6 +6,8 @@
 	import { scaleSqrt, max } from 'd3';
 	import { typography } from '../tokens.js';
 	import { categorical8 } from '../palettes.js';
+	import { getCategoricalColor, getChartTheme } from '$lib/core/theme';
+	import type { ChartTheme } from '$lib/core/theme/types';
 	import {
 		BRAZIL_STATE_PATHS,
 		BRAZIL_STATE_LABELS,
@@ -17,18 +19,25 @@
 	interface Props {
 		data?: StateDatum[];
 		maxSize?: number;
+		/** Silhouette colours; defaults to the active theme's categorical ramp. */
 		colors?: readonly string[];
 		format?: (v: number) => string;
 		showLabels?: boolean;
+		/** Sets the theme for this chart; inherits an ancestor theme context when omitted. */
+		theme?: ChartTheme;
 	}
 
 	let {
 		data = [],
 		maxSize = 80,
-		colors = categorical8,
+		colors,
 		format = (v: number) => v.toLocaleString(),
 		showLabels = true,
+		theme,
 	}: Props = $props();
+
+	const inheritedTheme = getChartTheme();
+	const activeTheme = $derived(theme ?? inheritedTheme);
 
 	const chartFont = typography.chartValueFontFamily;
 
@@ -68,7 +77,13 @@
 
 			const s = sScale(d.value);
 			const half = 50 * s; // half-size of bounding box
-			const color = d.color ?? colors[i % colors.length];
+			const color =
+				d.color ??
+				(colors?.length
+					? colors[i % colors.length]
+					: activeTheme?.palette?.categorical?.length
+						? getCategoricalColor(i, activeTheme)
+						: categorical8[i % categorical8.length]);
 			const label = BRAZIL_STATE_LABELS[d.state];
 
 			if (curX + half * 2 > innerW && curX > 0) {

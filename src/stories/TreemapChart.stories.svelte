@@ -1,6 +1,7 @@
 <script module>
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 	import TreemapChart from '../lib/components/TreemapChart.svelte';
+	import { getPillarTheme } from '../lib/core/theme/index.js';
 
 	const { Story } = defineMeta({
 		title: 'Charts/TreemapChart',
@@ -75,5 +76,24 @@
 			],
 		},
 		height: 350,
+	}}
+/>
+
+<!-- No `colors` prop: top-level branch colours picked up from the active theme's categorical ramp. -->
+<Story
+	name="Themed"
+	args={{
+		data: {
+			name: 'Regioes',
+			children: [
+				{ name: 'Sudeste', value: 4200 },
+				{ name: 'Nordeste', value: 2800 },
+				{ name: 'Sul', value: 1500 },
+				{ name: 'Centro-Oeste', value: 900 },
+				{ name: 'Norte', value: 600 },
+			],
+		},
+		height: 350,
+		theme: getPillarTheme(100),
 	}}
 />

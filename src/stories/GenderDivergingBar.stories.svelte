@@ -1,6 +1,7 @@
 <script module>
   import { defineMeta } from '@storybook/addon-svelte-csf';
   import DivergingBarChart from '../lib/components/DivergingBarChart.svelte';
+  import { getPillarTheme } from '../lib/core/theme/index.js';
 
   const fullData = [
     { label: 'SP', leftPct: 51.8 },
@@ -73,5 +74,18 @@
     referenceValue: 51.5,
     referenceLabel: 'média',
     showFlags: true,
+  }}
+/>
+
+<!-- No `colors` prop: left/right colours picked up from the active theme's primary/secondary. -->
+<Story
+  name="Themed"
+  args={{
+    data: fullData,
+    leftLabel: 'Feminino',
+    rightLabel: 'Masculino',
+    referenceValue: 51.5,
+    referenceLabel: 'média',
+    theme: getPillarTheme(100),
   }}
 />

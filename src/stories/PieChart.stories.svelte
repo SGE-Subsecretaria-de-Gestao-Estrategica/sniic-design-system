@@ -1,6 +1,7 @@
 <script module>
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 	import PieChart from '../lib/components/PieChart.svelte';
+	import { getPillarTheme } from '../lib/core/theme/index.js';
 
 	const { Story } = defineMeta({
 		title: 'Charts/PieChart',
@@ -50,5 +51,21 @@
 			{ label: 'Sul', value: 1500 },
 		],
 		height: 360,
+	}}
+/>
+
+<!-- No `colors` prop: slice colours picked up from the active theme's categorical ramp. -->
+<Story
+	name="Themed"
+	args={{
+		data: [
+			{ label: 'Musica', value: 3200 },
+			{ label: 'Cinema', value: 2100 },
+			{ label: 'Teatro', value: 1400 },
+			{ label: 'Danca', value: 800 },
+			{ label: 'Artes Visuais', value: 600 },
+		],
+		height: 360,
+		theme: getPillarTheme(100),
 	}}
 />

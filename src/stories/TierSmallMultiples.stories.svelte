@@ -1,6 +1,7 @@
 <script module>
   import { defineMeta } from '@storybook/addon-svelte-csf';
   import TierSmallMultiples from '../lib/components/TierSmallMultiples.svelte';
+  import { getPillarTheme } from '../lib/core/theme/index.js';
 
   // ── Helper: generate tier data for all 27 states ──────────────────────────
 
@@ -133,5 +134,17 @@
     metric: 'valorRecebido',
     format: (v) => BRL.format(v),
     cities,
+  }}
+/>
+
+<!-- Sequential ramp built from the active theme's primary hue instead of the fixed blue→purple SCALE_STOPS. -->
+<Story
+  name="Themed"
+  args={{
+    tiers: tiersData,
+    metric: 'execucaoFinanceira',
+    format: (v) => `${v.toFixed(1)}%`,
+    cities,
+    theme: getPillarTheme(100),
   }}
 />

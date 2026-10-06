@@ -6,6 +6,7 @@
   import IconTerritorioIndigena from '../lib/components/atoms/icons/IconTerritorioIndigena.svelte';
   import IconTerritorioQuilombola from '../lib/components/atoms/icons/IconTerritorioQuilombola.svelte';
   import IconRural from '../lib/components/atoms/icons/IconRural.svelte';
+  import { getPillarTheme } from '../lib/core/theme/index.js';
 
   const { Story } = defineMeta({
     title: 'Charts/RadialChart',
@@ -239,6 +240,46 @@
           { axis: 'Território indígena',           value: 35 },
           { axis: 'Território quilombola',         value: 41 },
           { axis: 'Área rural',                    value: 58 },
+        ],
+      },
+    ],
+  }}
+/>
+
+<!-- No `colors` prop: series colours picked up from the active theme's categorical ramp. -->
+<Story
+  name="Themed"
+  args={{
+    size: 420,
+    levels: 5,
+    showDots: true,
+    showLevelLabels: true,
+    showLegend: true,
+    strokeWidth: 2,
+    dotRadius: 4,
+    fillOpacity: 0.15,
+    theme: getPillarTheme(100),
+    series: [
+      {
+        name: 'Norte',
+        values: [
+          { axis: 'Saúde',       value: 58 },
+          { axis: 'Educação',    value: 42 },
+          { axis: 'Renda',       value: 31 },
+          { axis: 'Habitação',   value: 47 },
+          { axis: 'Saneamento',  value: 35 },
+          { axis: 'Mobilidade',  value: 28 },
+        ],
+      },
+      {
+        name: 'Sudeste',
+        values: [
+          { axis: 'Saúde',       value: 81 },
+          { axis: 'Educação',    value: 74 },
+          { axis: 'Renda',       value: 67 },
+          { axis: 'Habitação',   value: 72 },
+          { axis: 'Saneamento',  value: 78 },
+          { axis: 'Mobilidade',  value: 61 },
         ],
       },
     ],

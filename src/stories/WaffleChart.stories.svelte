@@ -1,6 +1,7 @@
 <script module>
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 	import WaffleChart from '../lib/components/WaffleChart.svelte';
+	import { getPillarTheme } from '../lib/core/theme/index.js';
 
 	const { Story } = defineMeta({
 		title: 'Charts/WaffleChart',
@@ -59,5 +60,24 @@
 		totalCells: 100,
 		columns: 10,
 		height: 360,
+	}}
+/>
+
+<!-- No `colors` prop: category colours picked up from the active theme's categorical ramp. -->
+<Story
+	name="Themed"
+	args={{
+		data: [
+			{ label: 'Musica', value: 32 },
+			{ label: 'Cinema', value: 21 },
+			{ label: 'Teatro', value: 14 },
+			{ label: 'Danca', value: 8 },
+			{ label: 'Artes Visuais', value: 6 },
+			{ label: 'Outros', value: 19 },
+		],
+		totalCells: 100,
+		columns: 10,
+		height: 360,
+		theme: getPillarTheme(100),
 	}}
 />

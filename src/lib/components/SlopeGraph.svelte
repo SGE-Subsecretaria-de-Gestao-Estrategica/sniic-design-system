@@ -2,6 +2,8 @@
   import { scaleLinear, scalePoint, extent } from 'd3';
   import { typography, type Margin } from '../tokens.js';
   import { categorical8 } from '../palettes.js';
+  import { getCategoricalColor, getChartTheme } from '$lib/core/theme';
+  import type { ChartTheme } from '$lib/core/theme/types';
   import ChartFrame from './molecules/ChartFrame.svelte';
 
   interface Item {
@@ -20,7 +22,10 @@
     strokeWidth?: number;
     dotRadius?: number;
     fontSize?: number;
+    /** Item colours; defaults to the active theme's categorical ramp. */
     colors?: readonly string[];
+    /** Sets the theme for this chart; inherits an ancestor theme context when omitted. */
+    theme?: ChartTheme;
   }
 
   let {
@@ -33,10 +38,20 @@
     strokeWidth = 2.5,
     dotRadius = 7,
     fontSize = typography.sizes.md,
-    colors = categorical8,
+    colors,
+    theme,
   }: Props = $props();
 
-  const defaultColors = $derived(colors);
+  const inheritedTheme = getChartTheme();
+  const activeTheme = $derived(theme ?? inheritedTheme);
+
+  function itemColor(item: Item, i: number): string {
+    if (item.color) return item.color;
+    if (colors?.length) return colors[i % colors.length];
+    return activeTheme?.palette?.categorical?.length
+      ? getCategoricalColor(i, activeTheme)
+      : categorical8[i % categorical8.length];
+  }
 
   let innerWidth = $state(0);
   let innerHeight = $state(0);
@@ -83,7 +98,7 @@
 
   <!-- Slopes -->
   {#each items as item, i (item.name)}
-    {@const color = item.color ?? defaultColors[i % defaultColors.length]}
+    {@const color = itemColor(item, i)}
 
     <!-- Line segments -->
     {#each item.values as val, ci (ci)}

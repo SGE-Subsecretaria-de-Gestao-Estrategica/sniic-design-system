@@ -1,6 +1,7 @@
 <script module>
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 	import ParliamentChart from '../lib/components/ParliamentChart.svelte';
+	import { getPillarTheme } from '../lib/core/theme/index.js';
 
 	const { Story } = defineMeta({
 		title: 'Charts/ParliamentChart',
@@ -52,5 +53,23 @@
 		],
 		height: 300,
 		rows: 3,
+	}}
+/>
+
+<!-- No `colors` prop: party colours picked up from the active theme's categorical ramp. -->
+<Story
+	name="Themed"
+	args={{
+		data: [
+			{ label: 'Partido A', seats: 120 },
+			{ label: 'Partido B', seats: 85 },
+			{ label: 'Partido C', seats: 62 },
+			{ label: 'Partido D', seats: 45 },
+			{ label: 'Partido E', seats: 30 },
+			{ label: 'Outros', seats: 18 },
+		],
+		height: 360,
+		rows: 5,
+		theme: getPillarTheme(100),
 	}}
 />

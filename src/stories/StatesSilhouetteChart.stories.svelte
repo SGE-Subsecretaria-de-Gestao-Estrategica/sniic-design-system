@@ -1,6 +1,7 @@
 <script module>
   import { defineMeta } from '@storybook/addon-svelte-csf';
   import StatesSilhouetteChart from '../lib/components/StatesSilhouetteChart.svelte';
+  import { getPillarTheme } from '../lib/core/theme/index.js';
 
   const { Story } = defineMeta({
     title: 'Charts/StatesSilhouetteChart',
@@ -103,5 +104,24 @@
     ],
     maxSize: 90,
     showLabels: false,
+  }}
+/>
+
+<!-- No `colors` prop: silhouette colours picked up from the active theme's categorical ramp. -->
+<Story
+  name="Themed"
+  args={{
+    data: [
+      { state: 'SP', value: 4200 },
+      { state: 'MG', value: 2800 },
+      { state: 'RJ', value: 2100 },
+      { state: 'BA', value: 1500 },
+      { state: 'RS', value: 1200 },
+      { state: 'PR', value: 1000 },
+      { state: 'PE', value: 900 },
+      { state: 'CE', value: 800 },
+    ],
+    maxSize: 80,
+    theme: getPillarTheme(100),
   }}
 />

@@ -3,6 +3,8 @@
 	import { scaleLinear, scaleBand } from 'd3';
 	import { typography } from '../tokens.js';
 	import { colorPairs, type ColorPair } from '../palettes.js';
+	import { getChartTheme } from '$lib/core/theme';
+	import type { ChartTheme } from '$lib/core/theme/types';
 	import { gridPositions, xLinearTicks } from '../utils/scaleHelpers.js';
 	import ChartFrame from './molecules/ChartFrame.svelte';
 	import LegendBar from './molecules/LegendBar.svelte';
@@ -23,6 +25,7 @@
 		referenceValue?: number;
 		referenceLabel?: string;
 		referenceColor?: string;
+		/** Left/right colours; defaults to the active theme's primary/secondary. */
 		colors?: ColorPair;
 		marginLeft?: number;
 		rowHeight?: number;
@@ -30,6 +33,8 @@
 		showFlags?: boolean;
 		flagBasePath?: string;
 		flagSize?: number;
+		/** Sets the theme for this chart; inherits an ancestor theme context when omitted. */
+		theme?: ChartTheme;
 	}
 
 	let {
@@ -39,14 +44,24 @@
 		referenceValue = 0,
 		referenceLabel = '',
 		referenceColor = 'var(--chart-fg-strong, #000000)',
-		colors = colorPairs.orangeTeal,
+		colors,
 		marginLeft = 130,
 		rowHeight = 52,
 		sortDirection = 'desc',
 		showFlags = false,
 		flagBasePath = '/flags/states',
 		flagSize = 20,
+		theme,
 	}: Props = $props();
+
+	const inheritedTheme = getChartTheme();
+	const activeTheme = $derived(theme ?? inheritedTheme);
+	const resolvedColors = $derived<ColorPair>(
+		colors ??
+			(activeTheme?.palette?.primary && activeTheme.palette?.secondary
+				? [activeTheme.palette.primary, activeTheme.palette.secondary]
+				: colorPairs.orangeTeal),
+	);
 
 	const chartFont = typography.chartValueFontFamily;
 
@@ -63,7 +78,7 @@
 		left: marginLeft + (showFlags ? flagW + FLAG_GAP : 0),
 	});
 
-	const COLORS = $derived({ left: colors[0], right: colors[1] });
+	const COLORS = $derived({ left: resolvedColors[0], right: resolvedColors[1] });
 
 	let innerW = $state(0);
 

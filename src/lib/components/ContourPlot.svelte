@@ -5,6 +5,9 @@
   } from 'd3';
   import { geoPath } from 'd3-geo';
   import { colorScales, defaultMargin, typography, type Margin } from '../tokens.js';
+  import { getChartTheme } from '$lib/core/theme';
+  import type { ChartTheme } from '$lib/core/theme/types';
+  import { buildSequentialRange } from '../utils/colorMapHelpers.js';
   import ChartFrame from './molecules/ChartFrame.svelte';
   import XAxis from './atoms/XAxis.svelte';
   import YAxis from './atoms/YAxis.svelte';
@@ -16,6 +19,7 @@
     data?: ContourPoint[];
     height?: number;
     margin?: Margin;
+    /** Sequential fill ramp (low → high density); defaults to the active theme's primary hue. */
     colorRange?: readonly string[];
     xLabel?: string;
     yLabel?: string;
@@ -32,13 +36,15 @@
     format?: (v: number) => string;
     xTickCount?: number;
     yTickCount?: number;
+    /** Sets the theme for this chart; inherits an ancestor theme context when omitted. */
+    theme?: ChartTheme;
   }
 
   let {
     data = [],
     height = 400,
     margin = defaultMargin,
-    colorRange = colorScales.purple,
+    colorRange,
     xLabel = '',
     yLabel = '',
     thresholds = 20,
@@ -51,7 +57,17 @@
     format = (v: number) => v.toFixed(3),
     xTickCount = 6,
     yTickCount = 6,
+    theme,
   }: Props = $props();
+
+  const inheritedTheme = getChartTheme();
+  const activeTheme = $derived(theme ?? inheritedTheme);
+  const resolvedColorRange = $derived(
+    colorRange ??
+      (activeTheme?.palette?.primary
+        ? buildSequentialRange(activeTheme.palette.primary)
+        : [...colorScales.purple]),
+  );
 
   const chartFont = typography.chartValueFontFamily;
   const legendHeight = 28;
@@ -94,9 +110,9 @@
 
   const fillScale = $derived.by(() => {
     const [lo, hi] = densityExtent;
-    const n = colorRange.length;
+    const n = resolvedColorRange.length;
     const domain = Array.from({ length: n }, (_, i) => lo + (hi - lo) * (i / (n - 1)));
-    return scaleLinear<string>().domain(domain).range([...colorRange]);
+    return scaleLinear<string>().domain(domain).range([...resolvedColorRange]);
   });
 
   const pathGen = $derived(geoPath());
@@ -174,7 +190,7 @@
   {#if showLegend}
     <g transform="translate(0,{legendBarY})">
       <GradientLegend
-        colorRange={[...colorRange]}
+        colorRange={[...resolvedColorRange]}
         min={densityExtent[0]}
         max={densityExtent[1]}
         width={legendWidth}

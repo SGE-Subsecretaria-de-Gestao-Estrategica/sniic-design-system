@@ -3,6 +3,8 @@
 	import { scaleSqrt, max } from 'd3';
 	import { typography } from '../tokens.js';
 	import { categorical8 } from '../palettes.js';
+	import { getCategoricalColor, getChartTheme } from '$lib/core/theme';
+	import type { ChartTheme } from '$lib/core/theme/types';
 	import ChartFrame from './molecules/ChartFrame.svelte';
 	import TooltipContainer from './molecules/TooltipContainer.svelte';
 	import { labelFitsInCircle } from '../utils/labelHelpers.js';
@@ -11,18 +13,25 @@
 	interface Props {
 		data?: ProportionalDatum[];
 		maxRadius?: number;
+		/** Circle colours; defaults to the active theme's categorical ramp. */
 		colors?: readonly string[];
 		format?: (v: number) => string;
 		showLabels?: boolean;
+		/** Sets the theme for this chart; inherits an ancestor theme context when omitted. */
+		theme?: ChartTheme;
 	}
 
 	let {
 		data = [],
 		maxRadius = 80,
-		colors = categorical8,
+		colors,
 		format = (v: number) => v.toLocaleString(),
 		showLabels = true,
+		theme,
 	}: Props = $props();
+
+	const inheritedTheme = getChartTheme();
+	const activeTheme = $derived(theme ?? inheritedTheme);
 
 	const chartFont = typography.chartValueFontFamily;
 
@@ -62,7 +71,13 @@
 		for (let i = 0; i < sorted.length; i++) {
 			const d = sorted[i];
 			const r = rScale(d.value);
-			const color = d.color ?? colors[i % colors.length];
+			const color =
+				d.color ??
+				(colors?.length
+					? colors[i % colors.length]
+					: activeTheme?.palette?.categorical?.length
+						? getCategoricalColor(i, activeTheme)
+						: categorical8[i % categorical8.length]);
 			const fitsInside = r > 8 && bothLabelsFit(d.label, d.value, r);
 
 			if (curX + r * 2 > innerW && curX > 0) {

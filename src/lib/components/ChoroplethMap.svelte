@@ -6,7 +6,10 @@
     max, interpolateRgbBasis,
   } from 'd3';
   import { black, white, red, amber, green, colorScales } from '../tokens.js';
+  import { getChartTheme } from '$lib/core/theme';
+  import type { ChartTheme } from '$lib/core/theme/types';
   import { getContrastColor } from '../utils/colorContrast.js';
+  import { buildSequentialRange } from '../utils/colorMapHelpers.js';
   import { loadBrazilGeoJSON } from '../utils/geoLoader.js';
   import { BRLFull } from '../utils/formatters.js';
   import type { ChoroplethCapital } from '../charts/choroplethMap.js';
@@ -42,7 +45,10 @@
     metric?: string;
     label?: string;
     format?: (v: number) => string;
+    /** Sequential fill ramp (low → high); defaults to the active theme's primary hue. */
     colorRange?: string[];
+    /** Sets the theme for this chart; inherits an ancestor theme context when omitted. */
+    theme?: ChartTheme;
     activeState?: object | null;
     capitals?: ChoroplethCapital[];
     showCapitals?: boolean;
@@ -54,12 +60,22 @@
     metric = 'execucaoFinanceira',
     label = '',
     format = (v) => v.toLocaleString('pt-BR'),
-    colorRange = [...colorScales.blue],
+    colorRange,
+    theme,
     activeState = $bindable(null),
     capitals = [],
     showCapitals = false,
     isStatic = false,
   }: Props = $props();
+
+  const inheritedTheme = getChartTheme();
+  const activeTheme = $derived(theme ?? inheritedTheme);
+  const resolvedColorRange = $derived(
+    colorRange ??
+      (activeTheme?.palette?.primary
+        ? buildSequentialRange(activeTheme.palette.primary)
+        : [...colorScales.blue]),
+  );
 
   // ── State ─────────────────────────────────────────────────────────────────
 
@@ -85,7 +101,7 @@
   const colorScale = $derived(
     scaleSequential()
       .domain([0, maxVal])
-      .interpolator(interpolateRgbBasis(colorRange))
+      .interpolator(interpolateRgbBasis(resolvedColorRange))
   );
 
   // Geo — recomputed whenever width/height or geojson changes.
@@ -342,7 +358,7 @@
 
       <!-- ── Gradient colour legend (bottom-left) ───────────────────────── -->
       <g transform="translate(16,{height - 36})">
-        <GradientLegend {colorRange} min={0} max={maxVal} {format} width={legendW} />
+        <GradientLegend colorRange={resolvedColorRange} min={0} max={maxVal} {format} width={legendW} />
       </g>
 
     </svg>

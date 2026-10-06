@@ -6,6 +6,9 @@
   import type { TierData, CityMarker, MunicipalityData } from '../charts/tierSmallMultiples.js';
   import { getContrastColor } from '../utils/colorContrast.js';
   import { colorScales } from '../tokens.js';
+  import { getChartTheme } from '$lib/core/theme';
+  import type { ChartTheme } from '$lib/core/theme/types';
+  import { buildSequentialRange } from '../utils/colorMapHelpers.js';
 
   interface Props {
     tiers?: Record<string, TierData>;
@@ -14,6 +17,8 @@
     cities?: CityMarker[];
     municipalities?: MunicipalityData;
     initialState?: string;
+    /** Sets the theme for this chart; inherits an ancestor theme context when omitted. */
+    theme?: ChartTheme;
   }
 
   let {
@@ -23,7 +28,15 @@
     cities = [],
     municipalities = {},
     initialState,
+    theme,
   }: Props = $props();
+
+  const inheritedTheme = getChartTheme();
+  const activeTheme = $derived(theme ?? inheritedTheme);
+  /** Sequential fill ramp (low → high); defaults to the active theme's primary hue. */
+  const resolvedScaleStops = $derived(
+    activeTheme?.palette?.primary ? buildSequentialRange(activeTheme.palette.primary) : SCALE_STOPS,
+  );
 
   // ── DOM dimensions (bind:clientWidth handles ResizeObserver internally) ───
 
@@ -39,7 +52,7 @@
 
   // ── Data computations (reactive to tiers / metric) ────────────────────────
 
-  const colorResult = $derived(buildSharedColorScale(tiers, metric));
+  const colorResult = $derived(buildSharedColorScale(tiers, metric, resolvedScaleStops));
   const flat        = $derived(flattenTierData(tiers, metric));
 
   // ── Brazil overview map ───────────────────────────────────────────────────
@@ -271,8 +284,8 @@
         <svg width={legendW} height={24}>
           <defs>
             <linearGradient id={legendGradId} x1="0%" x2="100%">
-              {#each SCALE_STOPS as color, i (i)}
-                <stop offset="{(i / (SCALE_STOPS.length - 1)) * 100}%" stop-color={color} />
+              {#each resolvedScaleStops as color, i (i)}
+                <stop offset="{(i / (resolvedScaleStops.length - 1)) * 100}%" stop-color={color} />
               {/each}
             </linearGradient>
           </defs>

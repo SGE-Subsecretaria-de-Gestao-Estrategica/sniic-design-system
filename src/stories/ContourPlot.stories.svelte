@@ -2,6 +2,7 @@
   import { defineMeta } from '@storybook/addon-svelte-csf';
   import ContourPlot from '../lib/components/ContourPlot.svelte';
   import { colorScales } from '../lib/tokens.js';
+  import { getPillarTheme } from '../lib/core/theme/index.js';
 
   const { Story } = defineMeta({
     title: 'Charts/ContourPlot',
@@ -81,5 +82,20 @@
     showGrid: false,
     colorRange: colorScales.teal,
     data: makeGaussianClusters(1000, 99),
+  }}
+/>
+
+<!-- No `colorRange` prop: sequential ramp built from the active theme's primary hue. -->
+<Story
+  name="Themed"
+  args={{
+    height: 400,
+    thresholds: 20,
+    bandwidth: 20,
+    showPoints: false,
+    showLegend: true,
+    showGrid: true,
+    theme: getPillarTheme(100),
+    data: makeGaussianClusters(500),
   }}
 />

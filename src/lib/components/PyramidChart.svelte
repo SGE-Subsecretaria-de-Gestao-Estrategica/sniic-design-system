@@ -2,6 +2,8 @@
 	import type { PyramidTier } from '../types.js';
 	import { typography, type Margin } from '../tokens.js';
 	import { colorPairs, type ColorPair } from '../palettes.js';
+	import { getChartTheme } from '$lib/core/theme';
+	import type { ChartTheme } from '$lib/core/theme/types';
 	import TooltipContainer from './molecules/TooltipContainer.svelte';
 
 	interface Props {
@@ -10,7 +12,10 @@
 		rightLabel?: string;
 		height?: number;
 		margin?: Margin;
+		/** Left/right bar colours; defaults to the active theme's primary/secondary. */
 		colors?: ColorPair;
+		/** Sets the theme for this chart; inherits an ancestor theme context when omitted. */
+		theme?: ChartTheme;
 		format?: (v: number) => string;
 		centerGap?: number;
 	}
@@ -21,10 +26,20 @@
 		rightLabel = 'Feminino',
 		height = 420,
 		margin = { top: 16, right: 16, bottom: 68, left: 16 },
-		colors = colorPairs.bluePurple,
+		colors,
+		theme,
 		format = (v: number) => v.toLocaleString(),
 		centerGap = 48,
 	}: Props = $props();
+
+	const inheritedTheme = getChartTheme();
+	const activeTheme = $derived(theme ?? inheritedTheme);
+	const resolvedColors = $derived<ColorPair>(
+		colors ??
+			(activeTheme?.palette?.primary && activeTheme.palette?.secondary
+				? [activeTheme.palette.primary, activeTheme.palette.secondary]
+				: colorPairs.bluePurple),
+	);
 
 	const chartFont = typography.chartValueFontFamily;
 	const FONT_PAD = 4;
@@ -93,7 +108,7 @@
 									y={row.y}
 									width={row.lw}
 									height={bw}
-									fill={colors[0]}
+									fill={resolvedColors[0]}
 									stroke="var(--chart-fg-strong, #000000)"
 									stroke-width={STROKE_W}
 									shape-rendering="crispEdges"
@@ -116,7 +131,7 @@
 										dy="0.35em"
 										font-size={row.fs}
 										font-weight="700"
-										fill={colors[0]}
+										fill={resolvedColors[0]}
 										text-anchor="end"
 										pointer-events="none"
 									>{row.lt}</text>
@@ -136,7 +151,7 @@
 									y={row.y}
 									width={row.rw}
 									height={bw}
-									fill={colors[1]}
+									fill={resolvedColors[1]}
 									stroke="var(--chart-fg-strong, #000000)"
 									stroke-width={STROKE_W}
 									shape-rendering="crispEdges"
@@ -159,7 +174,7 @@
 										dy="0.35em"
 										font-size={row.fs}
 										font-weight="700"
-										fill={colors[1]}
+										fill={resolvedColors[1]}
 										text-anchor="start"
 										pointer-events="none"
 									>{row.rt}</text>
@@ -196,9 +211,9 @@
 
 						<!-- Legend -->
 						<g transform="translate({cx}, {legendY})" text-anchor="middle">
-							<rect x={-80} y={-8} width={14} height={14} fill={colors[0]} />
+							<rect x={-80} y={-8} width={14} height={14} fill={resolvedColors[0]} />
 							<text x={-62} y={-1} dy="0.35em" font-size="11" text-anchor="start" fill="var(--chart-fg-strong, #000000)">{leftLabel}</text>
-							<rect x={20} y={-8} width={14} height={14} fill={colors[1]} />
+							<rect x={20} y={-8} width={14} height={14} fill={resolvedColors[1]} />
 							<text x={38} y={-1} dy="0.35em" font-size="11" text-anchor="start" fill="var(--chart-fg-strong, #000000)">{rightLabel}</text>
 						</g>
 					</g>

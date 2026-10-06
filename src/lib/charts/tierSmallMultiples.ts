@@ -55,6 +55,7 @@ export interface SharedColorScaleResult {
 export function buildSharedColorScale(
   tiers: Record<string, TierData>,
   metric: string,
+  colorStops: readonly string[] = SCALE_STOPS,
 ): SharedColorScaleResult {
   const allValues = TIER_ORDER.flatMap((tier) =>
     Object.values(tiers[tier] ?? {}).map((d) => (d[metric] as number) ?? 0),
@@ -65,7 +66,7 @@ export function buildSharedColorScale(
   const colorScale = d3
     .scaleSequential()
     .domain([sharedMin, sharedMax])
-    .interpolator(d3.interpolateRgbBasis(SCALE_STOPS));
+    .interpolator(d3.interpolateRgbBasis([...colorStops]));
 
   return { colorScale, sharedMin, sharedMax };
 }
