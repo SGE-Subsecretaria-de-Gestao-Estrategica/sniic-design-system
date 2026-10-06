@@ -1,6 +1,7 @@
 import type { ColumnSchema } from "../data/types";
 import { pillarPalettes } from "$lib/core/theme/tokens";
 import type { ChartId } from "../registry/layouts";
+import { channelAccepts } from "../registry/compatibility";
 import { isMarginPresetId } from "../registry/margins";
 import { clampParam, resolveFormat } from "../registry/params";
 import type { ChannelDef, ChartRegistry } from "../registry/types";
@@ -42,7 +43,7 @@ export function compatibleColumns(
   channel: ChannelDef,
   columns: readonly ColumnSchema[],
 ): ColumnSchema[] {
-  return columns.filter((c) => channel.accepts.includes(c.type));
+  return columns.filter((c) => channelAccepts(channel, c.type));
 }
 
 export function missingChannels(
@@ -69,7 +70,7 @@ export function pruneEncoding(
       reset.push({ channel: channelId, column, reason: "channel-removed" });
     } else if (!schemaColumn) {
       reset.push({ channel: channelId, column, reason: "column-removed" });
-    } else if (!channel.accepts.includes(schemaColumn.type)) {
+    } else if (!channelAccepts(channel, schemaColumn.type)) {
       reset.push({ channel: channelId, column, reason: "type-mismatch" });
     } else {
       next[channelId] = column;
@@ -144,7 +145,7 @@ export function setEncoding(
   } else {
     const column = spec.data.columns.find((c) => c.name === columnName);
     if (!column) throw new Error(`Unknown column "${columnName}".`);
-    if (!channel.accepts.includes(column.type)) {
+    if (!channelAccepts(channel, column.type)) {
       throw new Error(
         `Channel "${channelId}" does not accept ${column.type} column "${columnName}".`,
       );

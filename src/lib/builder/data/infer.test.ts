@@ -96,7 +96,7 @@ describe("inferSchema", () => {
       ["MG", "–"],
     );
     expect(inferSchema(t, ",")).toEqual([
-      { name: "uf", type: "text" },
+      { name: "uf", type: "uf" },
       { name: "total", type: "text" },
     ]);
   });

@@ -7,6 +7,7 @@
   import Fieldset from "../ui/Fieldset.svelte";
   import AggregationField from "./AggregationField.svelte";
   import ChoiceOption from "./ChoiceOption.svelte";
+  import NumberOption from "./NumberOption.svelte";
   import OrderOption from "./OrderOption.svelte";
   import TextOption from "./TextOption.svelte";
   import ToggleOption from "./ToggleOption.svelte";
@@ -99,6 +100,12 @@
       />
     {:else if option.kind === "toggle"}
       <ToggleOption
+        {option}
+        {stored}
+        onchange={(value) => onoption(option.id, value)}
+      />
+    {:else if option.kind === "number"}
+      <NumberOption
         {option}
         {stored}
         onchange={(value) => onoption(option.id, value)}

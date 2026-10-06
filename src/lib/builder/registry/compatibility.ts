@@ -1,6 +1,17 @@
 import { COLUMN_TYPE_LABELS } from "../data/labels";
-import type { ColumnSchema } from "../data/types";
+import type { ColumnSchema, ColumnType } from "../data/types";
 import type { ChannelDef } from "./types";
+
+/** Does a channel take a column of `type`? A UF column is text too. */
+export function channelAccepts(
+  channel: Pick<ChannelDef, "accepts">,
+  type: ColumnType,
+): boolean {
+  return (
+    channel.accepts.includes(type) ||
+    (type === "uf" && channel.accepts.includes("text"))
+  );
+}
 
 export type Compatibility = {
   compatible: boolean;
@@ -34,7 +45,7 @@ export function chartCompatibility(
     }
     const channel = required[index];
     for (const column of columns) {
-      if (used.has(column.name) || !channel.accepts.includes(column.type))
+      if (used.has(column.name) || !channelAccepts(channel, column.type))
         continue;
       assign(index + 1, new Set(used).add(column.name), unmatched);
     }

@@ -34,13 +34,19 @@ ChartSpec (spec/) ─────┘         │
 
 | File | What it does |
 |---|---|
-| `types.ts` | `ColumnSchema`, `Row`, `Table` (unique headers + raw string rows), `ColumnIssues` |
+| `types.ts` | `ColumnSchema`, `Row`, `Table` (unique headers + raw string rows), `ColumnIssues`. Column types: `number`, `date`, `text`, `uf` |
 | `file.ts` | `readCsvFile`: .csv / .txt, 5 MB limit, UTF-8 then Windows-1252 |
 | `table.ts` | `detectDelimiter`, `parseTable`, `FIELD_SEPARATORS` |
 | `coerce.ts` | `parseNumber(raw, decimal)` (thousands only in groups of three), `parseDate`, `coerceRows`, `coerceData`; `DECIMAL_SEPARATORS`, `DATE_PATTERNS` |
-| `infer.ts` | `detectDecimal`, `inferColumn` / `inferSchema` (≥ 90% parse rate; years are numbers; leading-zero codes are text), `columnAs`, `yearLikeColumns` |
+| `infer.ts` | `detectDecimal`, `inferColumn` / `inferSchema` (≥ 90% parse rate; years are numbers; leading-zero codes are text; siglas or state names are UFs), `columnAs`, `yearLikeColumns` |
+| `uf.ts` | `UFS` (sigla, name, IBGE code), `parseUf` (any of the three), `parseUfName` (sigla or name) |
 | `issues.ts` | `cellFails`, `columnIssues`, `describeIssues` |
 | `labels.ts` | `COLUMN_TYPE_LABELS` |
+
+A `uf` column is text that names a state. Its cells stay as written (so a
+bar chart shows the file's own names) and a cell that isn't a state is a
+failed cell, like "Brasil" in a total row. IBGE codes are numbers to the
+detection, so that column becomes a UF only when its type is set by hand.
 
 ## `spec/`
 
@@ -82,7 +88,8 @@ listed in `charts/index.ts` (`CHARTS`). `layouts.ts` derives `ChartLayouts`,
 
 A definition has:
 
-- `channels`: `id`, `label`, `accepts` (column types), `required`
+- `channels`: `id`, `label`, `accepts` (column types), `required`. A `uf`
+  column also fits a channel that accepts `text` (`channelAccepts`).
 - `keys` and `measures`: rows repeating the `keys` are combined, applying the
   spec's `aggregate` to the `measures`
 - `sizing` per axis: `free` (the user sets it), `fitted` (computed, unless the
@@ -108,11 +115,23 @@ the layout's type.
 | `lineDifference` | x, y, series (exactly two values) | G6.08: two lines over their difference |
 | `rangeRows` | category, group, value | G6.20 |
 | `bubbleColumns` | category, value, group (optional) | G6.12 |
+| `hexChoropleth` | uf, value, slice (optional) | G6.10: one value per state, coloured by steps |
+| `hexTwinBars` | uf, value, type (at most two values) | G6.09: up to two bars per state and a reference line |
 
 The two combined charts stack several `core` layouts on one
 `stackPanelsLayout` and return them together; the lower panel reuses
-`line.xAxis`, so it shares the line's breaks. Hex maps aren't here yet: `core`
-has the layouts but no component that draws them.
+`line.xAxis`, so it shares the line's breaks.
+
+The two hex maps (`hex.ts` holds what they share) are sized by the `radius`
+param. Their width is `fitted`: once the user sets a figure width, the radius
+is solved from it instead, and the height always follows (`derived`). The
+choropleth's ramp runs from the page colour through a colour pair, lighter
+first by default or in a chosen direction (`rampOrder`). The part of a twin
+bar above the reference line takes the accent colour only when asked
+(`accentOver`). The choropleth's `slice` channel is for
+files with several rows per state (state and capital, say): one slice is
+shown at a time, picked in the mapping step. Both warn about states with no
+row and about hexagons too small for the labels.
 
 ### Options (`options.ts`, `OptionDef`)
 
@@ -129,10 +148,11 @@ A chart's own settings, stored in `style.options`. Each declares:
 | `order` | list with ↑ / ↓ | category names; `when` ties it to a value of a choice |
 | `value` | select | one value of a channel's column |
 | `values` | checkboxes | a list of a channel's values; one `whole` checkbox (`true`) while the channel has no column |
+| `number` | number field | a number in the data's own unit (a reference value) |
 | `toggle` | checkbox | `true`, or nothing |
 | `text` | text field | the text |
 
-Readers: `readChoice`, `readText`, `readToggle`, `readStringList`,
+Readers: `readChoice`, `readText`, `readNumber`, `readToggle`, `readStringList`,
 `isPicked`, `readOrdering`. A stored value that no longer fits the data is
 ignored, never an error. The helpers the options panel uses are here too
 (`choiceValue`, `ordersOpenedBy`, `pickedValues`, `togglePicked`, `moveItem`,
@@ -161,8 +181,10 @@ breaks the x axis after 2021, for dates or years as numbers).
 ## `encoding/`
 
 `createChannelReader(encoding, columns)` gives strict accessors by channel
-(`has`, `text`, `number`, `x`). They throw `MissingValueError` on `null`, so
-incomplete rows are dropped first (`dropIncomplete`).
+(`has`, `text`, `number`, `x`, `uf`). They throw `MissingValueError` on
+`null`, so incomplete rows are dropped first (`dropIncomplete`). `uf` gives
+the state's sigla whatever the file wrote; `text` on a UF column gives the
+cell as written.
 
 ## `resolve/`
 
@@ -205,7 +227,7 @@ columns that ended up unused.
 | `style/` | Step 4: `StyleStep` composes `PillarPicker`, the chart options, `SizeFields` (page-grid width, sizes, margins), `ParamFields`, and one `NumberFormatFields` per format |
 | `preview/` | `ChartPreview` draws any resolution. The dashed frame is the figure's exact size; `overflow.ts` measures what is drawn outside it and says so. |
 | `ChartView.svelte` | `<ChartView chart id style>`: theme from the pillar, the `<Svg>`, and one branch per chart (a chart without a branch fails the type check) |
-| `views/` | One `<Name>View` per chart, props `ViewProps<L>`. It owns the chart's look, taken from its Eixo 6 story. Shared: `colors.ts`, `lines.ts`, `XAxisFrame.svelte`. |
+| `views/` | One `<Name>View` per chart, props `ViewProps<L>`. It owns the chart's look, taken from its Eixo 6 story. Shared: `colors.ts` (series and group colours, the choropleth ramp, the label colour on a filled tile), `lines.ts`, `XAxisFrame.svelte`. |
 | `ui/` | The wizard's own controls: `Field`, `Select`, `Input`, `Checkbox`, `Button`, `Fieldset`, and `tokens.css` (`--builder-*`) |
 
 ## Adding a chart
@@ -219,7 +241,8 @@ columns that ended up unused.
 
 - Unit tests sit beside the code (`*.test.ts`): `npm run test:unit`.
 - Stories are in `src/stories/dist/builder/` (git-ignored). `Builder/Wizard`
-  has `Vazio`, `Com dados de exemplo` and `Com dados longos` for manual checks
-  (keep them without `play`), and `Fluxo completo`, `Dois na mesma página`,
-  `Opções dos gráficos` and `Linhas e gráficos combinados` as `play` tests:
+  has `Vazio`, `Com dados de exemplo`, `Com dados longos` and
+  `Com dados por UF` for manual checks (keep them without `play`), and
+  `Fluxo completo`, `Dois na mesma página`, `Opções dos gráficos`,
+  `Linhas e gráficos combinados` and `Mapas de UFs` as `play` tests:
   `npx vitest run --project storybook src/stories/dist/builder`.

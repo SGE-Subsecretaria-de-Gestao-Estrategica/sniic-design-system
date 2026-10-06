@@ -72,7 +72,7 @@
         label="{label} (px)"
         inline
         note={fitted && style[axis] === null && figure
-          ? `Agora: ${Math.round(figure[axis])} px, calculada a partir dos dados.`
+          ? `Agora: ${Math.round(figure[axis])} px, calculada automaticamente.`
           : undefined}
       >
         <Input
@@ -91,7 +91,7 @@
     {:else}
       <p>
         {label}: {figure ? `${Math.round(figure[axis])} px` : "—"},
-        {sizing[axis] === "derived" ? "calculada a partir dos dados" : "fixa"}.
+        {sizing[axis] === "derived" ? "calculada automaticamente" : "fixa"}.
       </p>
     {/if}
   {/each}

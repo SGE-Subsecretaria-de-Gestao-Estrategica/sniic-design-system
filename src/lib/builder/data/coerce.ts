@@ -7,6 +7,7 @@ import type {
   RawRow,
   Row,
 } from "./types";
+import { parseUf } from "./uf";
 
 export const DECIMAL_SEPARATORS: DecimalSeparator[] = [",", "."];
 export const DATE_PATTERNS: DatePattern[] = [
@@ -95,6 +96,11 @@ export function coerceCell(
     case "text": {
       const text = raw?.trim();
       return text ? text : null;
+    }
+    case "uf": {
+      // Kept as written, so a chart that only needs text shows the file's own names.
+      const text = raw?.trim();
+      return text && parseUf(text) ? text : null;
     }
   }
 }

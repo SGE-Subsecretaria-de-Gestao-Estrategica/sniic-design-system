@@ -48,6 +48,7 @@ const FAILURE_LABEL: Record<
 > = {
   number: ["valor não numérico", "valores não numéricos"],
   date: ["valor que não é data", "valores que não são datas"],
+  uf: ["valor que não é UF", "valores que não são UFs"],
 };
 
 /** e.g. `12 valores não numéricos: “–”, “n/d”` */

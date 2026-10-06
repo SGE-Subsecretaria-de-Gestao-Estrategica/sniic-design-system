@@ -1,4 +1,5 @@
-export type ColumnType = "number" | "date" | "text";
+/** `uf`: text that names a Brazilian state (sigla, name or IBGE code). */
+export type ColumnType = "number" | "date" | "text" | "uf";
 
 export type DatePattern = "yyyy" | "mm/yyyy" | "dd/mm/yyyy" | "yyyy-mm-dd";
 

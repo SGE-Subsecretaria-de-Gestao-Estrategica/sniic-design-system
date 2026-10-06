@@ -99,6 +99,14 @@ export function readText(options: Options, id: string): string | undefined {
   return typeof value === "string" && value.trim() ? value.trim() : undefined;
 }
 
+/** A stored number; `undefined` when empty or not finite. */
+export function readNumber(options: Options, id: string): number | undefined {
+  const value = options[id];
+  return typeof value === "number" && Number.isFinite(value)
+    ? value
+    : undefined;
+}
+
 export function readToggle(options: Options, id: string): boolean {
   return options[id] === true;
 }

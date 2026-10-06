@@ -28,6 +28,7 @@
     { value: "number", label: "Número" },
     { value: "date", label: "Data" },
     { value: "text", label: "Texto" },
+    { value: "uf", label: "UF" },
   ];
 
   const visible = $derived(table.rows.slice(0, PREVIEW_ROWS));

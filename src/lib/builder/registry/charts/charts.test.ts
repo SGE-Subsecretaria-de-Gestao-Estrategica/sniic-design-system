@@ -11,6 +11,7 @@ import {
   setData,
   setEncoding,
   setOption,
+  setParam,
 } from "../../spec/spec";
 
 function resolve(
@@ -311,6 +312,180 @@ describe("RAIS break", () => {
   });
 });
 
+const UF_COLUMNS: ColumnSchema[] = [
+  { name: "UF", type: "uf" },
+  { name: "Escala", type: "text" },
+  { name: "valor", type: "number" },
+];
+const SIGLAS = ["AC", "SP", "RJ", "DF"];
+const ufRows = ["Estadual", "Municipal"].flatMap((Escala, e) =>
+  SIGLAS.map((UF, i) => ({ UF, Escala, valor: `0,${e + 1}${i}` })),
+);
+
+describe("hexChoropleth", () => {
+  it("sizes the map by the hexagon radius and steps one slice of the data", () => {
+    const { result } = resolve("hexChoropleth", UF_COLUMNS, ufRows, {
+      slice: "Escala",
+    });
+    if (result.view.chart !== "hexChoropleth") throw new Error();
+    const { layout } = result.view;
+    // 12,5 radii wide, plus the margins
+    expect(layout.width).toBeCloseTo(12.5 * 22);
+    expect(result.figure.width).toBe(323);
+    expect(result.solved).toEqual({});
+    expect(layout.slice).toBe("Estadual");
+    expect(layout.data.map((d) => d.key)).toEqual(SIGLAS);
+    expect(layout.domain).toEqual([0, 0.13]);
+    expect(layout.steps).toBe(10);
+    expect(result.warnings.join(" ")).toMatch(/^Sem dados para: AL, AM, AP/);
+  });
+
+  it("shows the chosen slice, and starts at the lowest value when asked", () => {
+    const { spec } = resolve("hexChoropleth", UF_COLUMNS, ufRows, {
+      slice: "Escala",
+    });
+    let next = setOption(spec, "sliceValue", "Municipal", defaultRegistry).spec;
+    next = setOption(next, "fromMin", true, defaultRegistry).spec;
+    const result = resolveChart(
+      next,
+      coerceRows(ufRows, UF_COLUMNS, ","),
+      defaultRegistry,
+    );
+    if (result.status !== "ready" || result.view.chart !== "hexChoropleth")
+      throw new Error();
+    expect(result.view.layout.slice).toBe("Municipal");
+    expect(result.view.layout.domain).toEqual([0.2, 0.23]);
+  });
+
+  it("reads state names and combines repeated states", () => {
+    const columns: ColumnSchema[] = [
+      { name: "estado", type: "uf" },
+      { name: "valor", type: "number" },
+    ];
+    const { result } = resolve("hexChoropleth", columns, [
+      { estado: "São Paulo", valor: "1" },
+      { estado: "São Paulo", valor: "2" },
+      { estado: "Acre", valor: "5" },
+      { estado: "Brasil", valor: "99" },
+    ]);
+    if (result.view.chart !== "hexChoropleth") throw new Error();
+    expect(result.dropped).toBe(1);
+    expect(result.combined).toBe(1);
+    expect(result.view.layout.data.map((d) => [d.key, d.value])).toEqual([
+      ["SP", 3],
+      ["AC", 5],
+    ]);
+  });
+
+  it("explains a state written in two ways", () => {
+    const columns: ColumnSchema[] = [
+      { name: "estado", type: "uf" },
+      { name: "valor", type: "number" },
+    ];
+    expect(() =>
+      resolve("hexChoropleth", columns, [
+        { estado: "SP", valor: "1" },
+        { estado: "São Paulo", valor: "2" },
+      ]),
+    ).toThrow(/A UF SP aparece mais de uma vez/);
+  });
+
+  it("follows the radius param, until a width takes its place", () => {
+    const { spec } = resolve("hexChoropleth", UF_COLUMNS, ufRows, {
+      slice: "Escala",
+    });
+    const rows = coerceRows(ufRows, UF_COLUMNS, ",");
+    const bigger = resolveChart(
+      setParam(spec, "radius", 40, defaultRegistry).spec,
+      rows,
+      defaultRegistry,
+    );
+    if (bigger.status !== "ready") throw new Error();
+    expect(bigger.figure.width).toBe(12.5 * 40 + 48);
+
+    const fitted = resolveChart(
+      { ...spec, style: { ...spec.style, width: 581.1 } },
+      rows,
+      defaultRegistry,
+    );
+    if (fitted.status !== "ready") throw new Error();
+    expect(fitted.figure.width).toBe(581.1);
+    expect(fitted.solved.radius).toBeCloseTo((581.1 - 48) / 12.5);
+  });
+
+  it("warns when the tiles get too small for their labels", () => {
+    const { spec } = resolve("hexChoropleth", UF_COLUMNS, ufRows, {
+      slice: "Escala",
+    });
+    const small = resolveChart(
+      { ...spec, style: { ...spec.style, width: 182.4 } },
+      coerceRows(ufRows, UF_COLUMNS, ","),
+      defaultRegistry,
+    );
+    if (small.status !== "ready") throw new Error();
+    expect(small.warnings.join(" ")).toMatch(/11 px de raio/);
+  });
+});
+
+describe("hexTwinBars", () => {
+  const mapped = { type: "Escala" };
+
+  it("draws up to two bars per state, tied to their type", () => {
+    const { result } = resolve("hexTwinBars", UF_COLUMNS, ufRows, mapped);
+    if (result.view.chart !== "hexTwinBars") throw new Error();
+    const { layout } = result.view;
+    // 13,01 radii wide with the regions apart by 0,6, plus the margins
+    expect(result.figure.width).toBe(633.5);
+    expect(layout.types).toEqual(["Estadual", "Municipal"]);
+    expect(layout.data).toHaveLength(4);
+    expect(layout.data[0].bars.map((b) => b.type)).toEqual([
+      "Estadual",
+      "Municipal",
+    ]);
+    expect(layout.data[0].threshold).toBeUndefined();
+  });
+
+  it("takes the first bar and the reference line from the options", () => {
+    const { spec } = resolve("hexTwinBars", UF_COLUMNS, ufRows, mapped);
+    let next = setOption(spec, "firstType", "Municipal", defaultRegistry).spec;
+    next = setOption(next, "threshold", 0.12, defaultRegistry).spec;
+    const result = resolveChart(
+      next,
+      coerceRows(ufRows, UF_COLUMNS, ","),
+      defaultRegistry,
+    );
+    if (result.status !== "ready" || result.view.chart !== "hexTwinBars")
+      throw new Error();
+    const { layout } = result.view;
+    expect(layout.types).toEqual(["Municipal", "Estadual"]);
+    const sp = layout.data.find((d) => d.key === "SP")!;
+    expect(sp.threshold).toBeDefined();
+    expect(sp.bars.map((b) => b.isOverThreshold)).toEqual([true, false]);
+  });
+
+  it("explains that it takes at most two types", () => {
+    const rows = ["A", "B", "C"].map((Escala) => ({
+      UF: "SP",
+      Escala,
+      valor: "1",
+    }));
+    expect(() => resolve("hexTwinBars", UF_COLUMNS, rows, mapped)).toThrow(
+      /até dois tipos por UF; a coluna escolhida tem 3/,
+    );
+  });
+
+  it("warns when the bars don't fit the tiles", () => {
+    const { spec } = resolve("hexTwinBars", UF_COLUMNS, ufRows, mapped);
+    const narrow = resolveChart(
+      { ...spec, style: { ...spec.style, width: 381.7 } },
+      coerceRows(ufRows, UF_COLUMNS, ","),
+      defaultRegistry,
+    );
+    if (narrow.status !== "ready") throw new Error();
+    expect(narrow.warnings.join(" ")).toMatch(/barras estão largas demais/);
+  });
+});
+
 describe("drawing-only options", () => {
   it("don't reach the layout: it is the same with or without them", () => {
     const { spec } = resolve("lineSeries", SERIES, seriesRows, {
@@ -346,5 +521,15 @@ describe("drawing-only options", () => {
       "endNote",
     ]);
     expect(drawingOnly("horizontalBars")).toEqual([]);
+    expect(drawingOnly("hexChoropleth")).toEqual([
+      "ramp",
+      "rampOrder",
+      "legendValues",
+    ]);
+    expect(drawingOnly("hexTwinBars")).toEqual([
+      "accentOver",
+      "thresholdName",
+      "legend",
+    ]);
   });
 });

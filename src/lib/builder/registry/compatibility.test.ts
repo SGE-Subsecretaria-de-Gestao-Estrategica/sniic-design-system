@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { ColumnSchema } from "../data/types";
 import { CHARTS } from "./charts";
-import { chartCompatibility } from "./compatibility";
+import { channelAccepts, chartCompatibility } from "./compatibility";
 import type { ChannelDef } from "./types";
 
 const text = (name: string): ColumnSchema => ({ name, type: "text" });
 const number = (name: string): ColumnSchema => ({ name, type: "number" });
+const uf = (name: string): ColumnSchema => ({ name, type: "uf" });
 
 const channelsOf = (id: string) => CHARTS.find((c) => c.id === id)!.channels;
 
@@ -49,5 +50,38 @@ describe("chartCompatibility", () => {
     expect(
       chartCompatibility(channels, [number("n"), text("t")]).compatible,
     ).toBe(true);
+  });
+});
+
+describe("UF columns", () => {
+  it("are text too, but text is not a UF", () => {
+    expect(channelAccepts({ accepts: ["text"] }, "uf")).toBe(true);
+    expect(channelAccepts({ accepts: ["uf"] }, "text")).toBe(false);
+    expect(channelAccepts({ accepts: ["number"] }, "uf")).toBe(false);
+  });
+
+  it("feed charts that ask for text", () => {
+    expect(
+      chartCompatibility(channelsOf("horizontalBars"), [uf("UF"), number("v")])
+        .compatible,
+    ).toBe(true);
+  });
+
+  it("are what a hex map needs", () => {
+    const withText = chartCompatibility(channelsOf("hexChoropleth"), [
+      text("estado"),
+      number("v"),
+    ]);
+    expect(withText.compatible).toBe(false);
+    expect(withText.reason).toBe("Faltam colunas para: UF (UF).");
+    expect(
+      chartCompatibility(channelsOf("hexChoropleth"), [uf("UF"), number("v")])
+        .compatible,
+    ).toBe(true);
+    // The type of the bars can't be the UF column itself.
+    expect(
+      chartCompatibility(channelsOf("hexTwinBars"), [uf("UF"), number("v")])
+        .compatible,
+    ).toBe(false);
   });
 });

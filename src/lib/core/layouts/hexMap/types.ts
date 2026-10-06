@@ -21,20 +21,20 @@ export type GridCoordinate = {
 export type UFTile = GridCoordinate & {
   ufCode: string;
   region: BrazilianRegion;
-}
+};
 
 export type RegionLayoutOffset = {
   region: BrazilianRegion;
   dx: number;
   dy: number;
-}
+};
 
 export type MapTile = {
   ufCode: string;
   region: BrazilianRegion;
   /** Centre of the hexagon, in plotting-area coordinates. */
   position: Point;
-}
+};
 
 // -----------------------------------------------------------------------------
 // Base Layout
@@ -89,6 +89,8 @@ export type TwinBarsLayoutConfig<D> = BaseLayoutConfig<D> &
   Partial<TwinBarsSpacing> &
   ValueAccessor<D> & {
     getType: (d: D) => string;
+    /** Types listed here come first, in this order; the rest follow as in the data. */
+    typeOrder?: readonly string[];
     /** Values above it get a second (overflow) segment and a threshold line. */
     threshold?: number;
   };
@@ -100,16 +102,19 @@ export type TwinBarSegment = {
 
 export type ThresholdLine = LineSegment;
 
-/** Tile-local. `index`: position in its tile. */
-export type TwinBarItem<T> = Point & LayoutItem<T> & {
-  value: number;
-  width: number;
-  height: number;
-  segments: TwinBarSegment[];
-  isOverThreshold: boolean;
-  /** Under the bar's base, tile-local. */
-  label: LabelPlacement;
-};
+/** Tile-local. `index`: position in its tile; `typeIndex`: position of its type in `layout.types`. */
+export type TwinBarItem<T> = Point &
+  LayoutItem<T> & {
+    type: string;
+    typeIndex: number;
+    value: number;
+    width: number;
+    height: number;
+    segments: TwinBarSegment[];
+    isOverThreshold: boolean;
+    /** Under the bar's base, tile-local. */
+    label: LabelPlacement;
+  };
 
 export type TwinBarDatum<T> = MapTile & {
   key: string;
@@ -126,6 +131,10 @@ export type TwinBarDatum<T> = MapTile & {
 export type TwinBarsLayout<T> = LayoutBox & {
   tiles: Map<string, MapTile>;
   pathData: string;
+  /** Every type in the data, in drawing order. */
+  types: string[];
+  /** UF name in a tile's top-left corner, tile-local (the same on every tile). */
+  nameLabel: LabelPlacement;
   yScale: ScaleLinear<number, number>;
   thresholdHeight: number;
   data: TwinBarDatum<T>[];
@@ -135,6 +144,7 @@ export type TwinBarsLayout<T> = LayoutBox & {
 // Choropleth Layout
 // -----------------------------------------------------------------------------
 
+/** A colour ramp cut into steps: see `choroplethStepColors`. */
 export type ChoroplethColorConfig = {
   colors: [string, string, string];
   steps?: number;
@@ -154,13 +164,16 @@ export type ChoroplethLabelSpacing = ChoroplethSpacing;
 export type ChoroplethLayoutConfig<D> = BaseLayoutConfig<D> &
   Partial<ChoroplethSpacing> &
   ValueAccessor<D> & {
-    color: ChoroplethColorConfig;
+    /** Number of colour steps the domain is cut into. Default 7. */
+    steps?: number;
+    /** Default: the extent of the data. */
     domain?: [number, number];
   };
 
 export type ChoroplethDatum<T> = BaseLayoutDatum<T> & {
   value: number;
-  color: string;
+  /** Its colour step, 0 = the lowest. Colours belong to the component. */
+  step: number;
   /** UF name above the centre and value below it, tile-local. */
   labels: { name: LabelPlacement; value: LabelPlacement };
 };
@@ -168,8 +181,10 @@ export type ChoroplethDatum<T> = BaseLayoutDatum<T> & {
 export type ChoroplethLayout<T> = LayoutBox & {
   tiles: Map<string, MapTile>;
   pathData: string;
-  colorScale: ScaleQuantize<string>;
-  stepColors: string[];
+  steps: number;
+  stepScale: ScaleQuantize<number>;
   domain: [number, number];
+  /** UF name on a tile without data, tile-local. */
+  emptyLabel: LabelPlacement;
   data: ChoroplethDatum<T>[];
 };

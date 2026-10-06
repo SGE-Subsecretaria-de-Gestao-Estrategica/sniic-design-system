@@ -6,6 +6,7 @@ import type {
   DecimalSeparator,
   Table,
 } from "./types";
+import { parseUfName } from "./uf";
 
 const SAMPLE_ROWS = 1000;
 const MIN_PARSE_RATE = 0.9;
@@ -67,6 +68,10 @@ export function inferColumn(
     MIN_PARSE_RATE
   ) {
     return { name, type: "date", datePattern };
+  }
+  // IBGE codes alone look like any other numbers, so they are a choice made by hand.
+  if (parseRate(values, (v) => parseUfName(v) !== null) >= MIN_PARSE_RATE) {
+    return { name, type: "uf" };
   }
   return { name, type: "text" };
 }

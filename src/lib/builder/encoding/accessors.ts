@@ -7,6 +7,7 @@ import type {
   Row,
   ValueOf,
 } from "../data/types";
+import { parseUf } from "../data/uf";
 import type { Encoding } from "../spec/types";
 
 export class MissingValueError extends Error {
@@ -24,6 +25,7 @@ const isOfType: { [T in ColumnType]: (v: CellValue) => v is ValueOf<T> } = {
   number: (v): v is number => typeof v === "number",
   date: (v): v is Date => v instanceof Date,
   text: (v): v is string => typeof v === "string",
+  uf: (v): v is string => typeof v === "string",
 };
 
 export function columnAccessor<T extends ColumnType>(
@@ -40,7 +42,10 @@ export function columnAccessor<T extends ColumnType>(
 
 export type ChannelReader = {
   has(channel: string): boolean;
+  /** Any text column, a UF column included (as written in the file). */
   text(channel: string): Accessor<Row, string>;
+  /** A UF column, as the state's sigla. */
+  uf(channel: string): Accessor<Row, string>;
   number(channel: string): Accessor<Row, number>;
   x(channel: string): Accessor<Row, XValue>;
 };
@@ -71,11 +76,20 @@ export function createChannelReader(
 
   return {
     has: (channel) => !!encoding[channel],
-    text: (channel) => typed(channel, "text"),
+    text: (channel) =>
+      typed(channel, single(channel).type === "uf" ? "uf" : "text"),
+    uf: (channel) => {
+      const read = typed(channel, "uf");
+      return (row) => {
+        const code = parseUf(read(row));
+        if (!code) throw new MissingValueError(single(channel).name);
+        return code;
+      };
+    },
     number: (channel) => typed(channel, "number"),
     x: (channel) => {
       const column = single(channel);
-      if (column.type === "text") {
+      if (column.type === "text" || column.type === "uf") {
         throw new Error(
           `Channel "${channel}" needs numbers or dates; "${column.name}" is text.`,
         );

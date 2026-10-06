@@ -8,6 +8,8 @@
   import { createFormatter } from "../spec/format";
   import type { StyleSpec } from "../spec/types";
   import BubbleColumnsView from "./views/BubbleColumnsView.svelte";
+  import HexChoroplethView from "./views/HexChoroplethView.svelte";
+  import HexTwinBarsView from "./views/HexTwinBarsView.svelte";
   import HorizontalBarsView from "./views/HorizontalBarsView.svelte";
   import LineBubbleRowView from "./views/LineBubbleRowView.svelte";
   import LineDifferenceView from "./views/LineDifferenceView.svelte";
@@ -67,6 +69,10 @@
         <RangeRowsView layout={view.layout} {...shared} />
       {:else if view.chart === "bubbleColumns"}
         <BubbleColumnsView layout={view.layout} {...shared} />
+      {:else if view.chart === "hexChoropleth"}
+        <HexChoroplethView layout={view.layout} {...shared} />
+      {:else if view.chart === "hexTwinBars"}
+        <HexTwinBarsView layout={view.layout} {...shared} />
       {:else}
         {unhandled(view)}
       {/if}

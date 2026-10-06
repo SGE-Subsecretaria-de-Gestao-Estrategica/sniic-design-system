@@ -42,6 +42,11 @@ export { default as DifferenceStems } from './components/differenceStems/Differe
 // Labels: draw a layout's LabelPlacement with a theme text role
 export { default as PlacedLabel } from './components/label/PlacedLabel.svelte';
 
+// Hex map of Brazilian states
+export { default as HexTiles } from './components/hexMap/HexTiles.svelte';
+export { default as HexChoropleth } from './components/hexMap/HexChoropleth.svelte';
+export { default as HexTwinBars } from './components/hexMap/HexTwinBars.svelte';
+
 // Range rows (dumbbell)
 export { default as RangeRows } from './components/rangeRows/RangeRows.svelte';
 
@@ -57,6 +62,7 @@ export { default as Circle } from './components/markers/Circle.svelte';
 // Legend
 export { default as Legend } from './components/legend/Legend.svelte';
 export { default as LegendChips } from './components/legend/LegendChips.svelte';
+export { default as LegendSteps } from './components/legend/LegendSteps.svelte';
 
 // Annotation
 export { default as ValueCallout } from './components/annotation/ValueCallout.svelte';
@@ -187,6 +193,31 @@ export type {
   RangeRow,
   RangeRowsLayout,
 } from './layouts/rangeRows/types.js';
+
+export {
+  choroplethLayout,
+  choroplethStepColors,
+  twinBarsLayout,
+  hexRadiusForWidth,
+  CHOROPLETH_DEFAULTS,
+  CHOROPLETH_COLOR_DEFAULTS,
+  TWIN_BARS_DEFAULTS,
+} from './layouts/hexMap/index.js';
+export type {
+  BrazilianRegion,
+  MapTile,
+  TwinBarsSpacing,
+  TwinBarsLayoutConfig,
+  TwinBarSegment,
+  TwinBarItem,
+  TwinBarDatum,
+  TwinBarsLayout,
+  ChoroplethColorConfig,
+  ChoroplethSpacing,
+  ChoroplethLayoutConfig,
+  ChoroplethDatum,
+  ChoroplethLayout,
+} from './layouts/hexMap/types.js';
 
 // Constants
 export { default as Orientation } from './constants/orientation.js';

@@ -13,6 +13,7 @@ import {
   moveItem,
   ordersOpenedBy,
   pickedValues,
+  readNumber,
   readOrdering,
   readText,
   readToggle,
@@ -178,6 +179,13 @@ describe("option helpers", () => {
     expect(moveItem(["A", "B", "C"], 2, -1)).toEqual(["A", "C", "B"]);
     expect(moveItem(["A", "B", "C"], 0, -1)).toEqual(["A", "B", "C"]);
     expect(moveItem(["A", "B", "C"], 2, 1)).toEqual(["A", "B", "C"]);
+  });
+
+  it("reads a number, and anything else as nothing", () => {
+    expect(readNumber({ threshold: 0.4 }, "threshold")).toBe(0.4);
+    expect(readNumber({ threshold: 0 }, "threshold")).toBe(0);
+    expect(readNumber({ threshold: "0.4" }, "threshold")).toBeUndefined();
+    expect(readNumber({}, "threshold")).toBeUndefined();
   });
 
   it("reads a text trimmed, and empty as nothing", () => {

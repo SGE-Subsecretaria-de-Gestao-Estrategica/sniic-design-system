@@ -63,6 +63,8 @@ export type OptionDef<L> = {
   | { kind: "value"; channel: string; none?: string }
   /** Free text drawn on the chart (a caption, a name). */
   | { kind: "text"; placeholder?: string }
+  /** A number typed in the data's own unit (a reference value); `note` goes under the field. */
+  | { kind: "number"; placeholder?: string; note?: string }
   /** On or off. Stored as `true`; off removes the value. */
   | { kind: "toggle" }
   /**

@@ -1,42 +1,44 @@
 import * as d3 from "d3";
-import chroma from "chroma-js";
-import type { ChoroplethColorConfig, ChoroplethDatum, ChoroplethLayout, ChoroplethLayoutConfig } from "./types";
+import type {
+  ChoroplethDatum,
+  ChoroplethLayout,
+  ChoroplethLayoutConfig,
+} from "./types";
 import { baseLayout } from "./baseLayout";
-import { placeOnSide } from "../labels";
-import { CHOROPLETH_COLOR_DEFAULTS, resolveChoroplethSpacing } from "./defaults";
+import { placeCentered, placeOnSide } from "../labels";
+import {
+  CHOROPLETH_COLOR_DEFAULTS,
+  resolveChoroplethSpacing,
+} from "./defaults";
 
-function buildStepColors({
-  colors,
-  steps = CHOROPLETH_COLOR_DEFAULTS.steps,
-  mode = CHOROPLETH_COLOR_DEFAULTS.mode,
-}: ChoroplethColorConfig): string[] {
-  return chroma.scale(colors).mode(mode).colors(steps);
-}
-
-function resolveColorScale<D>(
+function resolveStepScale<D>(
   raw: D[],
-  config: Pick<ChoroplethLayoutConfig<D>, "getValue" | "color" | "domain">
-): { colorScale: d3.ScaleQuantize<string>; stepColors: string[]; domain: [number, number] } {
-  const { getValue, color, domain } = config;
-
-  const [min = 0, max = 0] = domain ?? (d3.extent(raw, getValue) as [number, number]);
+  { getValue, domain, steps }: ChoroplethLayoutConfig<D>,
+) {
+  const count = Math.max(
+    1,
+    Math.round(steps ?? CHOROPLETH_COLOR_DEFAULTS.steps),
+  );
+  const [min = 0, max = 0] =
+    domain ?? (d3.extent(raw, getValue) as [number, number]);
   const resolvedDomain: [number, number] = [min, max];
-
-  const stepColors = buildStepColors(color);
-  const colorScale = d3.scaleQuantize<string>().domain(resolvedDomain).range(stepColors);
-
-  return { colorScale, stepColors, domain: resolvedDomain };
+  const stepScale = d3
+    .scaleQuantize<number>()
+    .domain(resolvedDomain)
+    .range(d3.range(count));
+  return { stepScale, steps: count, domain: resolvedDomain };
 }
 
+/** Per UF tile, the step of its value on a stepped scale, with its two labels. */
 export function choroplethLayout<D>(
   raw: D[],
-  config: ChoroplethLayoutConfig<D>
+  config: ChoroplethLayoutConfig<D>,
 ): ChoroplethLayout<D> {
   const spacing = resolveChoroplethSpacing(config);
   const { radius, offsetK = 0, getUf, getValue } = config;
 
   const layout = baseLayout(raw, { getUf, radius, offsetK });
-  const { colorScale, stepColors, domain } = resolveColorScale(raw, config);
+  const { stepScale, steps, domain } = resolveStepScale(raw, config);
 
   const centre = { x: 0, y: 0 };
   const labels = {
@@ -46,15 +48,16 @@ export function choroplethLayout<D>(
 
   const data: ChoroplethDatum<D>[] = layout.data.map((d) => {
     const value = getValue(d.data);
-    return { ...d, value, color: colorScale(value), labels };
+    return { ...d, value, step: stepScale(value), labels };
   });
 
   return {
     tiles: layout.tiles,
     pathData: layout.pathData,
-    colorScale,
-    stepColors,
+    steps,
+    stepScale,
     domain,
+    emptyLabel: placeCentered(centre),
     data,
     width: layout.width,
     height: layout.height,

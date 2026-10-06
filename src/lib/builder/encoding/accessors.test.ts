@@ -52,6 +52,25 @@ describe("createChannelReader", () => {
   });
 });
 
+describe("UF columns", () => {
+  const read = createChannelReader({ uf: "estado", category: "estado" }, [
+    { name: "estado", type: "uf" },
+  ]);
+
+  it("read as the sigla, or as the text in the file", () => {
+    expect(read.uf("uf")({ estado: "São Paulo" })).toBe("SP");
+    expect(read.uf("uf")({ estado: "35" })).toBe("SP");
+    expect(read.text("category")({ estado: "São Paulo" })).toBe("São Paulo");
+  });
+
+  it("need a column typed as UF", () => {
+    const text = createChannelReader({ uf: "estado" }, [
+      { name: "estado", type: "text" },
+    ]);
+    expect(() => text.uf("uf")).toThrow(/is text/);
+  });
+});
+
 describe("dropIncomplete", () => {
   it("drops rows with a missing value in the given columns", () => {
     const rows: Row[] = [
