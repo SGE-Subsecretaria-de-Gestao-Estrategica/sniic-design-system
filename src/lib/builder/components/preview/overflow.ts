@@ -38,7 +38,6 @@ const SIDES: [keyof Overflow, string][] = [
   ["bottom", "embaixo"],
 ];
 
-/** pt-BR sentence for the preview, or `null` when everything is inside. */
 export function describeOverflow(overflow: Overflow | null): string | null {
   if (!overflow) return null;
   const parts = SIDES.filter(([side]) => overflow[side] > TOLERANCE).map(

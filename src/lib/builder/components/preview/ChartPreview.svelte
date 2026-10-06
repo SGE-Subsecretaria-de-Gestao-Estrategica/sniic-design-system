@@ -39,7 +39,6 @@
 
 <figure class="chart-preview">
   {#if resolution.status === "ready"}
-    <!-- Padded by what sticks out on the left and top, which a scroll area can't reach. -->
     <div
       class="holder"
       bind:this={holder}
@@ -86,7 +85,6 @@
     padding: 20px;
     overflow: auto;
     font-family: var(--builder-font);
-    background: #fff;
     border: 1px solid var(--builder-line);
     border-radius: var(--builder-radius);
   }

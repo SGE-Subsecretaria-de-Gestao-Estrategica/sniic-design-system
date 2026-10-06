@@ -14,8 +14,7 @@ import { FULL_PAGE_WIDTH } from "../widths";
 export const lineSeriesChart = defineChart({
   id: "lineSeries",
   label: "Linhas",
-  description:
-    "Mostra a evolução de um valor no tempo, com uma linha por série.",
+  group: "lines",
   channels: [
     { id: "x", label: "Eixo X", accepts: ["date", "number"], required: true },
     { id: "y", label: "Valor", accepts: ["number"], required: true },
@@ -51,7 +50,7 @@ export const lineSeriesChart = defineChart({
   ],
   sizing: { width: "free", height: "free" },
   defaultSize: { width: FULL_PAGE_WIDTH, height: 320 },
-  margin: "namesRight",
+  margin: "right",
   build: (rows, { read, box, options, params }) => {
     const getX = read.x("x");
     return lineSeriesLayout(rows, {

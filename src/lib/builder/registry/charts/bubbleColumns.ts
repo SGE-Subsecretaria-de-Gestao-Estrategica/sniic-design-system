@@ -14,8 +14,7 @@ import { defineChart } from "../registry";
 export const bubbleColumnsChart = defineChart({
   id: "bubbleColumns",
   label: "Colunas de bolhas",
-  description:
-    "Compara proporções por categoria, com uma coluna de círculos por grupo.",
+  group: "categories",
   channels: [
     { id: "category", label: "Categoria", accepts: ["text"], required: true },
     { id: "value", label: "Valor", accepts: ["number"], required: true },
@@ -51,7 +50,7 @@ export const bubbleColumnsChart = defineChart({
   ],
   sizing: { width: "derived", height: "derived" },
   defaultSize: { width: 480, height: 400 },
-  margin: "labelsBothSides",
+  margin: "both",
   build: (rows, { read, options, params }) => {
     const getGroup = read.has("group") ? read.text("group") : undefined;
     // A stored main group may be gone after the data or mapping changed.

@@ -52,7 +52,7 @@ describe("margin presets", () => {
   it("have unique ids and can be looked up", () => {
     const ids = MARGIN_PRESETS.map((p) => p.id);
     expect(new Set(ids).size).toBe(ids.length);
-    expect(isMarginPresetId("namesRight")).toBe(true);
+    expect(isMarginPresetId("right")).toBe(true);
     expect(isMarginPresetId("nope")).toBe(false);
     expect(marginOf("even")).toEqual({
       top: 24,

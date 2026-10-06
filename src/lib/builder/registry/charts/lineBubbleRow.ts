@@ -16,9 +16,8 @@ import { FULL_PAGE_WIDTH } from "../widths";
 /** A line panel over a row of bubbles on the same x axis (G6.05). */
 export const lineBubbleRowChart = defineChart({
   id: "lineBubbleRow",
-  label: "Linha com bolhas",
-  description:
-    "Uma linha no tempo e, abaixo dela, um segundo valor em círculos proporcionais.",
+  label: "Linhas com bolhas",
+  group: "lines",
   channels: [
     { id: "x", label: "Eixo X", accepts: ["date", "number"], required: true },
     { id: "y", label: "Valor da linha", accepts: ["number"], required: true },
@@ -68,7 +67,7 @@ export const lineBubbleRowChart = defineChart({
   formats: [{ id: "bubbles", label: "Formato dos valores das bolhas" }],
   sizing: { width: "free", height: "free" },
   defaultSize: { width: FULL_PAGE_WIDTH, height: 320 },
-  margin: "namesRight",
+  margin: "right",
   build: (rows, { read, box, options, params }) => {
     const panels = stackPanelsLayout(
       [

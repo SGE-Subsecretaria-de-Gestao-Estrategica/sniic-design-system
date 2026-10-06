@@ -21,7 +21,7 @@ describe("rampColors", () => {
     ]);
   });
 
-  it("always gets darker when left to choose, on every pillar", () => {
+  it("never gets lighter when left to choose, on every palette", () => {
     for (const { id } of pillarPalettes) {
       for (const ramp of ["primary", "secondary"] as const) {
         const lightness = rampColors(
@@ -30,7 +30,8 @@ describe("rampColors", () => {
           getPillarTheme(id),
         ).map((c) => chroma(c).luminance());
         expect(lightness[0]).toBeGreaterThan(lightness[1]);
-        expect(lightness[1]).toBeGreaterThan(lightness[2]);
+        // A palette may repeat a colour as its own variant.
+        expect(lightness[1]).toBeGreaterThanOrEqual(lightness[2]);
       }
     }
   });

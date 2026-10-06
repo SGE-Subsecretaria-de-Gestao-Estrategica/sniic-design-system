@@ -16,8 +16,7 @@ import { FULL_PAGE_WIDTH } from "../widths";
 export const lineDifferenceChart = defineChart({
   id: "lineDifference",
   label: "Linhas com diferença",
-  description:
-    "Duas séries no tempo e, abaixo delas, a diferença entre as duas em cada ponto.",
+  group: "lines",
   channels: [
     { id: "x", label: "Eixo X", accepts: ["date", "number"], required: true },
     { id: "y", label: "Valor", accepts: ["number"], required: true },
@@ -54,7 +53,7 @@ export const lineDifferenceChart = defineChart({
   formats: [{ id: "difference", label: "Formato da diferença" }],
   sizing: { width: "free", height: "free" },
   defaultSize: { width: FULL_PAGE_WIDTH, height: 240 },
-  margin: "namesRight",
+  margin: "right",
   build: (rows, { read, box, options, params }) => {
     const getX = read.x("x");
     const getY = read.number("y");

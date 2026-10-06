@@ -47,9 +47,7 @@ export type HorizontalBar<D> = HorizontalBarsEntry<D> & LayoutItem<D> & {
   thickness: number;
   clipPath: string;
   marker: HorizontalBarMarker;
-  /** After the bar's end. */
   valueLabel: LabelPlacement;
-  /** Before the baseline. */
   categoryLabel: LabelPlacement;
 };
 

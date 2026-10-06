@@ -10,8 +10,7 @@ import { FULL_PAGE_WIDTH } from "../widths";
 export const rangeRowsChart = defineChart({
   id: "rangeRows",
   label: "Intervalos",
-  description:
-    "Compara grupos dentro de cada categoria, do menor ao maior valor.",
+  group: "categories",
   channels: [
     { id: "category", label: "Categoria", accepts: ["text"], required: true },
     { id: "group", label: "Grupo", accepts: ["text"], required: true },
@@ -64,8 +63,7 @@ export const rangeRowsChart = defineChart({
   ],
   sizing: { width: "free", height: "fitted" },
   defaultSize: { width: FULL_PAGE_WIDTH, height: 400 },
-  margin: "categoriesLeft",
-  // The legend sits above the rows.
+  margin: "left",
   extraMargin: { top: 24 },
   build: (rows, { read, box, options, params, ...fitting }) => {
     const getCategory = read.text("category");

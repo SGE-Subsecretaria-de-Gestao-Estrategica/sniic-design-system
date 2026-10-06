@@ -107,7 +107,7 @@
       {#each MARGIN_PRESETS as preset (preset.id)}
         {@const m = preset.margin}
         <option value={preset.id}>
-          {preset.label} ({preset.figures}): {m.top} / {m.right} / {m.bottom} / {m.left}{preset.id ===
+          {preset.label}: {m.top} / {m.right} / {m.bottom} / {m.left}{preset.id ===
           definition.margin
             ? ", padrão"
             : ""}

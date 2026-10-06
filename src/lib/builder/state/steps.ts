@@ -31,7 +31,6 @@ function mappingReason(resolution: ChartResolution): string | null {
     case "incomplete":
       return `Escolha uma coluna para: ${resolution.missing.map((c) => c.label).join(", ")}.`;
     case "error":
-      // A size that doesn't fit is fixed in the style step, so it doesn't lock it.
       return resolution.step === "style" ? null : resolution.message;
     case "empty":
       return resolution.reason === "no-data"
@@ -67,7 +66,6 @@ export function canEnter(
   return statuses.slice(0, index).every((s) => s.done);
 }
 
-/** Why `step` can't be entered yet: the reason of the first earlier step that isn't done. */
 export function blockingReason(
   statuses: readonly StepStatus[],
   step: StepId,

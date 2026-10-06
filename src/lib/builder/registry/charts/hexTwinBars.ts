@@ -14,9 +14,8 @@ const MAX_BARS_WIDTH_RATIO = 1.1;
 
 export const hexTwinBarsChart = defineChart({
   id: "hexTwinBars",
-  label: "Mapa UF barras gêmeas",
-  description:
-    "Até dois valores por estado, lado a lado em um mapa de hexágonos, com uma linha de referência opcional.",
+  label: "Barras gêmeas",
+  group: "hexMaps",
   channels: [
     { id: "uf", label: "UF", accepts: ["uf"], required: true },
     { id: "value", label: "Valor", accepts: ["number"], required: true },
@@ -104,7 +103,7 @@ export const hexTwinBarsChart = defineChart({
       label: "Linha de referência",
       step: "style",
       kind: "number",
-      note: "No número do arquivo: 0,4 para 40%.",
+      note: "No número do arquivo: 0.4 para 40%.",
     },
     {
       id: "accentOver",

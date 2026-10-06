@@ -10,12 +10,10 @@ import {
 import { readText, readToggle } from "../options";
 import { defineChart } from "../registry";
 
-/** One value per state on the hex map, coloured by steps (G6.10). */
 export const hexChoroplethChart = defineChart({
   id: "hexChoropleth",
-  label: "Mapa UF Coropleto",
-  description:
-    "Um valor por estado, em um mapa de hexágonos colorido por faixas.",
+  label: "Coropleto",
+  group: "hexMaps",
   channels: [
     { id: "uf", label: "UF", accepts: ["uf"], required: true },
     { id: "value", label: "Valor", accepts: ["number"], required: true },
@@ -35,7 +33,6 @@ export const hexChoroplethChart = defineChart({
     },
     regionGapParam(0),
   ],
-  // The radius sizes the map, unless a width is set; the height follows.
   sizing: { width: "fitted", height: "derived" },
   defaultSize: { width: 323, height: 315 },
   margin: "even",
@@ -44,7 +41,6 @@ export const hexChoroplethChart = defineChart({
     const getUf = read.uf("uf");
     const getValue = read.number("value");
 
-    // A file with several slices (state and capital, say) shows one at a time.
     let shown = rows;
     let slice: string | undefined;
     if (read.has("slice")) {
@@ -89,7 +85,7 @@ export const hexChoroplethChart = defineChart({
         { value: "secondary", label: "Secundária" },
         { value: "primary", label: "Primária" },
       ],
-      default: "secondary",
+      default: "primary",
     },
     {
       id: "rampOrder",

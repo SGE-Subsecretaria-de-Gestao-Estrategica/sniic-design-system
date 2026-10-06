@@ -11,7 +11,7 @@
 </script>
 
 <fieldset>
-  <legend>Pilar</legend>
+  <legend>Cores</legend>
   <div class="swatches">
     {#each pillarPalettes as palette (palette.id)}
       <label class="swatch" class:selected={palette.id === pillar}>
@@ -23,11 +23,11 @@
           onchange={() => onpillar(palette.id)}
         />
         <span class="colors" aria-hidden="true">
-          {#each [palette.primary, palette.primaryVariant, palette.secondary, palette.accent] as color (color)}
+          {#each new Set( [palette.primary, palette.primaryVariant, palette.secondary, palette.secondaryVariant, palette.accent], ) as color, i (color + i)}
             <span style:background={color}></span>
           {/each}
         </span>
-        Pilar {palette.id}
+        {palette.name}
       </label>
     {/each}
   </div>
@@ -88,7 +88,7 @@
     display: flex;
   }
   .colors span {
-    width: 20px;
+    width: 12px;
     height: 20px;
   }
 </style>

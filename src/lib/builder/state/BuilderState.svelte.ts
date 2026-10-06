@@ -84,15 +84,12 @@ export class BuilderState {
       : {},
   );
 
-  // The layout follows only what shapes it; a pillar change doesn't rebuild it.
   readonly #chart = $derived(this.spec.chart);
   readonly #encoding = $derived(this.spec.encoding);
   readonly #aggregate = $derived(this.spec.aggregate);
   readonly #width = $derived(this.spec.style.width);
   readonly #height = $derived(this.spec.style.height);
   readonly #margin = $derived(this.spec.style.margin);
-  // Drawing-only options (labels, colours, captions) don't reach the layout:
-  // the same object comes back until an option the layout reads changes.
   #layoutOptions: Record<string, JsonValue> = {};
   readonly #options = $derived.by(() => {
     const defs = this.#chart

@@ -88,6 +88,8 @@ listed in `charts/index.ts` (`CHARTS`). `layouts.ts` derives `ChartLayouts`,
 
 A definition has:
 
+- `group`: the named group it is listed under in step 2 (`groups.ts`,
+  `CHART_GROUPS`: Categorias, Linhas, Mapas hexagonais de UFs)
 - `channels`: `id`, `label`, `accepts` (column types), `required`. A `uf`
   column also fits a channel that accepts `text` (`channelAccepts`).
 - `keys` and `measures`: rows repeating the `keys` are combined, applying the
@@ -221,7 +223,7 @@ columns that ended up unused.
 |---|---|
 | `Builder.svelte` | The wizard: stepper, back / next, reset notice, preview beside steps 3 and 4 |
 | `data/` | Step 1: `DataStep`, `FileInput`, `DataOptions`, `DataPreview` (raw values, never reformatted) |
-| `chart/ChartGallery.svelte` | Step 2: every chart, incompatible ones disabled with the reason |
+| `chart/ChartGallery.svelte` | Step 2: the named groups as a list, each with its charts side by side; a chart the data can't feed is disabled and says what is missing |
 | `mapping/MappingStep.svelte` | Step 3: one select per channel |
 | `options/` | `ChartOptions` shows the options of one step (`step="mapping"` under the mapping, `step="style"` as the first group of the style step). One component per option kind, plus `AggregationField`. |
 | `style/` | Step 4: `StyleStep` composes `PillarPicker`, the chart options, `SizeFields` (page-grid width, sizes, margins), `ParamFields`, and one `NumberFormatFields` per format |
@@ -232,17 +234,16 @@ columns that ended up unused.
 
 ## Adding a chart
 
-1. A `defineChart` file in `registry/charts/`, calling the `core` layout.
+1. A `defineChart` file in `registry/charts/`, calling the `core` layout,
+   with its `group` (add one to `CHART_GROUPS` if none fits).
 2. A line in `CHARTS` (`registry/charts/index.ts`).
 3. A view in `components/views/`, with the look of its story.
 4. A branch in `ChartView.svelte`.
 
-## Tests and stories
+## Tests and the story
 
 - Unit tests sit beside the code (`*.test.ts`): `npm run test:unit`.
-- Stories are in `src/stories/dist/builder/` (git-ignored). `Builder/Wizard`
-  has `Vazio`, `Com dados de exemplo`, `Com dados longos` and
-  `Com dados por UF` for manual checks (keep them without `play`), and
-  `Fluxo completo`, `Dois na mesma página`, `Opções dos gráficos`,
-  `Linhas e gráficos combinados` and `Mapas de UFs` as `play` tests:
-  `npx vitest run --project storybook src/stories/dist/builder`.
+- There is one story, `Builder` › `Criar gráfico`
+  (`src/stories/dist/builder/Builder.stories.svelte`): the whole wizard,
+  empty, for making charts from a file. It holds no sample data and no
+  `play` test.

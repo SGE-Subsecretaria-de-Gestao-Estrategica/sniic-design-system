@@ -10,7 +10,7 @@ import { FULL_PAGE_WIDTH } from "../widths";
 export const horizontalBarsChart = defineChart({
   id: "horizontalBars",
   label: "Barras horizontais",
-  description: "Compara um valor entre categorias.",
+  group: "categories",
   channels: [
     { id: "category", label: "Categoria", accepts: ["text"], required: true },
     { id: "value", label: "Valor", accepts: ["number"], required: true },
@@ -46,7 +46,7 @@ export const horizontalBarsChart = defineChart({
   ],
   sizing: { width: "free", height: "fitted" },
   defaultSize: { width: FULL_PAGE_WIDTH, height: 400 },
-  margin: "categoriesLeftTight",
+  margin: "left",
   build: (rows, { read, box, options, params, ...fitting }) =>
     horizontalBarsLayout(rows, {
       getCategory: read.text("category"),

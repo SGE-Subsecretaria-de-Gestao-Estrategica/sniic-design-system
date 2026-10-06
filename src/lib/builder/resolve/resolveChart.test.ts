@@ -206,14 +206,14 @@ describe("resolveChart", () => {
       const standard = bars(mapped());
       expect(standard.margin).toEqual({
         top: 24,
-        right: 12,
+        right: 24,
         bottom: 24,
         left: 150,
       });
       const even = bars(setStyle(mapped(), { margin: "even" }).spec);
       expect(even.margin).toEqual({ top: 24, right: 24, bottom: 24, left: 24 });
       expect(even.figure.width).toBe(standard.figure.width);
-      expect(even.layout.width).toBe(standard.layout.width + 150 + 12 - 48);
+      expect(even.layout.width).toBe(standard.layout.width + 150 + 24 - 48);
     });
 
     it("passes layout params, with defaults for the ones not set", () => {
@@ -261,7 +261,7 @@ describe("resolveChart", () => {
     const withGroup = defineChart({
       id: "grouped",
       label: "",
-      description: "",
+      group: "categories",
       channels: [
         { id: "value", label: "", accepts: ["number"], required: true },
         { id: "group", label: "", accepts: ["text"], required: false },

@@ -28,7 +28,7 @@ const stub = (
 ): AnyChartDefinition => ({
   id,
   label: id,
-  description: "",
+  group: "categories",
   channels,
   keys: [],
   measures: [],
@@ -125,7 +125,7 @@ describe("invalidation", () => {
   });
 
   it("switching chart keeps channels that still exist and clears options, params and margin", () => {
-    const styled = setStyle(mappedBars(), { margin: "namesRight" }).spec;
+    const styled = setStyle(mappedBars(), { margin: "right" }).spec;
     const spec: typeof styled = {
       ...styled,
       style: {
@@ -206,8 +206,8 @@ describe("setStyle", () => {
   });
 
   it("accepts a margin preset or null, and rejects other ids", () => {
-    const preset = setStyle(createSpec(), { margin: "namesRight" }).spec;
-    expect(preset.style.margin).toBe("namesRight");
+    const preset = setStyle(createSpec(), { margin: "right" }).spec;
+    expect(preset.style.margin).toBe("right");
     expect(setStyle(preset, { margin: null }).spec.style.margin).toBeNull();
     expect(() => setStyle(createSpec(), { margin: "huge" as never })).toThrow(
       /Unknown margin/,

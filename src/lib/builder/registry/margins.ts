@@ -3,45 +3,28 @@ import type { Margin } from "./types";
 /** The margin combinations of the Eixo 6 figures (`src/stories/dist/Eixo6`). */
 export const MARGIN_PRESETS = [
   {
-    id: "categoriesLeft",
-    label: "Categorias à esquerda",
-    figures: "G6.20",
-    margin: { top: 24, right: 24, bottom: 24, left: 150 },
+    id: "left",
+    label: "Maior à esquerda",
+    margin: { top: 24, right: 24, bottom: 24, left: 120 },
   },
   {
-    id: "categoriesLeftTight",
-    label: "Categorias à esquerda, direita curta",
-    figures: "G6.26",
-    margin: { top: 24, right: 12, bottom: 24, left: 150 },
+    id: "right",
+    label: "Maior à direita",
+    margin: { top: 24, right: 120, bottom: 24, left: 24 },
   },
   {
-    id: "namesRight",
-    label: "Nomes à direita",
-    figures: "G6.05, G6.07, G6.08",
-    margin: { top: 12, right: 120, bottom: 24, left: 24 },
-  },
-  {
-    id: "labelsBothSides",
-    label: "Rótulos dos dois lados",
-    figures: "G6.12 a G6.16",
-    margin: { top: 24, right: 120, bottom: 8, left: 120 },
-  },
-  {
-    id: "labelsBothSidesLow",
-    label: "Rótulos dos dois lados, topo curto",
-    figures: "G6.31",
-    margin: { top: 12, right: 120, bottom: 24, left: 120 },
+    id: "both",
+    label: "Ambos os lados",
+    margin: { top: 24, right: 120, bottom: 24, left: 120 },
   },
   {
     id: "even",
-    label: "Igual nos quatro lados",
-    figures: "G6.09, G6.10",
+    label: "Uniforme",
     margin: { top: 24, right: 24, bottom: 24, left: 24 },
   },
 ] as const satisfies readonly {
   id: string;
   label: string;
-  figures: string;
   margin: Margin;
 }[];
 
