@@ -3,6 +3,7 @@ import type { Snippet } from "svelte";
 import type { ClassValue } from "svelte/elements";
 import type { AccessorForArrayItem } from "./Accessor";
 import type { PathProps } from './Path';
+import type { StrokeRole } from "$lib/core/theme/types";
 
 interface Point {
   x?: number;
@@ -11,6 +12,8 @@ interface Point {
 
 export type LineProps = {
   class?: ClassValue;
+  /** Theme stroke role the unset stroke props come from (e.g. "baseline"). */
+  role?: StrokeRole;
   innerRef?: SVGLineElement | null;
   fill?: string;
   from?: Point;

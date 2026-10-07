@@ -1,6 +1,6 @@
 {
   "name": "sniic-design-system",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "A Svelte component library with chart components and design tokens based on the Brazilian Government Design System (Padrão Digital de Governo).",
   "author": "SNIIC",
   "license": "MIT",
@@ -39,6 +39,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json",
+    "test:unit": "vitest run --project unit",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "dev:demo": "vite --config vite.config.demo.ts",
@@ -53,6 +54,7 @@
     "@storybook/svelte-vite": "^10.5.5",
     "@sveltejs/vite-plugin-svelte": "^5.0.3",
     "@tsconfig/svelte": "^5.0.8",
+    "@types/chroma-js": "^3.1.2",
     "@types/d3": "^7.4.3",
     "@vitest/browser-playwright": "^4.1.2",
     "@vitest/coverage-v8": "^4.1.2",
@@ -73,6 +75,7 @@
   },
   "dependencies": {
     "@types/node": "^26.1.1",
+    "chroma-js": "^3.2.0",
     "reduce-css-calc": "^2.1.8",
     "textures": "^1.2.3"
   }

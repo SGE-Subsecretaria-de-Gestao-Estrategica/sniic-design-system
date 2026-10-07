@@ -14,6 +14,14 @@ export type ChartTheme = {
   margin?: Margin;
   text?: TextStyle;
   dataLabel?: TextStyle;
+  valueLabel?: TextStyle;
+  categoryLabel?: TextStyle;
+  seriesLabel?: TextStyle;
+  tickLabel?: TextStyle;
+  caption?: TextStyle;
+  baseline?: BaselineStyle;
+  connector?: ConnectorStyle;
+  auxiliaryMark?: AuxiliaryMarkStyle;
   axis?: AxisStyle;
   line?: LineStyle;
   area?: AreaStyle;
@@ -34,8 +42,34 @@ export type Palette = {
   transparent?: string;
   base?: { [key: number]: string },
   neutral?: { [key: number]: string },
-  /** Series colours, in assignment order, for multi-series charts. */
   categorical?: string[],
+}
+
+export type TextVariant =
+  | "text"
+  | "dataLabel"
+  | "valueLabel"
+  | "categoryLabel"
+  | "seriesLabel"
+  | "tickLabel"
+  | "caption";
+
+export type StrokeRole = "baseline";
+
+export type AuxiliaryMarkStyle = {
+  fill?: string;
+  fillOpacity?: number;
+}
+
+export type BaselineStyle = {
+  stroke?: string;
+  strokeWidth?: number;
+}
+
+export type ConnectorStyle = {
+  strokeOpacity?: number;
+  widthRatio?: number;
+  strokeDasharray?: (strokeWidth: number) => string;
 }
 
 export type MissingStyle = {

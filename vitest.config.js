@@ -15,6 +15,16 @@ const dirname =
 export default defineConfig({
   test: {
     projects: [
+      // Plain unit tests (`*.test.ts`) in Node, e.g. the chart builder.
+      {
+        plugins: [svelte()],
+        resolve: { alias: { $lib: path.join(dirname, 'src/lib') } },
+        test: {
+          name: 'unit',
+          include: ['src/**/*.test.ts'],
+          environment: 'node',
+        },
+      },
       {
         extends: true,
         plugins: [

@@ -1,8 +1,20 @@
-import SvgExportDecorator from '../src/lib/storybook/SvgExportDecorator.svelte';
+import { addons } from 'storybook/preview-api';
 import ThemeDecorator from '../src/lib/storybook/ThemeDecorator.svelte';
+import { downloadSvg } from '../src/lib/utils/exportSvg.js';
 import {sharedPalette} from "$lib/core/theme/tokens"
+import { EXPORT_SVG } from './events.js';
 
 import "../src/app.css"
+
+// The toolbar's "SVG" button (see manager.js) downloads the first <svg> of the story.
+const channel = addons.getChannel();
+channel.removeAllListeners(EXPORT_SVG);
+channel.on(EXPORT_SVG, ({ name = 'chart' } = {}) => {
+  const svg = document.querySelector('#storybook-root svg');
+  // The story id names the file, without its accents.
+  const plain = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  if (svg) downloadSvg(svg, `${plain}.svg`);
+});
 
 /** @type { import('@storybook/svelte-vite').Preview } */
 const preview = {
@@ -54,9 +66,6 @@ const preview = {
     // Sets CSS custom properties (--chart-fg, --chart-grid, etc.) based on the
     // active Storybook background, so chart foreground elements adapt automatically.
     (_, { globals }) => ({ Component: ThemeDecorator, props: { globals } }),
-    // Wraps every story with an "Export SVG" button that serialises the
-    // first <svg> found in the rendered story and downloads it as a file.
-    () => ({ Component: SvgExportDecorator }),
   ],
 };
 

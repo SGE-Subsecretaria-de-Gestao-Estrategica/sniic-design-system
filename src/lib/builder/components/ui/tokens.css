@@ -1,0 +1,26 @@
+/*
+ * The wizard's own look. Colours are the library's shared neutrals
+ * (`sharedPalette` in core/theme/tokens.ts), so the pillar colours stay
+ * with the chart. Every builder control reads these variables.
+ */
+:root {
+  --builder-font: "General Sans Variable", system-ui, sans-serif;
+
+  --builder-ink: #2d2e2b; /* neutral 300 */
+  --builder-ink-strong: #1c1c1c; /* neutral 400 */
+  --builder-muted: #4d5148; /* neutral 200 */
+  --builder-faint: #808679; /* neutral 100 */
+  --builder-surface: #fefffc; /* base 100 */
+  --builder-wash: #f0f2f1; /* base 200 */
+  --builder-line: color-mix(in srgb, #808679 38%, #fefffc);
+  --builder-line-soft: #eceeed; /* base 300 */
+  --builder-danger: #b42318;
+  --builder-warning: #b54708;
+
+  --builder-radius: 4px; /* radii.md */
+  --builder-control-height: 36px;
+  --builder-control-height-sm: 28px;
+  --builder-text: 14px;
+  --builder-text-sm: 13px;
+  --builder-text-xs: 12px;
+}
