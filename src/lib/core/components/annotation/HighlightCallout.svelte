@@ -1,39 +1,17 @@
 <script lang="ts">
-  import { neutralPalette } from '$lib/core/theme/tokens';
   /**
    * A big colored number with a short wrapped sentence under it — the
-   * "leia aqui o achado" block that sits in the right-hand gutter of most
-   * former Eixo 1 print charts (`FaixaLinhasChart`, `CascataChart`,
-   * `BarraRankingChart`, `ConcentracaoChart`, `AntesDepoisChart`,
-   * `BarraDivergenteChart`, `MatrizBolhasChart`...), each of which had its
-   * own copy of this exact layout. Reads top-down from `(x, y)`: the value
-   * first, the description wrapped to `width` below it.
+   * "leia aqui o achado" block that sits in the gutter of a chart. Reads
+   * top-down from `(x, y)`: the value first, the description wrapped to
+   * `width` below it.
    *
-   * Not chart-family-specific — no A4 print scale or fixed palette baked
-   * in, every size is a prop — so it's meant for Eixo 6, LPG, or any future
-   * project's "number + one-sentence explanation" callout too.
+   * Unset styles come from the theme's `calloutValue` and
+   * `calloutDescription` text roles.
    */
+  import { placeBelowLine } from "$lib/core/layouts/labels";
+  import { DefaultTheme, getChartTheme, resolveThemeStyles, type TextStyle } from "$lib/core/theme";
+  import type { HighlightCalloutProps } from "$lib/types/HighlightCallout";
   import Text from "../Text.svelte";
-
-  interface Props {
-    /** Already formatted — this component doesn't format numbers. */
-    value: string;
-    description: string;
-    /** Fill for `value`; `description` defaults to a softer ink unless overridden. */
-    color: string;
-    x: number;
-    y: number;
-    /** Wrap width for `description`. `value` never wraps. */
-    width: number;
-    valueFontSize?: number;
-    descriptionFontSize?: number;
-    descriptionColor?: string;
-    fontFamily?: string;
-    descriptionFontWeight?: string | number;
-    /** Vertical gap between the value and the description's first line. Defaults to a size relative to `valueFontSize`. */
-    gap?: number;
-    lineHeight?: string | number;
-  }
 
   let {
     value,
@@ -42,30 +20,40 @@
     x,
     y,
     width,
-    valueFontSize = 19,
-    descriptionFontSize = 13,
-    descriptionColor = neutralPalette[300],
+    valueFontSize,
+    descriptionFontSize,
+    descriptionColor,
     fontFamily,
-    descriptionFontWeight = 500,
+    descriptionFontWeight,
     gap,
     lineHeight,
-  }: Props = $props();
+  }: HighlightCalloutProps = $props();
 
-  const resolvedGap = $derived(gap ?? valueFontSize * 0.55);
-  const descriptionY = $derived(y + valueFontSize * 1.15 + resolvedGap);
+  const theme = getChartTheme();
+
+  // The description's position depends on the value's resolved size.
+  let valueStyle = $derived(
+    resolveThemeStyles<TextStyle>(
+      { fontSize: valueFontSize },
+      theme?.calloutValue,
+      DefaultTheme.calloutValue,
+    ),
+  );
+  let descriptionY = $derived(placeBelowLine(y, Number(valueStyle.fontSize), gap));
 </script>
 
 <Text
+  variant="calloutValue"
   {x}
   {y}
   verticalAnchor="start"
   {fontFamily}
   fontSize={valueFontSize}
-  fontWeight={700}
   fill={color}
   text={value}
 />
 <Text
+  variant="calloutDescription"
   {x}
   y={descriptionY}
   {width}

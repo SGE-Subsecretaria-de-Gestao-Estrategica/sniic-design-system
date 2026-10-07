@@ -31,6 +31,7 @@
 
 <line
   stroke-linecap="round"
+  shape-rendering={isRectilinear ? "crispEdges" : "auto"}
   {...restProps}
   stroke={stroked.stroke}
   stroke-width={stroked.strokeWidth}
@@ -43,5 +44,4 @@
   x2={to.x}
   y2={to.y}
   {fill}
-  shape-rendering={isRectilinear ? "crispEdges" : "auto"}
 />

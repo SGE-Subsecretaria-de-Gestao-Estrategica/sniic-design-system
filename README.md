@@ -70,13 +70,23 @@ Charts tied to a specific project's data and copy live in that project's reposit
 |---|---|
 | Container | `Chart`, `Svg`, `Group`, `Text`, `Theme` |
 | Axes and grid | `Axis`, `AxisRenderer`, `Ticks`, `Grid`, `GridRows`, `GridColumns` |
-| Shapes | `Line`, `LinePath`, `AreaPath`, `Arc`, `Bar`, `BarStack`, `BarGroup`, `RoundedBar` |
+| Shapes — draw a ready geometry | `Line`, `LinePath`, `AreaPath`, `Arc`, `Bar`, `RoundedBar`, `CapsuleBar` |
+| Layout components — draw a computed layout | `BarStack`, `BarGroup`, `CapsuleStack` |
+| Composites | `Dumbbell` (a `Line` and two `Circle`s) |
+| Layouts — pure geometry | `capsuleBarLayout`, `capsuleStackLayout`, `barStackLayout`, `barGroupLayout` |
 | Markers | `Marker`, `MarkerCircle`, `Markers`, `Circle` |
 | Legend | `ChartLegend` (core's `Legend`, renamed at the root to avoid the legacy atom), `LegendChips` |
-| Annotation | `ValueCallout`, `HighlightCallout`, `TimelineBreak` |
+| Annotation | `ValueCallout`, `HighlightCallout`, `TimelineBreak`, `LabelMask` |
 | Interaction | `HoverLayer`, `HitTarget`, `Crosshair`, `ChartTooltip`, `HoverState`, `ScrollySteps`, `scrollStep` |
-| Theme | `DefaultTheme`, `getPillarTheme`, `getChartTheme`, `setChartTheme`, `getCategoricalColor` |
-| Utilities | `roundedRect`, `wrapText`, `relativeLuminance`, `contrastRatio`, `pickContrastInk`, `getTicks`, `getStringWidth`… |
+| Theme | `DefaultTheme`, `getPillarTheme`, `getChartTheme`, `setChartTheme`, `getCategoricalColor`, `resolveThemeStyles` and the role resolvers (`resolveCapsule`, `resolveDumbbell`, `resolveLabelMask`, `resolveTimelineBreak`…) |
+| Utilities | `roundedRect`, `wrapText`, `padBox`, `getTicks`, `getStringWidth`… |
+
+Shapes take geometry, never data or scales; layout functions turn data into
+that geometry. Every unset style falls through props > `<Theme>` >
+`DefaultTheme`, via `resolveThemeStyles` or a role resolver — components do
+not read tokens directly. `relativeLuminance`, `contrastRatio` and
+`pickContrastInk` live outside the core (`$lib/utils/contrastColor`) and are
+still exported from the package root.
 
 ### Figuras — generic print bases
 

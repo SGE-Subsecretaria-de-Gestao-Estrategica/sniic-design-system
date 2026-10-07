@@ -24,7 +24,7 @@
 	import { Tokens, getPillarTheme } from '$lib/core/theme';
 	import { basePalette } from '$lib/core/theme/tokens';
 	import { formatLocale } from '$lib/core/format';
-	import { pickContrastInk } from '$lib/core/utils/contrastColor';
+	import { pickContrastInk } from '$lib/utils/contrastColor';
 	import malha from '../eixo1/data/malha-ufs.json';
 	import ChartShell from './ChartShell.svelte';
 	import type { MapaUfCategoria, MapaUfValor } from './data.js';

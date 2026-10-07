@@ -5,8 +5,10 @@
   import Axis from "$lib/core/components/axis/Axis.svelte";
   import Grid from "$lib/core/components/grid/Grid.svelte";
   import Bar from "$lib/core/components/shape/Bar.svelte";
-  import BarStack from "$lib/core/components/shape/BarStack.svelte";
-  import BarGroup from "$lib/core/components/shape/BarGroup.svelte";
+  import BarStack from "$lib/core/components/barStack/BarStack.svelte";
+  import BarGroup from "$lib/core/components/barGroup/BarGroup.svelte";
+  import { barStackLayout } from "$lib/core/layouts/barStack";
+  import { barGroupLayout } from "$lib/core/layouts/barGroup";
   import Legend from "$lib/core/components/legend/Legend.svelte";
   import Text from "$lib/core/components/Text.svelte";
   import { getPillarTheme } from "$lib/core/theme";
@@ -41,18 +43,11 @@
     globals: { backgrounds: { value: "cultnum-bg" } },
     component: BarStack,
     argTypes: {
-      data: { control: false },
-      keys: { control: false },
-      xScale: { control: false },
-      yScale: { control: false },
-      category: { control: false },
+      layout: { control: false },
       children: { control: false },
-      color: { control: false },
-      horizontal: { control: { type: "boolean" } },
       rx: { control: { type: "number" } },
     },
     args: {
-      horizontal: false,
       rx: 2,
     },
   });
@@ -87,12 +82,13 @@
         />
 
         <BarStack
-          {...args}
-          {data}
-          keys={[...keys]}
-          category={(d) => d.region}
-          {xScale}
-          {yScale}
+          rx={args.rx}
+          layout={barStackLayout(data, {
+            keys: [...keys],
+            category: (d) => d.region,
+            xScale,
+            yScale,
+          })}
         />
 
         <Axis orientation="left" scale={yScale} />
@@ -128,13 +124,13 @@
         />
 
         <BarGroup
-          horizontal={args.horizontal}
           rx={args.rx}
-          {data}
-          keys={[...keys]}
-          category={(d) => d.region}
-          {xScale}
-          {yScale}
+          layout={barGroupLayout(data, {
+            keys: [...keys],
+            category: (d) => d.region,
+            xScale,
+            yScale,
+          })}
         />
 
         <Axis orientation="left" scale={yScale} />
@@ -164,12 +160,13 @@
           .range([0, innerWidth])}
 
         <BarStack
-          horizontal
-          {data}
-          keys={[...keys]}
-          category={(d) => d.region}
-          {xScale}
-          {yScale}
+          layout={barStackLayout(data, {
+            horizontal: true,
+            keys: [...keys],
+            category: (d) => d.region,
+            xScale,
+            yScale,
+          })}
           rx={2}
         >
           {#snippet children({ barStacks })}

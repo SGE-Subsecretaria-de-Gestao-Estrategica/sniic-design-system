@@ -61,9 +61,6 @@ export {
 	arc,
 	roundedRect,
 	wrapText,
-	relativeLuminance,
-	contrastRatio,
-	pickContrastInk,
 	Orientation,
 	HoverLayer,
 	HitTarget,
@@ -77,11 +74,19 @@ export {
 	ScrollySteps,
 	scrollStep,
 } from './core/index.js';
+export {
+	capsuleBarLayout,
+	capsuleStackLayout,
+	barStackLayout,
+	barGroupLayout
+} from './core/index.js';
+export type { CapsuleBarLayout, CapsuleStackLayout } from './core/index.js';
+export { relativeLuminance, contrastRatio, pickContrastInk } from './utils/contrastColor.js';
 
 export type {
 	ChartTheme,
 	Palette,
-	EixoPalette,
+	PillarPalette,
 	TextStyle,
 	AxisStyle,
 	LineStyle,
@@ -112,7 +117,11 @@ export type {
 } from './types/RoundedRect.js';
 export type { CapsuleBarProps } from './types/CapsuleBar.js';
 export type { DumbbellProps } from './types/Dumbbell.js';
-export type { CapsuleStackProps, CapsuleStackSegment } from './types/CapsuleStack.js';
+export type { CapsuleStackProps, CapsuleStackFillSegment } from './types/CapsuleStack.js';
+export type { LabelMaskProps } from './types/LabelMask.js';
+export type { HitTargetProps } from './types/HitTarget.js';
+export type { HighlightCalloutProps } from './types/HighlightCallout.js';
+export type { TimelineBreakProps } from './types/TimelineBreak.js';
 
 // Atoms — single-responsibility SVG <g> fragments
 export { default as XAxis } from './components/atoms/XAxis.svelte';

@@ -21,10 +21,10 @@
     component: LabelMask,
     tags: ["autodocs"],
     argTypes: {
-      opacity: { control: { type: "range", min: 0, max: 1, step: 0.05 } },
+      fillOpacity: { control: { type: "range", min: 0, max: 1, step: 0.05 } },
       radius: { control: "number" },
     },
-    args: { opacity: 0.75, radius: 0 },
+    args: { fillOpacity: 0.75, radius: 0 },
   });
 
   const theme = getPillarTheme(6);
@@ -37,7 +37,7 @@
   ];
 </script>
 
-{#snippet scene(args: { opacity?: number; radius?: number }, masked: boolean)}
+{#snippet scene(args: { fillOpacity?: number; radius?: number }, masked: boolean)}
   <Svg width={640} height={340} style="background: {theme.palette.base[100]};">
     <LinePath
       data={curve}

@@ -20,7 +20,7 @@
 	import { Tokens, getPillarTheme } from '$lib/core/theme';
 	import { basePalette, neutralPalette } from '$lib/core/theme/tokens';
 	import { formatLocale } from '$lib/core/format';
-	import { pickContrastInk } from '$lib/core/utils/contrastColor';
+	import { pickContrastInk } from '$lib/utils/contrastColor';
 	import getStringWidth from '$lib/core/utils/getStringWidth';
 	import ChartShell from './ChartShell.svelte';
 	import type { ColunasDatum, FaixasParticipacaoDestaque } from './data.js';

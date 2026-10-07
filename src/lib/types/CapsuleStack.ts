@@ -1,25 +1,16 @@
 import type { SVGAttributes } from "svelte/elements";
+import type { CapsuleStackLayout, CapsuleStackSegment } from "$lib/core/layouts/capsuleStack";
 
-/** One piece of a stack, from the base outward. */
-export type CapsuleStackSegment = {
-  /** Length along the stack's axis, in px. */
-  length: number;
+/** A stack segment as `CapsuleStack` paints it. */
+export type CapsuleStackFillSegment = CapsuleStackSegment & {
   fill: string;
   fillOpacity?: number;
 };
 
 export type CapsuleStackOwnProps = {
-  /** The stack's box: `x`/`y` top-left, as for `CapsuleBar`. */
-  x?: number;
-  y?: number;
-  width?: number;
-  height?: number;
-  /** `vertical` stacks upwards from a base at `y + height`; `horizontal` rightwards from `x`. */
-  orientation?: "horizontal" | "vertical";
-  segments: CapsuleStackSegment[];
-  /** Gap between segments, in px, painted in the background colour. */
-  gap?: number;
-  /** Colour of the gap — the surface behind the chart. Defaults to the theme's `base[100]`. */
+  /** Geometry from `capsuleStackLayout`. */
+  layout: CapsuleStackLayout<CapsuleStackFillSegment>;
+  /** Colour of the gaps — the surface behind the chart. Defaults to the theme's `capsule.gapFill`. */
   gapFill?: string;
   class?: string;
 };

@@ -19,6 +19,9 @@ export type ChartTheme = {
   seriesLabel?: TextStyle;
   tickLabel?: TextStyle;
   caption?: TextStyle;
+  calloutValue?: TextStyle;
+  calloutDescription?: TextStyle;
+  breakLabel?: TextStyle;
   baseline?: BaselineStyle;
   connector?: ConnectorStyle;
   auxiliaryMark?: AuxiliaryMarkStyle;
@@ -31,6 +34,10 @@ export type ChartTheme = {
   legend?: LegendStyle;
   marker?: MarkerStyle;
   missing?: MissingStyle;
+  capsule?: CapsuleStyle;
+  dumbbell?: DumbbellStyle;
+  labelMask?: LabelMaskStyle;
+  timelineBreak?: TimelineBreakStyle;
 }
 
 export type Palette = {
@@ -52,7 +59,10 @@ export type TextVariant =
   | "categoryLabel"
   | "seriesLabel"
   | "tickLabel"
-  | "caption";
+  | "caption"
+  | "calloutValue"
+  | "calloutDescription"
+  | "breakLabel";
 
 export type StrokeRole = "baseline";
 
@@ -70,6 +80,42 @@ export type ConnectorStyle = {
   strokeOpacity?: number;
   widthRatio?: number;
   strokeDasharray?: (strokeWidth: number) => string;
+}
+
+/** The Cultura em Números bar (`CapsuleBar`, `CapsuleStack`). */
+export type CapsuleStyle = {
+  /** One colour, or `[base, tip]` for a gradient along the bar. */
+  fill?: string | readonly [string, string];
+  fillOpacity?: number;
+  /** Colour of the dot inside the cap. */
+  dotFill?: string;
+  /** Colour of the gaps between stack segments — the surface behind the chart. */
+  gapFill?: string;
+}
+
+export type DumbbellStyle = {
+  stroke?: string;
+  strokeWidth?: number;
+  strokeOpacity?: number;
+  fromFill?: string;
+  toFill?: string;
+  fromSize?: number;
+  toSize?: number;
+}
+
+export type LabelMaskStyle = {
+  fill?: string;
+  fillOpacity?: number;
+  /** Space around the label, in px — one number, or `[horizontal, vertical]`. */
+  padding?: number | readonly [number, number];
+  radius?: number;
+}
+
+export type TimelineBreakStyle = {
+  stroke?: string;
+  /** Scales the chevron glyph and its gaps from the axis and the label. */
+  size?: number;
+  label?: string;
 }
 
 export type MissingStyle = {

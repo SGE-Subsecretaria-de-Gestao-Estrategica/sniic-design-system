@@ -5,18 +5,18 @@ export type DumbbellOwnProps = {
   from: { x: number; y: number };
   /** End point — the "after" end, emphasised like the last point of a line. */
   to: { x: number; y: number };
-  /** Stroke colour. Defaults to the theme's line stroke (`primary`). */
+  /** Stroke colour. Defaults to the theme's `dumbbell.stroke`. */
   stroke?: string;
-  /** Stroke thickness. Defaults to the theme's line stroke width. */
+  /** Stroke thickness. Defaults to the theme's `dumbbell.strokeWidth`. */
   strokeWidth?: number;
   strokeOpacity?: number;
-  /** Start dot colour. Defaults to the theme's marker colour (`primaryVariant`). */
+  /** Start dot colour. Defaults to the theme's `dumbbell.fromFill`. */
   fromFill?: string;
-  /** End dot colour. Defaults to the theme's `accent`, the line charts' last point. */
+  /** End dot colour. Defaults to the theme's `dumbbell.toFill`, the line charts' last point. */
   toFill?: string;
-  /** Start dot radius. Defaults to the theme's marker size. */
+  /** Start dot radius. Defaults to the theme's `dumbbell.fromSize`. */
   fromSize?: number;
-  /** End dot radius. Defaults to 1.6× the start dot. */
+  /** End dot radius. Defaults to the theme's `dumbbell.toSize`. */
   toSize?: number;
   /** Hide either end's dot — to reveal the pair in steps. */
   showFrom?: boolean;

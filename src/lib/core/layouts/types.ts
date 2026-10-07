@@ -32,6 +32,8 @@ export type AxisBreak = {
 
 export type LayoutBox = { width: number; height: number };
 
+export type Rect = Point & LayoutBox;
+
 export type LayoutItem<T> = { key: string; index: number; data: T };
 
 export type SharedXAxis = {

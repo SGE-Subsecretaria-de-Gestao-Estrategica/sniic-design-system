@@ -7,6 +7,7 @@
   import Text from "$lib/core/components/Text.svelte";
   import Line from "$lib/core/components/shape/Line.svelte";
   import CapsuleBar from "$lib/core/components/shape/CapsuleBar.svelte";
+  import { capsuleBarLayout } from "$lib/core/layouts/capsuleBar";
   import { Tokens, getPillarTheme } from "$lib/core/theme";
   import { formatCompactNumber } from "$lib/core/format";
 
@@ -68,7 +69,7 @@
               verticalAnchor="middle"
               fontSize={Tokens.fontSize.md}
             />
-            <CapsuleBar x={0} y={top} width={x(d.value)} height={BAR} />
+            <CapsuleBar layout={capsuleBarLayout({ x: 0, y: top, width: x(d.value), height: BAR })} />
             <Text
               dx={x(d.value) + Tokens.spacing.md}
               dy={top + BAR / 2}
@@ -101,7 +102,7 @@
     <Theme {theme}>
       <Svg width={480} height={330}>
         {#each [360, 160, 60, 42, 30, 21, 12, 5] as length, i (length)}
-          <CapsuleBar x={20} y={10 + i * 40} width={length} height={30} />
+          <CapsuleBar layout={capsuleBarLayout({ x: 20, y: 10 + i * 40, width: length, height: 30 })} />
           <text x={470} y={30 + i * 40} text-anchor="end" font-size="11" fill="#808679">
             {length}px
           </text>
@@ -118,11 +119,13 @@
       <Svg width={360} height={240}>
         {#each [200, 150, 96, 40, 14] as length, i (length)}
           <CapsuleBar
-            orientation="vertical"
-            x={20 + i * 64}
-            y={220 - length}
-            width={42}
-            height={length}
+            layout={capsuleBarLayout({
+              orientation: "vertical",
+              x: 20 + i * 64,
+              y: 220 - length,
+              width: 42,
+              height: length,
+            })}
           />
         {/each}
         <line x1={10} x2={350} y1={220} y2={220} stroke="#ECEEED" stroke-width={2} />
@@ -140,8 +143,10 @@
     <Theme {theme}>
       <Svg width={420} height={180}>
         {#each [[150, 120], [90, 160], [20, 60], [8, 14]] as [left, right], i (i)}
-          <CapsuleBar x={210 - left} y={10 + i * 42} width={left} height={30} reverse />
-          <CapsuleBar x={210} y={10 + i * 42} width={right} height={30} />
+          <CapsuleBar
+            layout={capsuleBarLayout({ x: 210 - left, y: 10 + i * 42, width: left, height: 30, reverse: true })}
+          />
+          <CapsuleBar layout={capsuleBarLayout({ x: 210, y: 10 + i * 42, width: right, height: 30 })} />
         {/each}
         <line x1={210} x2={210} y1={4} y2={176} stroke="#ECEEED" stroke-width={2} />
       </Svg>
@@ -154,21 +159,33 @@
   {#snippet template()}
     <Theme {theme}>
       <Svg width={420} height={180}>
-        <CapsuleBar x={20} y={10} width={360} height={30} />
-        <CapsuleBar x={20} y={55} width={300} height={30} fill={theme.palette.secondary} dotFill={theme.palette.secondaryVariant} />
-        <CapsuleBar x={20} y={100} width={240} height={30} fill={[theme.palette.secondary, theme.palette.secondaryVariant]} dotFill={theme.palette.base[100]} />
-        <CapsuleBar x={20} y={145} width={180} height={30} fill={theme.palette.base[300]} dot={false} />
+        <CapsuleBar layout={capsuleBarLayout({ x: 20, y: 10, width: 360, height: 30 })} />
+        <CapsuleBar
+          layout={capsuleBarLayout({ x: 20, y: 55, width: 300, height: 30 })}
+          fill={theme.palette.secondary}
+          dotFill={theme.palette.secondaryVariant}
+        />
+        <CapsuleBar
+          layout={capsuleBarLayout({ x: 20, y: 100, width: 240, height: 30 })}
+          fill={[theme.palette.secondary, theme.palette.secondaryVariant]}
+          dotFill={theme.palette.base[100]}
+        />
+        <CapsuleBar
+          layout={capsuleBarLayout({ x: 20, y: 145, width: 180, height: 30 })}
+          fill={theme.palette.base[300]}
+          dot={false}
+        />
       </Svg>
     </Theme>
   {/snippet}
 </Story>
 
-<!-- Sem tema no contexto, a primitiva cai no tema padrão (pilar 1). -->
+<!-- Sem tema no contexto, a primitiva cai no tema padrão. -->
 <Story name="Pilar 1">
   {#snippet template()}
     <Svg width={420} height={100}>
-      <CapsuleBar x={20} y={10} width={360} height={36} />
-      <CapsuleBar x={20} y={56} width={140} height={36} />
+      <CapsuleBar layout={capsuleBarLayout({ x: 20, y: 10, width: 360, height: 36 })} />
+      <CapsuleBar layout={capsuleBarLayout({ x: 20, y: 56, width: 140, height: 36 })} />
     </Svg>
   {/snippet}
 </Story>

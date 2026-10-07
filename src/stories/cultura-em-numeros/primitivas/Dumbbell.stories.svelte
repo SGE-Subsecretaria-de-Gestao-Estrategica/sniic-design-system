@@ -2,7 +2,7 @@
   import { defineMeta } from "@storybook/addon-svelte-csf";
   import Svg from "$lib/core/components/Svg.svelte";
   import Theme from "$lib/core/components/Theme.svelte";
-  import Dumbbell from "$lib/core/components/shape/Dumbbell.svelte";
+  import Dumbbell from "$lib/core/components/dumbbell/Dumbbell.svelte";
   import { getPillarTheme } from "$lib/core/theme";
 
   const theme = getPillarTheme(6);

@@ -17,7 +17,7 @@
 	import LabelMask from '$lib/core/components/annotation/LabelMask.svelte';
 	import Axis from '$lib/core/components/axis/Axis.svelte';
 	import GridColumns from '$lib/core/components/grid/GridColumns.svelte';
-	import Dumbbell from '$lib/core/components/shape/Dumbbell.svelte';
+	import Dumbbell from '$lib/core/components/dumbbell/Dumbbell.svelte';
 	import HitTarget from '$lib/core/components/interaction/HitTarget.svelte';
 	import { HoverState } from '$lib/core/interaction/hover.svelte.js';
 	import { Tokens, getPillarTheme } from '$lib/core/theme';

@@ -42,22 +42,13 @@ export const sharedPalette = {
   // TODO: dados que faltam, dados não enviados
 }
 
-/** As cinco cores de um eixo, na ordem da marca. */
-export type EixoPalette = {
-  primary: string
-  primaryVariant: string
-  secondary: string
-  secondaryVariant: string
-  accent: string
-}
-
 export const eixo1Palette = {
   primary: '#D5362A',
   primaryVariant: '#EC6596',
   secondary: '#4B2F92',
   secondaryVariant: '#4F68DA',
   accent: '#68CF27',
-} as const satisfies EixoPalette
+} as const
 
 export const eixo6Palette = {
   primary: '#F6B60E',
@@ -65,7 +56,7 @@ export const eixo6Palette = {
   secondary: '#265C4F',
   secondaryVariant: '#3D9142',
   accent: '#D74D2A',
-} as const satisfies EixoPalette
+} as const
 
 /** Paletas por eixo, indexadas pelo número do eixo. */
 export const eixoPalettes = {

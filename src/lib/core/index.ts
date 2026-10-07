@@ -25,8 +25,8 @@ export { default as LinePath } from './components/shape/LinePath.svelte';
 export { default as AreaPath } from './components/shape/AreaPath.svelte';
 export { default as Arc } from './components/shape/Arc.svelte';
 export { default as Bar } from './components/shape/Bar.svelte';
-export { default as BarStack } from './components/shape/BarStack.svelte';
-export { default as BarGroup } from './components/shape/BarGroup.svelte';
+export { default as BarStack } from './components/barStack/BarStack.svelte';
+export { default as BarGroup } from './components/barGroup/BarGroup.svelte';
 
 // Bubble columns
 export { default as BubbleColumns } from './components/bubbleColumns/BubbleColumns.svelte';
@@ -56,8 +56,8 @@ export { default as LinearGradient } from './components/gradient/LinearGradient.
 
 export { default as RoundedBar } from './components/shape/RoundedBar.svelte';
 export { default as CapsuleBar } from './components/shape/CapsuleBar.svelte';
-export { default as Dumbbell } from './components/shape/Dumbbell.svelte';
-export { default as CapsuleStack } from './components/shape/CapsuleStack.svelte';
+export { default as Dumbbell } from './components/dumbbell/Dumbbell.svelte';
+export { default as CapsuleStack } from './components/capsuleStack/CapsuleStack.svelte';
 
 // Markers
 export { default as Marker } from './components/markers/Marker.svelte';
@@ -82,6 +82,7 @@ export { default as HitTarget } from './components/interaction/HitTarget.svelte'
 export { default as Crosshair } from './components/interaction/Crosshair.svelte';
 export { default as ChartTooltip } from './components/interaction/ChartTooltip.svelte';
 export { HoverState, relativeTo } from './interaction/hover.svelte.js';
+export { hitRadius, pointerIn, focusAnchor, hitTargetHandlers } from './interaction/hitTarget.js';
 export type { TooltipRow, TooltipContent } from './interaction/hover.svelte.js';
 export { nearestIndex, nearestIndexWithin, nearestPoint, distance } from './interaction/nearest.js';
 export { ScrollySteps, scrollStep } from './interaction/scrolly.svelte.js';
@@ -116,6 +117,25 @@ export type { DomainOptions } from './utils/resolveDomain.js';
 // Layouts
 export { bubbleColumnsLayout, BUBBLE_COLUMNS_DEFAULTS } from './layouts/bubbleColumns/index.js';
 export type * from './layouts/bubbleColumns/types.js';
+export { capsuleBarLayout, CAPSULE_BAR_DEFAULTS } from './layouts/capsuleBar/index.js';
+export type {
+  CapsuleBarLayout,
+  CapsuleBarLayoutConfig,
+  CapsuleBox,
+  CapsuleDot,
+  CapsuleOrientation,
+} from './layouts/capsuleBar/types.js';
+export { capsuleStackLayout, CAPSULE_STACK_DEFAULTS } from './layouts/capsuleStack/index.js';
+export type {
+  CapsuleStackLayout,
+  CapsuleStackLayoutConfig,
+  CapsuleStackPiece,
+  CapsuleStackSegment,
+} from './layouts/capsuleStack/types.js';
+export { barStackLayout } from './layouts/barStack/index.js';
+export { barGroupLayout, BAR_GROUP_DEFAULTS } from './layouts/barGroup/index.js';
+export { breakGlyph } from './layouts/breakGlyph.js';
+export type { BreakGlyph } from './layouts/breakGlyph.js';
 export { horizontalBarsLayout, HORIZONTAL_BARS_DEFAULTS } from './layouts/horizontalBars/index.js';
 export type {
   HorizontalBarsSpacing,
@@ -134,6 +154,7 @@ export type {
   AxisBreak,
   SortOrder,
   LayoutBox,
+  Rect,
   LayoutItem,
   SharedXAxis,
   XAccessor,
@@ -169,6 +190,7 @@ export {
   placeCentered,
   sideSign,
   sideAnchor,
+  placeBelowLine,
 } from './layouts/labels.js';
 export { lineSeriesLayout, LINE_SERIES_DEFAULTS } from './layouts/lineSeries/index.js';
 export type {
@@ -239,7 +261,8 @@ export type {
   ChoroplethLayout,
 } from './layouts/hexMap/types.js';
 export { wrapText } from './utils/wrapText.js';
-export { relativeLuminance, contrastRatio, pickContrastInk } from './utils/contrastColor.js';
+export { padBox, paddingPair } from './utils/padBox.js';
+export { observeBBox } from './attachments/observeBBox.js';
 
 // Constants
 export { default as Orientation } from './constants/orientation.js';

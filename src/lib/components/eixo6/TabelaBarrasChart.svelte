@@ -25,6 +25,7 @@
 	import Text from '$lib/core/components/Text.svelte';
 	import Line from '$lib/core/components/shape/Line.svelte';
 	import CapsuleBar from '$lib/core/components/shape/CapsuleBar.svelte';
+	import { capsuleBarLayout } from '$lib/core/layouts/capsuleBar';
 	import HitTarget from '$lib/core/components/interaction/HitTarget.svelte';
 	import { HoverState } from '$lib/core/interaction/hover.svelte.js';
 	import { Tokens, getPillarTheme } from '$lib/core/theme';
@@ -324,7 +325,14 @@
 									fill={theme.palette.neutral[100]}
 								/>
 							{:else}
-								<CapsuleBar x={columnX(c)} y={row.middle - thickness / 2} width={length} height={thickness} />
+								<CapsuleBar
+									layout={capsuleBarLayout({
+										x: columnX(c),
+										y: row.middle - thickness / 2,
+										width: length,
+										height: thickness,
+									})}
+								/>
 								<Text
 									dx={columnX(c) + length + Tokens.spacing.sm}
 									dy={row.middle}

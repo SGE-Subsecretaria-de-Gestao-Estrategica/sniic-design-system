@@ -1,5 +1,9 @@
 <script lang="ts" generics="Scale extends AxisScale">
-  import { neutralPalette } from '$lib/core/theme/tokens';
+  import {
+    DefaultTheme,
+    getChartTheme,
+    resolveThemeStyles,
+  } from "$lib/core/theme";
   import Orientation from "$lib/core/constants/orientation";
   import type { AxisRendererProps, AxisScale } from "$lib/types/Axis";
   import type { TextProps } from "$lib/types/Text";
@@ -25,19 +29,30 @@
     labelProps,
     orientation = Orientation.bottom,
     scale,
-    stroke = neutralPalette[300],
+    stroke,
     strokeDasharray,
-    strokeWidth = 1,
+    strokeWidth,
     tickClassName,
     tickLineProps,
     tickLabelProps,
-    tickLength = 8,
-    tickStroke = neutralPalette[300],
+    tickLength,
+    tickStroke,
     tickTransform,
     ticks,
     tickComponent,
     ticksComponent,
   }: AxisRendererProps<Scale> = $props();
+
+  const theme = getChartTheme();
+
+  // Used directly (not through `Axis`), unset styles still come from the theme.
+  let style = $derived(
+    resolveThemeStyles(
+      { stroke, strokeWidth, tickStroke, tickLength },
+      theme?.axis,
+      DefaultTheme.axis,
+    ),
+  );
 
   let combinedLabelProps = $derived({
     ...defaultTextProps,
@@ -88,10 +103,10 @@
     tickClassName,
     tickComponent,
     tickLabelProps: allTickLabelProps,
-    tickStroke,
+    tickStroke: style.tickStroke,
     tickTransform,
     ticks,
-    strokeWidth,
+    strokeWidth: style.strokeWidth,
     tickLineProps,
   });
 </script>
@@ -107,8 +122,8 @@
     class={["axis-line", axisLineClassName]}
     from={axisFromPoint}
     to={axisToPoint}
-    {stroke}
-    stroke-width={strokeWidth}
+    stroke={style.stroke}
+    stroke-width={style.strokeWidth}
     stroke-dasharray={strokeDasharray}
   />
 {/if}
@@ -122,7 +137,7 @@
       orientation,
       range: scale.range(),
       tickLabelFontSize: maxTickLabelFontSize,
-      tickLength,
+      tickLength: style.tickLength ?? 0,
     })}
     {...combinedLabelProps}
     text={label}
