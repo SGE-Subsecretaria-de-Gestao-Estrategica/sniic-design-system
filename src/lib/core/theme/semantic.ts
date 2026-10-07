@@ -10,37 +10,56 @@ export function getPillarTheme(pillarId: number) {
     ...Tokens.sharedPalette, 
     ...pillarPalette };
 
+
+  const text = {
+    fill: palette.neutral[300],
+    fontFamily: Tokens.fontFamily,
+    fontSize: Tokens.fontSize.md,
+    fontWeight: Tokens.fontWeight.medium,
+    lineHeight: "1.1em"
+  }
+
+  const textRoles = {
+    text,
+    dataLabel: { ...text, fontSize: Tokens.fontSize.lg, fontWeight: Tokens.fontWeight.bold },
+    valueLabel: { ...text, fontSize: Tokens.fontSize.sm },
+    categoryLabel: text,
+    seriesLabel: text,
+    tickLabel: { ...text, fill: palette.neutral[200] },
+    caption: { ...text, fill: palette.neutral[200], fontSize: Tokens.fontSize.sm },
+  }
+
+  const baseline = {
+    stroke: palette.base[200],
+    strokeWidth: Tokens.strokeWidth.sm,
+  }
+
+  const auxiliaryMark = {
+    fill: palette.neutral[100],
+  }
+
+  const connector = {
+    strokeOpacity: 0.3,
+    widthRatio: 2 / 3,
+    strokeDasharray: (w: number) => `${Math.max(w, 6)},${Math.max(1.5 * w, 8)}`,
+  }
+
   return {
     palette: { ...palette, categorical: getCategoricalPalette(pillarPalette) },
     margin: Tokens.defaultMargin,
-    text: {
-      fill: palette.neutral[300],
-      fontFamily: Tokens.fontFamily,
-      fontSize: Tokens.fontSize.md,
-      fontWeight: Tokens.fontWeight.medium,
-      lineHeight: "1.1em"
-    },
-    dataLabel: {
-      fill: palette.neutral[300],
-      fontFamily: Tokens.fontFamily,
-      fontSize: Tokens.fontSize.lg,
-      fontWeight: Tokens.fontWeight.bold
-    },
+    ...textRoles,
+    baseline,
+    connector,
+    auxiliaryMark,
     axis: {
         hideAxisLine: true,
         hideTicks: true,
         hideZero: false,
         tickLength: Tokens.spacing.md,
-        tickLabelProps: { 
-          'font-family': Tokens.fontFamily,
-          'font-size': Tokens.fontSize.md,
-          'font-weight': Tokens.fontWeight.medium,
-          fill: palette.neutral[200]
-        }
+        tickLabelProps: textRoles.tickLabel,
     },
     grid: {
-      stroke: palette.base[200],
-      strokeWidth: 1.5,
+      ...baseline,
       numTicks: 10,
     },
     line: {
@@ -65,7 +84,7 @@ export function getPillarTheme(pillarId: number) {
     arc: {
       fill: palette.primary.toString(),
       stroke: palette.base[100],
-      strokeWidth: 1,
+      strokeWidth: Tokens.strokeWidth.xs,
       cornerRadius: Tokens.radii.none,
       padAngle: 0,
     },
@@ -74,12 +93,7 @@ export function getPillarTheme(pillarId: number) {
       shape: 'rect',
       shapeSize: Tokens.spacing.md,
       labelGap: Tokens.spacing.md / 2,
-      labelProps: {
-        fontFamily: Tokens.fontFamily,
-        fontSize: Tokens.fontSize.md,
-        fontWeight: Tokens.fontWeight.medium,
-        fill: palette.neutral[200],
-      },
+      labelProps: textRoles.tickLabel,
     },
     marker: {
       circle: {
@@ -97,11 +111,6 @@ export function getPillarTheme(pillarId: number) {
   } satisfies ChartTheme
 }
 
-/**
- * Series colours for multi-series charts. The three pillar hues come first so
- * charts with few series stay on-brand; lightness variants extend the ramp
- * while keeping adjacent entries distinguishable.
- */
 function getCategoricalPalette({ primary, secondary, accent }: Omit<Tokens.PillarPalette, 'id'>) {
   const [p, s, a] = [primary, secondary, accent].map((c) => d3.color(c)!)
 

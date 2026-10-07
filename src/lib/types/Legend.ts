@@ -42,3 +42,24 @@ export type LegendProps = {
   className?: ClassValue;
   item?: Snippet<[ComputedLegendItem]>;
 };
+
+/** A stepped colour scale: one swatch per step, lowest first. */
+export type LegendStepsProps = {
+  colors: readonly string[];
+  top?: number;
+  left?: number;
+  class?: ClassValue;
+  stepWidth?: number;
+  height?: number;
+  /** A line behind the swatches that runs past both ends (theme role: `baseline`). */
+  showLine?: boolean;
+  lineOverhang?: number;
+  lineStroke?: string;
+  lineStrokeWidth?: number;
+  /** Text at the two ends, e.g. the scale's lowest and highest value (theme role: `tickLabel`). */
+  labels?: readonly [string, string];
+  labelGap?: number;
+  labelFill?: string;
+  fontSize?: number;
+  fontWeight?: number;
+};

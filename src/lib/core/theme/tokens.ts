@@ -56,7 +56,7 @@ export const eixo1Palette = {
   primaryVariant: '#EC6596',
   secondary: '#4B2F92',
   secondaryVariant: '#4F68DA',
-  accent: '#4ACA5D',
+  accent: '#68CF27',
 } as const satisfies EixoPalette
 
 export const eixo6Palette = {
@@ -77,12 +77,12 @@ export const eixoPalettes = {
 export const defaultEixo = 6
 
 export const pillarPalettes = [
-  { id: 1, ...eixo1Palette },
-  { id: 6, ...eixo6Palette },
+  { id: 1, name: "Eixo 1", ...eixo1Palette },
+  { id: 6, name: "Eixo 6", ...eixo6Palette },
   // PNAB: extraído de public/logos/pnab-logo.svg (azul dominante, verde e amarelo
   // nos blocos principais da marca). Confirme com o guia de marca oficial do PNAB
   // se houver um, antes de considerar definitivo.
-  { id: 100, primary: '#173EFC', primaryVariant: '#173EFC', secondary: '#0DCB03', secondaryVariant: '#0DCB03', accent: '#FCCC02' },
+  { id: 100, name: "PNAB", primary: '#173EFC', primaryVariant: '#173EFC', secondary: '#0DCB03', secondaryVariant: '#0DCB03', accent: '#FCCC02' },
 ]
 
 export type PillarPalette = (typeof pillarPalettes)[number]
@@ -94,8 +94,8 @@ export const spacing = {
   md: 10,
   lg: 16,
   xl: 24,
-  xxl: 32,
-  xxxl: 48,
+  '2xl': 32,
+  '3xl': 48,
 }
 
 export const strokeWidth = {

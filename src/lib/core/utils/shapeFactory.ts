@@ -58,6 +58,60 @@ export function arc<Datum>({
   return path;
 }
 
+export function generateRoundedRect(x = 0, y = 0, width: number, height: number, side: 'top' | 'right' | 'bottom' | 'left', radius: number): string {
+  if (!radius) {
+    radius = Math.min(width, height)
+  }
+  
+  const r = Math.max(0, Math.min(radius, width / 2, height / 2));
+
+  let tl = 0, tr = 0, br = 0, bl = 0;
+
+  if (side === 'top') {
+    tl = r; tr = r;
+  } else if (side === 'right') {
+    tr = r; br = r;
+  } else if (side === 'bottom') {
+    br = r; bl = r;
+  } else if (side === 'left') {
+    bl = r; tl = r;
+  } else {
+    throw new Error(`Invalid side: "${side}". Use 'top' | 'right' | 'bottom' | 'left'.`);
+  }
+
+  const arc = (rad: number, px: number, py: number) => (rad ? `A${rad},${rad} 0 0 1 ${px},${py}` : '');
+
+  const d = [
+    `M${x + tl},${y}`,
+    `H${x + width - tr}`,
+    arc(tr, x + width, y + tr),
+    `V${y + height - br}`,
+    arc(br, x + width - br, y + height),
+    `H${x + bl}`,
+    arc(bl, x, y + height - bl),
+    `V${y + tl}`,
+    arc(tl, x + tl, y),
+    'Z',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  return d;
+}
+
+export function generateHexagon(radius: number): string {
+  const sqrt3 = Math.sqrt(3);
+  return (
+    `M${radius},0` + 
+    `L${radius / 2},${radius * sqrt3 / 2}` + 
+    `L-${radius / 2},${radius * sqrt3 / 2}` + 
+    `L-${radius},0` + 
+    `L-${radius / 2},-${radius * sqrt3 / 2}` + 
+    `L${radius / 2},-${radius * sqrt3 / 2}` + 
+    `Z`
+  )
+}
+
 /**
  * A rect path with independently roundable corners — what a plain `<rect rx>`
  * can't do, since SVG's native radius applies to all four corners alike. Used
@@ -105,15 +159,3 @@ export function roundedRect({
     .join(" ");
 }
 
-/**
- * A flat-topped hexagon path centred on the origin, vertices at `radius` —
- * the tile shape of the hex map layouts (columns 1.5·r apart, rows √3/2·r).
- * Translate it to each tile's position.
- */
-export function generateHexagon(radius: number): string {
-  const points = [0, 60, 120, 180, 240, 300].map((deg) => {
-    const rad = (deg * Math.PI) / 180;
-    return `${radius * Math.cos(rad)},${radius * Math.sin(rad)}`;
-  });
-  return `M${points.join("L")}Z`;
-}

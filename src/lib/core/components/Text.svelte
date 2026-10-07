@@ -8,6 +8,7 @@
   } from "$lib/core/theme";
 
   let {
+    variant = "text",
     dx = 0,
     dy = 0,
     textAnchor = "start",
@@ -23,12 +24,6 @@
     fontFamily,
     fontSize,
     fontWeight,
-    suffix,
-    suffixScale = 0.9,
-    suffixXOffset = 0,
-    suffixYOffset = 0,
-    // Held back from the spread below: `text` is our own prop, and letting it
-    // through would emit an invalid `text` attribute on every <text> element.
     text,
     ...textProps
   }: TextProps = $props();
@@ -44,8 +39,8 @@
         fontWeight,
         lineHeight,
       },
-      theme?.text,
-      DefaultTheme.text,
+      theme?.[variant] ?? theme?.text,
+      DefaultTheme[variant],
     ),
   );
 
@@ -92,18 +87,6 @@
           {line.words.join(" ")}
         </tspan>
       {/each}
-
-      {#if suffix}
-        <tspan
-          dx={suffixXOffset}
-          dy={txt.wordsByLines.length === 1 ? 0 : style.lineHeight}
-          font-size={style.fontSize
-            ? Number(style.fontSize) * suffixScale
-            : undefined}
-        >
-          {suffix}
-        </tspan>
-      {/if}
     </text>
   {/if}
 </svg>

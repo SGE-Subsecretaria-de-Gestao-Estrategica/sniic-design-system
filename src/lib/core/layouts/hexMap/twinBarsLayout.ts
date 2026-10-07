@@ -1,14 +1,25 @@
 import * as d3 from "d3";
-import type { MapTile, Point2D, TwinBarDatum, TwinBarItem, TwinBarsLayoutConfig } from "./types";
+import applyExplicitOrder from "$lib/core/utils/applyExplicitOrder";
+import resolveDomain from "$lib/core/utils/resolveDomain";
+import type { Point } from "../types";
+import type {
+  MapTile,
+  ThresholdLine,
+  TwinBarDatum,
+  TwinBarItem,
+  TwinBarsLayout,
+  TwinBarsLayoutConfig,
+  TwinBarsSpacing,
+} from "./types";
 import { baseLayout } from "./baseLayout";
+import { placeOnSide, placeRight } from "../labels";
+import { resolveTwinBarsSpacing } from "./defaults";
 
-const BAR_WIDTH = 20;
-const BAR_GAP = 2;
-const BAR_BASIS_OFFSET_K = 0.45;
-const BAR_HEIGHT_K = 0.8;
-const THRESHOLD_LINE_OFFSET = 6;
-
-function computeBarSegments(value: number, threshold: number, yScale: d3.ScaleLinear<number, number>) {
+function computeBarSegments(
+  value: number,
+  threshold: number,
+  yScale: d3.ScaleLinear<number, number>,
+) {
   const fullHeight = yScale(value);
   const isOverThreshold = Boolean(threshold && value > threshold);
 
@@ -27,20 +38,30 @@ function computeBarSegments(value: number, threshold: number, yScale: d3.ScaleLi
 function makeBarItem<D>(
   item: D,
   index: number,
-  config: Pick<TwinBarsLayoutConfig<D>, "getUf" | "getValue" | "getType" | "width" | "gap" | "threshold">,
+  types: readonly string[],
+  config: TwinBarsLayoutConfig<D>,
+  spacing: TwinBarsSpacing,
   yScale: d3.ScaleLinear<number, number>,
-  origin: Point2D,
+  origin: Point,
 ): TwinBarItem<D> {
-  const { getUf, getValue, getType, width = BAR_WIDTH, gap = BAR_GAP, threshold = 0 } = config;
-
-  const value = getValue(item);
-  const { fullHeight, segments, isOverThreshold } = computeBarSegments(value, threshold, yScale);
+  const { barWidth: width, barGap: gap } = spacing;
+  const value = config.getValue(item);
+  const { fullHeight, segments, isOverThreshold } = computeBarSegments(
+    value,
+    config.threshold ?? 0,
+    yScale,
+  );
 
   const x = origin.x + index * (width + gap);
   const y = origin.y - fullHeight;
 
+  const type = config.getType(item);
+
   return {
-    key: `${getType(item)}-${getUf(item)}`,
+    key: `${type}-${config.getUf(item)}`,
+    index,
+    type,
+    typeIndex: types.indexOf(type),
     value,
     data: item,
     x,
@@ -49,74 +70,123 @@ function makeBarItem<D>(
     height: fullHeight,
     segments,
     isOverThreshold,
+    label: placeOnSide(
+      { x: x + width / 2, y: origin.y },
+      "below",
+      spacing.valueLabelGap,
+    ),
   };
 }
 
-function getThresholdInterval(origin: Point2D, totalWidth: number, threshold: number, thresholdHeight: number) {
+function getThresholdInterval(
+  origin: Point,
+  totalWidth: number,
+  threshold: number,
+  thresholdHeight: number,
+  overhang: number,
+): ThresholdLine | undefined {
   if (threshold <= 0) return undefined;
   const y = origin.y - thresholdHeight;
   return {
-    from: { x: origin.x - THRESHOLD_LINE_OFFSET, y },
-    to: { x: origin.x + totalWidth + THRESHOLD_LINE_OFFSET, y },
+    from: { x: origin.x - overhang, y },
+    to: { x: origin.x + totalWidth + overhang, y },
   };
+}
+
+/** UF name hanging from the tile's top-left corner. */
+function placeUfName(radius: number, spacing: TwinBarsSpacing) {
+  const corner = -radius * spacing.nameCornerRatio;
+  return placeRight({ x: corner, y: corner }, spacing.nameLabelInset);
 }
 
 function makeTwinBars<D>(
   tile: MapTile,
-  ufCode: string,
-  items: D[],
+  index: number,
+  unordered: D[],
+  types: readonly string[],
   config: TwinBarsLayoutConfig<D>,
+  spacing: TwinBarsSpacing,
   yScale: d3.ScaleLinear<number, number>,
-  thresholdHeight: number
+  thresholdHeight: number,
 ): TwinBarDatum<D> {
-  const { width = BAR_WIDTH, gap = BAR_GAP, threshold = 0 } = config;
-
+  // Bars follow the order of the types, whatever the order of the rows.
+  const items = d3.sort(unordered, (d) => types.indexOf(config.getType(d)));
+  const { barWidth: width, barGap: gap } = spacing;
   const totalWidth = items.length * width + (items.length - 1) * gap;
-  const origin = { x: -totalWidth / 2, y: config.radius * BAR_BASIS_OFFSET_K}
-
-  const bars = items.map((item, index) =>
-    makeBarItem(item, index, config, yScale, origin)
-  );
+  const origin = {
+    x: -totalWidth / 2,
+    y: config.radius * spacing.barBaseRatio,
+  };
 
   return {
     ...tile,
-    ufCode,
-    bars,
+    key: tile.ufCode,
+    index,
+    bars: items.map((item, i) =>
+      makeBarItem(item, i, types, config, spacing, yScale, origin),
+    ),
     totalWidth,
     origin,
-    threshold: getThresholdInterval(origin, totalWidth, threshold, thresholdHeight),
+    threshold: getThresholdInterval(
+      origin,
+      totalWidth,
+      config.threshold ?? 0,
+      thresholdHeight,
+      spacing.thresholdOverhang,
+    ),
+    nameLabel: placeUfName(config.radius, spacing),
     data: items,
   };
 }
 
+/** Per UF tile, side-by-side bars (one per type) with an optional threshold. */
 export function twinBarsLayout<D>(
   raw: D[],
-  config: TwinBarsLayoutConfig<D>
-) {
-  const { radius, offsetK = 0, getUf, getValue, threshold = 0 } = config;
+  config: TwinBarsLayoutConfig<D>,
+): TwinBarsLayout<D> {
+  const spacing = resolveTwinBarsSpacing(config);
+  const { radius, offsetK = 0, getUf, threshold = 0 } = config;
 
   const layout = baseLayout(raw, { getUf, radius, offsetK });
 
-  const yScale = d3.scaleLinear()
-    .domain([0, d3.max(raw, getValue) ?? 0])
-    .range([0, radius * BAR_HEIGHT_K]);
+  const yScale = d3
+    .scaleLinear()
+    .domain(resolveDomain(raw.map(config.getValue), { includeZero: true }))
+    .range([0, radius * spacing.barHeightRatio]);
 
   const thresholdHeight = yScale(threshold);
+  const types = applyExplicitOrder(
+    [...new Set(raw.map(config.getType))],
+    config.typeOrder ?? [],
+  );
 
   const twinBarData: TwinBarDatum<D>[] = [];
   for (const [uf, items] of d3.group(raw, getUf).entries()) {
     const tile = layout.tiles.get(uf);
     if (!tile) continue;
-
-    const bars = makeTwinBars(tile, uf, items, config, yScale, thresholdHeight)
-    twinBarData.push(bars);
+    twinBarData.push(
+      makeTwinBars(
+        tile,
+        twinBarData.length,
+        items,
+        types,
+        config,
+        spacing,
+        yScale,
+        thresholdHeight,
+      ),
+    );
   }
 
   return {
     tiles: layout.tiles,
     pathData: layout.pathData,
+    types,
+    nameLabel: placeUfName(radius, spacing),
     yScale,
     thresholdHeight,
     data: twinBarData,
+    width: layout.width,
+    height: layout.height,
   };
 }
