@@ -57,7 +57,7 @@ export { default as LinearGradient } from './components/gradient/LinearGradient.
 export { default as RoundedBar } from './components/shape/RoundedBar.svelte';
 export { default as CapsuleBar } from './components/shape/CapsuleBar.svelte';
 export { default as Dumbbell } from './components/dumbbell/Dumbbell.svelte';
-export { default as CapsuleStack } from './components/capsuleStack/CapsuleStack.svelte';
+export { default as CapsuleStack } from './components/shape/CapsuleStack.svelte';
 
 // Markers
 export { default as Marker } from './components/markers/Marker.svelte';
@@ -102,7 +102,7 @@ export { default as getScaleBandwidth } from './utils/getScaleBandwidth.js';
 export { default as getStringWidth } from './utils/getStringWidth.js';
 export { default as getTicks } from './utils/getTicks.js';
 export { default as getLabelTransform } from './utils/getLabelTransform.js';
-export { line, area, arc, roundedRect } from './utils/shapeFactory.js';
+export { line, area, arc, roundedRect, capsuleBar, capsuleStack } from './utils/shapeFactory.js';
 export { default as applyExplicitOrder } from './utils/applyExplicitOrder.js';
 export { default as getGradientRamp } from './utils/getGradientRamp.js';
 export type { GradientStops } from './utils/getGradientRamp.js';
@@ -117,23 +117,10 @@ export type { DomainOptions } from './utils/resolveDomain.js';
 // Layouts
 export { bubbleColumnsLayout, BUBBLE_COLUMNS_DEFAULTS } from './layouts/bubbleColumns/index.js';
 export type * from './layouts/bubbleColumns/types.js';
-export { capsuleBarLayout, CAPSULE_BAR_DEFAULTS } from './layouts/capsuleBar/index.js';
-export type {
-  CapsuleBarLayout,
-  CapsuleBarLayoutConfig,
-  CapsuleBox,
-  CapsuleDot,
-  CapsuleOrientation,
-} from './layouts/capsuleBar/types.js';
-export { capsuleStackLayout, CAPSULE_STACK_DEFAULTS } from './layouts/capsuleStack/index.js';
-export type {
-  CapsuleStackLayout,
-  CapsuleStackLayoutConfig,
-  CapsuleStackPiece,
-  CapsuleStackSegment,
-} from './layouts/capsuleStack/types.js';
 export { barStackLayout } from './layouts/barStack/index.js';
+export type * from './layouts/barStack/types.js';
 export { barGroupLayout, BAR_GROUP_DEFAULTS } from './layouts/barGroup/index.js';
+export type * from './layouts/barGroup/types.js';
 export { breakGlyph } from './layouts/breakGlyph.js';
 export type { BreakGlyph } from './layouts/breakGlyph.js';
 export { horizontalBarsLayout, HORIZONTAL_BARS_DEFAULTS } from './layouts/horizontalBars/index.js';

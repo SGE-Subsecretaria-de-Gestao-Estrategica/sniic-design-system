@@ -1,67 +1,63 @@
-import * as d3 from "d3";
-import coerceNumber from "$lib/core/utils/coerceNumber";
-import getScaleBandwidth from "$lib/core/utils/getScaleBandwidth";
-import type { StringLike } from "$lib/types/Base";
-import type { BarGroupLayoutConfig, BarGroupRow, BarScale } from "$lib/types/Bar";
-
-export const BAR_GROUP_DEFAULTS = { groupPadding: 0.1 } as const;
+import rangeSpan from "$lib/core/utils/rangeSpan";
+import { resolveSpacing } from "./defaults";
+import { barFromBaseline, createGroupScale, scaled } from "./geometry";
+import type { BarGroupItem, BarGroupLayout, BarGroupLayoutConfig } from "./types";
 
 /**
  * One group per category, a rect per key side by side within the category's
  * band, each growing from the zero line — so a negative value extends the
  * other way. The only function that reads the config.
  */
-export function barGroupLayout<
-  Datum,
-  Key extends StringLike = string,
-  XScale extends BarScale = BarScale,
-  YScale extends BarScale = BarScale,
->(
-  data: Datum[],
-  config: BarGroupLayoutConfig<Datum, Key, XScale, YScale>,
-): BarGroupRow<Key>[] {
-  const { keys = [], category, color, horizontal = false } = config;
+export function barGroupLayout<D, K extends string = string>(
+  data: D[],
+  config: BarGroupLayoutConfig<D, K>,
+): BarGroupLayout<D, K> {
+  const spacing = resolveSpacing(config);
+  const { keys, getCategory, horizontal = false } = config;
   const getValue =
-    config.value ??
-    ((d: Datum, key: Key) => Number((d as Record<string, unknown>)[String(key)] ?? 0));
+    config.getValue ?? ((d: D, key: K) => Number((d as Record<string, unknown>)[key] ?? 0));
 
   // The band scale carries the categories; the other carries the values.
   const bandScale = horizontal ? config.yScale : config.xScale;
   const valueScale = horizontal ? config.xScale : config.yScale;
 
-  const innerScale =
-    config.groupScale ??
-    d3
-      .scaleBand<string>()
-      .domain(keys.map(String))
-      .range([0, getScaleBandwidth(bandScale)])
-      .padding(config.groupPadding ?? BAR_GROUP_DEFAULTS.groupPadding);
-  const thickness = innerScale.bandwidth();
-  const baseline = coerceNumber(valueScale(0 as never)) ?? 0;
+  const groupScale =
+    config.groupScale ?? createGroupScale(keys, bandScale.bandwidth?.() ?? 0, spacing.groupPadding);
+  const thickness = groupScale.bandwidth();
+  const baseline = scaled(valueScale, 0);
 
-  return data.map((datum, index) => {
-    const bandPos = coerceNumber(bandScale(category(datum) as never)) ?? 0;
-    return {
-      index,
-      x0: horizontal ? 0 : bandPos,
-      y0: horizontal ? bandPos : 0,
-      bars: keys.map((key, keyIndex) => {
-        const v = getValue(datum, key);
-        const scaled = coerceNumber(valueScale(v as never)) ?? 0;
-        const extent = Math.abs(scaled - baseline);
-        const origin = Math.min(scaled, baseline);
-        const withinGroup = innerScale(String(key)) ?? 0;
-        return {
-          key,
-          index: keyIndex,
-          x: horizontal ? origin : bandPos + withinGroup,
-          y: horizontal ? bandPos + withinGroup : origin,
-          width: horizontal ? extent : thickness,
-          height: horizontal ? thickness : extent,
-          color: color?.(key, keyIndex, keys),
-          value: v,
-        };
-      }),
-    };
-  });
+  return {
+    width: rangeSpan(config.xScale),
+    height: rangeSpan(config.yScale),
+    groups: data.map((datum, index): BarGroupItem<D, K> => {
+      const category = getCategory(datum);
+      const bandPos = scaled(bandScale, category);
+      return {
+        key: category,
+        index,
+        data: datum,
+        category,
+        x0: horizontal ? 0 : bandPos,
+        y0: horizontal ? bandPos : 0,
+        bars: keys.map((series, keyIndex) => {
+          const value = getValue(datum, series);
+          return {
+            key: `${category}:${series}`,
+            index: keyIndex,
+            data: datum,
+            series,
+            category,
+            value,
+            ...barFromBaseline(
+              horizontal,
+              bandPos + (groupScale(series) ?? 0),
+              thickness,
+              baseline,
+              scaled(valueScale, value),
+            ),
+          };
+        }),
+      };
+    }),
+  };
 }

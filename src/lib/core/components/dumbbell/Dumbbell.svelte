@@ -10,7 +10,7 @@
    *
    * Unset styles come from the theme's `dumbbell` role.
    */
-  import { getChartTheme, resolveDumbbell } from "$lib/core/theme";
+  import { DefaultTheme, getChartTheme, resolveThemeStyles } from "$lib/core/theme";
   import type { DumbbellProps } from "$lib/types/Dumbbell";
   import Circle from "../markers/Circle.svelte";
   import Line from "../shape/Line.svelte";
@@ -35,9 +35,10 @@
   const theme = getChartTheme();
 
   let style = $derived(
-    resolveDumbbell(
+    resolveThemeStyles(
       { stroke, strokeWidth, strokeOpacity, fromFill, toFill, fromSize, toSize },
-      theme,
+      theme?.dumbbell,
+      DefaultTheme.dumbbell,
     ),
   );
 </script>

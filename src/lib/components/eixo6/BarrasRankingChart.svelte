@@ -21,7 +21,6 @@
 	import Text from '$lib/core/components/Text.svelte';
 	import Line from '$lib/core/components/shape/Line.svelte';
 	import CapsuleBar from '$lib/core/components/shape/CapsuleBar.svelte';
-	import { capsuleBarLayout } from '$lib/core/layouts/capsuleBar';
 	import HitTarget from '$lib/core/components/interaction/HitTarget.svelte';
 	import { HoverState } from '$lib/core/interaction/hover.svelte.js';
 	import { Tokens, getPillarTheme } from '$lib/core/theme';
@@ -246,7 +245,7 @@
 						fill={theme.palette.neutral[300]}
 					/>
 
-					<CapsuleBar layout={capsuleBarLayout({ x: 0, y: row.top, width: row.length, height: thickness })} />
+					<CapsuleBar x={0} y={row.top} width={row.length} height={thickness} />
 
 					<g class="fade" style:opacity={shows(1) ? 1 : 0}>
 						<Text

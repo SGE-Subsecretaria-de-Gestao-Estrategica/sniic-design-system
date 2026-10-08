@@ -1,7 +1,8 @@
 <script lang="ts" generics="D">
   import {
     getChartTheme,
-    resolveBaseline,
+    resolveThemeStyles,
+    DefaultTheme,
     resolveConnector,
   } from "$lib/core/theme";
   import resolveValue from "$lib/core/utils/resolveValue";
@@ -35,9 +36,10 @@
   const theme = getChartTheme();
 
   const baseline = $derived(
-    resolveBaseline(
+    resolveThemeStyles(
       { stroke: baselineStroke, strokeWidth: baselineStrokeWidth },
-      theme,
+      theme?.baseline,
+      DefaultTheme.baseline,
     ),
   );
 

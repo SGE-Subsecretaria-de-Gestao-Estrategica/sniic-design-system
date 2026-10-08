@@ -13,7 +13,7 @@
    * text role.
    */
   import { breakGlyph } from "$lib/core/layouts/breakGlyph";
-  import { getChartTheme, resolveTimelineBreak } from "$lib/core/theme";
+  import { DefaultTheme, getChartTheme, resolveThemeStyles } from "$lib/core/theme";
   import type { TimelineBreakProps } from "$lib/types/TimelineBreak";
   import Text from "../Text.svelte";
 
@@ -22,7 +22,9 @@
 
   const theme = getChartTheme();
 
-  let style = $derived(resolveTimelineBreak({ stroke: color, size, label }, theme));
+  let style = $derived(
+    resolveThemeStyles({ stroke: color, size, label }, theme?.timelineBreak, DefaultTheme.timelineBreak),
+  );
   let glyph = $derived(breakGlyph(x, axisY, style.size));
 </script>
 

@@ -134,12 +134,12 @@
 		<BarStack
 			layout={barStackLayout(processed, {
 				keys: effectiveKeys,
-				category: (d) => String(d[categoryKey]),
-				value: (d, key) => Number(d[key]) || 0,
-				color: (_key, i) => seriesColor(i),
+				getCategory: (d) => String(d[categoryKey]),
+				getValue: (d, key) => Number(d[key]) || 0,
 				xScale,
 				yScale
 			})}
+			color={(_key, i) => seriesColor(i)}
 			rx={0}
 		/>
 

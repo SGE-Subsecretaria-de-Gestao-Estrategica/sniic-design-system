@@ -12,7 +12,7 @@
    */
   import { observeBBox } from "$lib/core/attachments/observeBBox";
   import type { Rect } from "$lib/core/layouts/types";
-  import { getChartTheme, resolveLabelMask } from "$lib/core/theme";
+  import { DefaultTheme, getChartTheme, resolveThemeStyles } from "$lib/core/theme";
   import { padBox } from "$lib/core/utils/padBox";
   import type { LabelMaskProps } from "$lib/types/LabelMask";
 
@@ -32,7 +32,9 @@
 
   let measured = $state<Rect | null>(null);
 
-  let style = $derived(resolveLabelMask({ fill, fillOpacity, padding, radius }, theme));
+  let style = $derived(
+    resolveThemeStyles({ fill, fillOpacity, padding, radius }, theme?.labelMask, DefaultTheme.labelMask),
+  );
   let box = $derived({
     x: x ?? measured?.x ?? 0,
     y: y ?? measured?.y ?? 0,

@@ -48,3 +48,18 @@ export type ValueAccessor<D> = { getValue: Accessor<D, number> };
 export type CategoryAccessor<D> = { getCategory: Accessor<D, string> };
 export type GroupAccessor<D> = { getGroup: Accessor<D, string> };
 export type SeriesAccessor<D> = { getSeries: Accessor<D, string> };
+
+/** A d3 scale a layout positions with — band, point or continuous. */
+export type PositionScale = {
+  (value: any): number | undefined;
+  range(): number[];
+  bandwidth?(): number;
+};
+
+/** Series keys and how to read one series' value off a datum. */
+export type SeriesAccessors<D, K extends string> = {
+  /** Series keys, in series order. */
+  keys: readonly K[];
+  /** Defaults to reading `datum[key]`. */
+  getValue?: (d: D, key: K) => number;
+};

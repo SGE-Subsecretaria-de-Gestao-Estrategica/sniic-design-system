@@ -19,7 +19,6 @@
 	import Text from '$lib/core/components/Text.svelte';
 	import Line from '$lib/core/components/shape/Line.svelte';
 	import CapsuleBar from '$lib/core/components/shape/CapsuleBar.svelte';
-	import { capsuleBarLayout } from '$lib/core/layouts/capsuleBar';
 	import HitTarget from '$lib/core/components/interaction/HitTarget.svelte';
 	import { HoverState } from '$lib/core/interaction/hover.svelte.js';
 	import { Tokens, getPillarTheme } from '$lib/core/theme';
@@ -240,14 +239,12 @@
 				{@const isActive = d.index === activeIndex}
 				<g class="fade" style:opacity={shows(stageOf[d.type]) ? (dimmed(d.label) ? 0.25 : 1) : 0}>
 					<CapsuleBar
-						layout={capsuleBarLayout({
-							orientation: 'vertical',
-							reverse: d.falls,
-							x: d.center - thickness / 2,
-							y: d.top,
-							width: thickness,
-							height: d.bottom - d.top,
-						})}
+						orientation="vertical"
+						reverse={d.falls}
+						x={d.center - thickness / 2}
+						y={d.top}
+						width={thickness}
+						height={d.bottom - d.top}
 						fill={d.fill}
 					/>
 

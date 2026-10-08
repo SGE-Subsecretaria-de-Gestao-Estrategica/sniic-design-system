@@ -85,7 +85,7 @@
           rx={args.rx}
           layout={barStackLayout(data, {
             keys: [...keys],
-            category: (d) => d.region,
+            getCategory: (d) => d.region,
             xScale,
             yScale,
           })}
@@ -127,7 +127,7 @@
           rx={args.rx}
           layout={barGroupLayout(data, {
             keys: [...keys],
-            category: (d) => d.region,
+            getCategory: (d) => d.region,
             xScale,
             yScale,
           })}
@@ -163,7 +163,7 @@
           layout={barStackLayout(data, {
             horizontal: true,
             keys: [...keys],
-            category: (d) => d.region,
+            getCategory: (d) => d.region,
             xScale,
             yScale,
           })}
@@ -171,7 +171,7 @@
         >
           {#snippet children({ barStacks })}
             {#each barStacks as stack (stack.key)}
-              {#each stack.bars as bar (`${stack.key}-${bar.index}`)}
+              {#each stack.bars as bar (bar.index)}
                 <Bar
                   x={bar.x}
                   y={bar.y}

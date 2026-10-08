@@ -115,7 +115,9 @@ export function getPillarTheme(pillarId: number) {
         d3.interpolateLab(pillarPalette.primaryVariant, pillarPalette.primary)(0.6),
       ] as const,
       dotFill: pillarPalette.primary,
+      dotRatio: 0.55,
       gapFill: palette.base[100],
+      gap: 2,
     },
     dumbbell: {
       stroke: pillarPalette.primary,

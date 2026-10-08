@@ -89,8 +89,12 @@ export type CapsuleStyle = {
   fillOpacity?: number;
   /** Colour of the dot inside the cap. */
   dotFill?: string;
+  /** Dot radius as a fraction of the cap's radius (half the thickness). */
+  dotRatio?: number;
   /** Colour of the gaps between stack segments — the surface behind the chart. */
   gapFill?: string;
+  /** Width of the gaps between stack segments, in px. */
+  gap?: number;
 }
 
 export type DumbbellStyle = {

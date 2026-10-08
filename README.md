@@ -70,16 +70,16 @@ Charts tied to a specific project's data and copy live in that project's reposit
 |---|---|
 | Container | `Chart`, `Svg`, `Group`, `Text`, `Theme` |
 | Axes and grid | `Axis`, `AxisRenderer`, `Ticks`, `Grid`, `GridRows`, `GridColumns` |
-| Shapes — draw a ready geometry | `Line`, `LinePath`, `AreaPath`, `Arc`, `Bar`, `RoundedBar`, `CapsuleBar` |
-| Layout components — draw a computed layout | `BarStack`, `BarGroup`, `CapsuleStack` |
+| Shapes — draw a ready geometry | `Line`, `LinePath`, `AreaPath`, `Arc`, `Bar`, `RoundedBar`, `CapsuleBar`, `CapsuleStack` |
+| Layout components — draw a computed layout | `BarStack`, `BarGroup` |
 | Composites | `Dumbbell` (a `Line` and two `Circle`s) |
-| Layouts — pure geometry | `capsuleBarLayout`, `capsuleStackLayout`, `barStackLayout`, `barGroupLayout` |
+| Layouts — pure geometry | `barStackLayout`, `barGroupLayout` |
 | Markers | `Marker`, `MarkerCircle`, `Markers`, `Circle` |
 | Legend | `ChartLegend` (core's `Legend`, renamed at the root to avoid the legacy atom), `LegendChips` |
 | Annotation | `ValueCallout`, `HighlightCallout`, `TimelineBreak`, `LabelMask` |
 | Interaction | `HoverLayer`, `HitTarget`, `Crosshair`, `ChartTooltip`, `HoverState`, `ScrollySteps`, `scrollStep` |
-| Theme | `DefaultTheme`, `getPillarTheme`, `getChartTheme`, `setChartTheme`, `getCategoricalColor`, `resolveThemeStyles` and the role resolvers (`resolveCapsule`, `resolveDumbbell`, `resolveLabelMask`, `resolveTimelineBreak`…) |
-| Utilities | `roundedRect`, `wrapText`, `padBox`, `getTicks`, `getStringWidth`… |
+| Theme | `DefaultTheme`, `getPillarTheme`, `getChartTheme`, `setChartTheme`, `getCategoricalColor`, `resolveThemeStyles` |
+| Utilities | `roundedRect`, `capsuleBar`, `capsuleStack`, `wrapText`, `padBox`, `getTicks`, `getStringWidth`… |
 
 Shapes take geometry, never data or scales; layout functions turn data into
 that geometry. Every unset style falls through props > `<Theme>` >

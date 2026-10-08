@@ -22,8 +22,7 @@
 	import * as d3 from 'd3';
 	import Text from '$lib/core/components/Text.svelte';
 	import Line from '$lib/core/components/shape/Line.svelte';
-	import CapsuleStack from '$lib/core/components/capsuleStack/CapsuleStack.svelte';
-	import { capsuleStackLayout } from '$lib/core/layouts/capsuleStack';
+	import CapsuleStack from '$lib/core/components/shape/CapsuleStack.svelte';
 	import HitTarget from '$lib/core/components/interaction/HitTarget.svelte';
 	import { HoverState } from '$lib/core/interaction/hover.svelte.js';
 	import { Tokens, getPillarTheme } from '$lib/core/theme';
@@ -352,14 +351,15 @@
 				{@const isActive = c.index === activeIndex}
 				{@const x = c.center - thickness / 2}
 				<CapsuleStack
-					layout={capsuleStackLayout(
-						c.segments.map((s) => ({
-							length: s.length,
-							fill: palette[s.index],
-							fillOpacity: segmentOpacity(s.key)
-						})),
-						{ x, y: plotHeight - c.length, width: thickness, height: c.length }
-					)}
+					{x}
+					y={plotHeight - c.length}
+					width={thickness}
+					height={c.length}
+					segments={c.segments.map((s) => ({
+						length: s.length,
+						fill: palette[s.index],
+						fillOpacity: segmentOpacity(s.key)
+					}))}
 				/>
 
 				<g class="fade" style:opacity={shows(1) ? 1 : 0}>

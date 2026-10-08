@@ -15,7 +15,6 @@
 	import Text from '$lib/core/components/Text.svelte';
 	import Line from '$lib/core/components/shape/Line.svelte';
 	import CapsuleBar from '$lib/core/components/shape/CapsuleBar.svelte';
-	import { capsuleBarLayout } from '$lib/core/layouts/capsuleBar';
 	import HitTarget from '$lib/core/components/interaction/HitTarget.svelte';
 	import { HoverState } from '$lib/core/interaction/hover.svelte.js';
 	import { Tokens, getPillarTheme } from '$lib/core/theme';
@@ -265,13 +264,11 @@
 					{#each SIDES as side (side)}
 						<g class="fade" style:opacity={shows(sideStage[side]) ? 1 : 0}>
 							<CapsuleBar
-								layout={capsuleBarLayout({
-									x: side === 'right' ? zero : zero - row.length.left,
-									y: row.top,
-									width: row.length[side],
-									height: thickness,
-									reverse: side === 'left',
-								})}
+								x={side === 'right' ? zero : zero - row.length.left}
+								y={row.top}
+								width={row.length[side]}
+								height={thickness}
+								reverse={side === 'left'}
 								fill={sideColors[side]}
 								dotFill={dotOf(side)}
 							/>

@@ -143,17 +143,17 @@
 			layout={barStackLayout(sorted, {
 				horizontal: true,
 				keys: effectiveKeys,
-				category: (d) => String(d[categoryKey]),
-				value: (d, key) => Number(d[key]) || 0,
-				color: (_key, i) => seriesColor(i),
+				getCategory: (d) => String(d[categoryKey]),
+				getValue: (d, key) => Number(d[key]) || 0,
 				xScale,
 				yScale
 			})}
+			color={(_key, i) => seriesColor(i)}
 			rx={0}
 		>
 			{#snippet children({ barStacks })}
 				{#each barStacks as stack (stack.key)}
-					{#each stack.bars as bar (`${stack.key}-${bar.index}`)}
+					{#each stack.bars as bar (bar.index)}
 						<Bar
 							x={bar.x}
 							y={bar.y}

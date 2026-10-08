@@ -60,6 +60,8 @@ export {
 	area,
 	arc,
 	roundedRect,
+	capsuleBar,
+	capsuleStack,
 	wrapText,
 	Orientation,
 	HoverLayer,
@@ -74,13 +76,7 @@ export {
 	ScrollySteps,
 	scrollStep,
 } from './core/index.js';
-export {
-	capsuleBarLayout,
-	capsuleStackLayout,
-	barStackLayout,
-	barGroupLayout
-} from './core/index.js';
-export type { CapsuleBarLayout, CapsuleStackLayout } from './core/index.js';
+export { barStackLayout, barGroupLayout } from './core/index.js';
 export { relativeLuminance, contrastRatio, pickContrastInk } from './utils/contrastColor.js';
 
 export type {
@@ -103,7 +99,24 @@ export type {
 } from './core/index.js';
 
 export type { ChartDimensions, ChartProps, Margin as ChartMargin } from './types/Chart.js';
-export type { BarProps, BarStackProps, BarGroupProps, ComputedBar } from './types/Bar.js';
+export type {
+	BarProps,
+	BarStackProps,
+	BarGroupProps,
+	ComputedBar,
+	ComputedBarStack,
+	ComputedBarGroup,
+} from './types/Bar.js';
+export type {
+	BarStackLayout,
+	BarStackLayoutConfig,
+	BarStackSeries,
+	BarStackBar,
+	BarGroupLayout,
+	BarGroupLayoutConfig,
+	BarGroupItem,
+	BarGroupBar,
+} from './core/index.js';
 export type { AreaPathProps } from './types/Area.js';
 export type { ArcProps } from './types/Arc.js';
 export type { LegendItem, LegendProps } from './types/Legend.js';
@@ -115,9 +128,23 @@ export type {
 	RoundedRectConfig,
 	RoundedBarProps,
 } from './types/RoundedRect.js';
-export type { CapsuleBarProps } from './types/CapsuleBar.js';
+export type {
+	CapsuleBarProps,
+	CapsuleBarConfig,
+	CapsuleBarGeometry,
+	CapsuleBox,
+	CapsuleDot,
+	CapsuleOrientation,
+} from './types/CapsuleBar.js';
 export type { DumbbellProps } from './types/Dumbbell.js';
-export type { CapsuleStackProps, CapsuleStackFillSegment } from './types/CapsuleStack.js';
+export type {
+	CapsuleStackProps,
+	CapsuleStackFillSegment,
+	CapsuleStackConfig,
+	CapsuleStackGeometry,
+	CapsuleStackPiece,
+	CapsuleStackSegment,
+} from './types/CapsuleStack.js';
 export type { LabelMaskProps } from './types/LabelMask.js';
 export type { HitTargetProps } from './types/HitTarget.js';
 export type { HighlightCalloutProps } from './types/HighlightCallout.js';

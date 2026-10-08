@@ -1,25 +1,26 @@
-<script lang="ts" generics="Key extends StringLike = string">
+<script lang="ts" generics="D, K extends string = string">
   /**
    * Draws the groups `barGroupLayout` computes, a `Bar` per rect. A bar
-   * without a colour takes the theme's categorical colour for its key.
+   * takes `color` for its series, or the theme's categorical colour for its
+   * position in the group.
    */
   import { getCategoricalColor, getChartTheme } from "$lib/core/theme";
-  import type { StringLike } from "$lib/types/Base";
   import type { BarGroupProps, ComputedBarGroup } from "$lib/types/Bar";
   import Group from "../Group.svelte";
   import Bar from "../shape/Bar.svelte";
 
-  let { layout, rx, ry, top = 0, left = 0, className, children }: BarGroupProps<Key> = $props();
+  let { layout, color, rx, ry, top = 0, left = 0, className, children }: BarGroupProps<D, K> =
+    $props();
 
   const theme = getChartTheme();
 
   let barGroups = $derived(
-    layout.map(
-      (group): ComputedBarGroup<Key> => ({
+    layout.groups.map(
+      (group): ComputedBarGroup<D, K> => ({
         ...group,
         bars: group.bars.map((bar) => ({
           ...bar,
-          color: bar.color ?? getCategoricalColor(bar.index, theme),
+          color: color?.(bar.series, bar.index) ?? getCategoricalColor(bar.index, theme),
         })),
       }),
     ),
@@ -31,7 +32,7 @@
     {@render children({ barGroups })}
   {:else}
     {#each barGroups as group (group.index)}
-      {#each group.bars as bar (`${group.index}-${String(bar.key)}`)}
+      {#each group.bars as bar (bar.index)}
         <Bar x={bar.x} y={bar.y} width={bar.width} height={bar.height} fill={bar.color} {rx} {ry} />
       {/each}
     {/each}
