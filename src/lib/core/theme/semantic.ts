@@ -62,6 +62,7 @@ export function getPillarTheme(pillarId: number) {
         strokeWidth: Tokens.strokeWidth.xs,
         tickStroke: palette.neutral[300],
         tickLength: Tokens.spacing.md,
+        labelOffset: 14,
         tickLabelProps: textRoles.tickLabel,
     },
     grid: {

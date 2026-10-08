@@ -25,7 +25,7 @@
     horizontal,
     label = "",
     labelClassName,
-    labelOffset = 14,
+    labelOffset,
     labelProps,
     orientation = Orientation.bottom,
     scale,
@@ -48,7 +48,7 @@
   // Used directly (not through `Axis`), unset styles still come from the theme.
   let style = $derived(
     resolveThemeStyles(
-      { stroke, strokeWidth, tickStroke, tickLength },
+      { stroke, strokeWidth, tickStroke, tickLength, labelOffset },
       theme?.axis,
       DefaultTheme.axis,
     ),
@@ -132,12 +132,12 @@
   <Text
     class={["axis-label", labelClassName]}
     {...getLabelTransform({
-      labelOffset,
+      labelOffset: style.labelOffset,
       labelProps: combinedLabelProps,
       orientation,
       range: scale.range(),
       tickLabelFontSize: maxTickLabelFontSize,
-      tickLength: style.tickLength ?? 0,
+      tickLength: style.tickLength,
     })}
     {...combinedLabelProps}
     text={label}

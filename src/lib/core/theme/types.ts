@@ -149,6 +149,7 @@ export type AxisStyle = Pick<
   'strokeDasharray' |
   'tickStroke' |
   'tickLength' |
+  'labelOffset' |
   'tickLabelProps' |
   'labelProps' |
   'tickLineProps'
