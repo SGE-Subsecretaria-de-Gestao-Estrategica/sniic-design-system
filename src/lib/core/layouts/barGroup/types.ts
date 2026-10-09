@@ -1,4 +1,5 @@
 import type { ScaleBand } from "d3";
+import type { BarGroupStyle, ChartTheme } from "$lib/core/theme/types";
 import type {
   CategoryAccessor,
   LayoutBox,
@@ -8,12 +9,7 @@ import type {
   SeriesAccessors,
 } from "../types";
 
-export type BarGroupSpacing = {
-  /** Gap between bars within a group, as a fraction of the inner bandwidth. */
-  groupPadding: number;
-};
-
-export type BarGroupLayoutConfig<D, K extends string = string> = Partial<BarGroupSpacing> &
+export type BarGroupLayoutConfig<D, K extends string = string> = BarGroupStyle &
   CategoryAccessor<D> &
   SeriesAccessors<D, K> & {
     xScale: PositionScale;
@@ -25,6 +21,8 @@ export type BarGroupLayoutConfig<D, K extends string = string> = Partial<BarGrou
     horizontal?: boolean;
     /** Inner band scale over `keys`; built from the outer bandwidth when omitted. */
     groupScale?: ScaleBand<string>;
+    /** Where unset styles (`groupPadding`) come from; `DefaultTheme` when omitted. */
+    theme?: ChartTheme;
   };
 
 /** One series' bar within a category's group. */

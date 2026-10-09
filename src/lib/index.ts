@@ -88,6 +88,7 @@ export type {
 	LineStyle,
 	AreaStyle,
 	BarStyle,
+	BarGroupStyle,
 	ArcStyle,
 	GridStyle,
 	LegendStyle,

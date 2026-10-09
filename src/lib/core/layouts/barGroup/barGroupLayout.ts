@@ -1,5 +1,5 @@
 import rangeSpan from "$lib/core/utils/rangeSpan";
-import { resolveSpacing } from "./defaults";
+import { DefaultTheme, resolveThemeStyles } from "$lib/core/theme";
 import { barFromBaseline, createGroupScale, scaled } from "./geometry";
 import type { BarGroupItem, BarGroupLayout, BarGroupLayoutConfig } from "./types";
 
@@ -12,7 +12,11 @@ export function barGroupLayout<D, K extends string = string>(
   data: D[],
   config: BarGroupLayoutConfig<D, K>,
 ): BarGroupLayout<D, K> {
-  const spacing = resolveSpacing(config);
+  const style = resolveThemeStyles(
+    { groupPadding: config.groupPadding },
+    config.theme?.barGroup,
+    DefaultTheme.barGroup,
+  );
   const { keys, getCategory, horizontal = false } = config;
   const getValue =
     config.getValue ?? ((d: D, key: K) => Number((d as Record<string, unknown>)[key] ?? 0));
@@ -22,7 +26,7 @@ export function barGroupLayout<D, K extends string = string>(
   const valueScale = horizontal ? config.xScale : config.yScale;
 
   const groupScale =
-    config.groupScale ?? createGroupScale(keys, bandScale.bandwidth?.() ?? 0, spacing.groupPadding);
+    config.groupScale ?? createGroupScale(keys, bandScale.bandwidth?.() ?? 0, style.groupPadding);
   const thickness = groupScale.bandwidth();
   const baseline = scaled(valueScale, 0);
 

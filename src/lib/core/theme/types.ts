@@ -29,6 +29,7 @@ export type ChartTheme = {
   line?: LineStyle;
   area?: AreaStyle;
   bar?: BarStyle;
+  barGroup?: BarGroupStyle;
   arc?: ArcStyle;
   grid?: GridStyle;
   legend?: LegendStyle;
@@ -95,6 +96,12 @@ export type CapsuleStyle = {
   gapFill?: string;
   /** Width of the gaps between stack segments, in px. */
   gap?: number;
+}
+
+/** Bars side by side within a category (`barGroupLayout`). */
+export type BarGroupStyle = {
+  /** Gap between bars within a group, as a fraction of the inner bandwidth. */
+  groupPadding?: number;
 }
 
 export type DumbbellStyle = {

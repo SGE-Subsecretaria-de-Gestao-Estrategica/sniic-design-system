@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { type Snippet, untrack } from "svelte";
+  import type { Snippet } from "svelte";
   import { setChartTheme } from "$lib/core/theme/context";
   import type { ChartTheme } from "$lib/core/theme/types";
 
@@ -10,8 +10,8 @@
 
   let { theme, children }: ThemeProps = $props();
 
-  // Context is set once at init; later changes to `theme` are not propagated.
-  setChartTheme(untrack(() => theme));
+  // A getter, so descendants follow later changes to `theme`.
+  setChartTheme(() => theme);
 </script>
 
 {@render children?.()}

@@ -31,4 +31,11 @@ describe("barGroupLayout", () => {
     expect(layout.groups[1]).toMatchObject({ key: "S", index: 1, data: data[1], category: "S" });
     expect(layout.groups[1].bars[1]).toMatchObject({ key: "S:b", series: "b", data: data[1] });
   });
+
+  it("takes groupPadding from the theme when the config leaves it unset", () => {
+    const tight = barGroupLayout(data, { ...config, theme: { barGroup: { groupPadding: 0 } } });
+    expect(tight.groups[0].bars[0].width).toBe(50);
+    const own = barGroupLayout(data, { ...config, groupPadding: 0, theme: { barGroup: { groupPadding: 0.5 } } });
+    expect(own.groups[0].bars[0].width).toBe(50);
+  });
 });

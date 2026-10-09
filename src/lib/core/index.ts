@@ -119,7 +119,7 @@ export { bubbleColumnsLayout, BUBBLE_COLUMNS_DEFAULTS } from './layouts/bubbleCo
 export type * from './layouts/bubbleColumns/types.js';
 export { barStackLayout } from './layouts/barStack/index.js';
 export type * from './layouts/barStack/types.js';
-export { barGroupLayout, BAR_GROUP_DEFAULTS } from './layouts/barGroup/index.js';
+export { barGroupLayout } from './layouts/barGroup/index.js';
 export type * from './layouts/barGroup/types.js';
 export { breakGlyph } from './layouts/breakGlyph.js';
 export type { BreakGlyph } from './layouts/breakGlyph.js';

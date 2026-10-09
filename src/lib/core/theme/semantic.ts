@@ -88,6 +88,9 @@ export function getPillarTheme(pillarId: number) {
       strokeWidth: 0,
       rx: Tokens.radii.sm,
     },
+    barGroup: {
+      groupPadding: 0.1,
+    },
     arc: {
       fill: palette.primary.toString(),
       stroke: palette.base[100],
