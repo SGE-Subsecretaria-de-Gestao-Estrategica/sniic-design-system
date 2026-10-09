@@ -1,3 +1,5 @@
+import { basePalette, neutralPalette } from '$lib/core/theme/tokens';
+
 /**
  * CSS custom-property names for chart foreground theming.
  *
@@ -25,6 +27,15 @@ const light = {
   [chartVars.fgMuted]: '#555555',
   [chartVars.grid]: '#e2e8f0',
   [chartVars.bg]: '#ffffff',
+};
+
+/** Fundo do Cultura em Números — só cores base e neutral. */
+const cultnum = {
+  [chartVars.fg]: neutralPalette[200],
+  [chartVars.fgStrong]: neutralPalette[300],
+  [chartVars.fgMuted]: neutralPalette[100],
+  [chartVars.grid]: basePalette[300],
+  [chartVars.bg]: basePalette[100],
 };
 
 /** Dark background values */
@@ -79,6 +90,7 @@ export const themes: Record<string, ThemePreset> = {
   'light-lime': onLightColor,
   'light-red': onLightColor,
   'light-lavender': onLightColor,
+  'cultnum-bg': cultnum,
 };
 
 /** Build a CSS style string from a theme preset */

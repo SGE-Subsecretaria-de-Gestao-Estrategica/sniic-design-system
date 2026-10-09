@@ -25,8 +25,8 @@ export { default as LinePath } from './components/shape/LinePath.svelte';
 export { default as AreaPath } from './components/shape/AreaPath.svelte';
 export { default as Arc } from './components/shape/Arc.svelte';
 export { default as Bar } from './components/shape/Bar.svelte';
-export { default as BarStack } from './components/shape/BarStack.svelte';
-export { default as BarGroup } from './components/shape/BarGroup.svelte';
+export { default as BarStack } from './components/barStack/BarStack.svelte';
+export { default as BarGroup } from './components/barGroup/BarGroup.svelte';
 
 // Bubble columns
 export { default as BubbleColumns } from './components/bubbleColumns/BubbleColumns.svelte';
@@ -55,6 +55,9 @@ export { default as LinearGradient } from './components/gradient/LinearGradient.
 
 
 export { default as RoundedBar } from './components/shape/RoundedBar.svelte';
+export { default as CapsuleBar } from './components/shape/CapsuleBar.svelte';
+export { default as Dumbbell } from './components/dumbbell/Dumbbell.svelte';
+export { default as CapsuleStack } from './components/shape/CapsuleStack.svelte';
 
 // Markers
 export { default as Marker } from './components/markers/Marker.svelte';
@@ -71,6 +74,7 @@ export { default as LegendSteps } from './components/legend/LegendSteps.svelte';
 export { default as ValueCallout } from './components/annotation/ValueCallout.svelte';
 export { default as HighlightCallout } from './components/annotation/HighlightCallout.svelte';
 export { default as TimelineBreak } from './components/annotation/TimelineBreak.svelte';
+export { default as LabelMask } from './components/annotation/LabelMask.svelte';
 
 // Interaction — hover, crosshair, tooltip and the optional scrollytelling driver
 export { default as HoverLayer } from './components/interaction/HoverLayer.svelte';
@@ -78,6 +82,7 @@ export { default as HitTarget } from './components/interaction/HitTarget.svelte'
 export { default as Crosshair } from './components/interaction/Crosshair.svelte';
 export { default as ChartTooltip } from './components/interaction/ChartTooltip.svelte';
 export { HoverState, relativeTo } from './interaction/hover.svelte.js';
+export { hitRadius, pointerIn, focusAnchor, hitTargetHandlers } from './interaction/hitTarget.js';
 export type { TooltipRow, TooltipContent } from './interaction/hover.svelte.js';
 export { nearestIndex, nearestIndexWithin, nearestPoint, distance } from './interaction/nearest.js';
 export { ScrollySteps, scrollStep } from './interaction/scrolly.svelte.js';
@@ -97,7 +102,7 @@ export { default as getScaleBandwidth } from './utils/getScaleBandwidth.js';
 export { default as getStringWidth } from './utils/getStringWidth.js';
 export { default as getTicks } from './utils/getTicks.js';
 export { default as getLabelTransform } from './utils/getLabelTransform.js';
-export { line, area, arc, roundedRect } from './utils/shapeFactory.js';
+export { line, area, arc, roundedRect, capsuleBar, capsuleStack } from './utils/shapeFactory.js';
 export { default as applyExplicitOrder } from './utils/applyExplicitOrder.js';
 export { default as getGradientRamp } from './utils/getGradientRamp.js';
 export type { GradientStops } from './utils/getGradientRamp.js';
@@ -112,6 +117,12 @@ export type { DomainOptions } from './utils/resolveDomain.js';
 // Layouts
 export { bubbleColumnsLayout, BUBBLE_COLUMNS_DEFAULTS } from './layouts/bubbleColumns/index.js';
 export type * from './layouts/bubbleColumns/types.js';
+export { barStackLayout } from './layouts/barStack/index.js';
+export type * from './layouts/barStack/types.js';
+export { barGroupLayout } from './layouts/barGroup/index.js';
+export type * from './layouts/barGroup/types.js';
+export { breakGlyph } from './layouts/breakGlyph.js';
+export type { BreakGlyph } from './layouts/breakGlyph.js';
 export { horizontalBarsLayout, HORIZONTAL_BARS_DEFAULTS } from './layouts/horizontalBars/index.js';
 export type {
   HorizontalBarsSpacing,
@@ -130,6 +141,7 @@ export type {
   AxisBreak,
   SortOrder,
   LayoutBox,
+  Rect,
   LayoutItem,
   SharedXAxis,
   XAccessor,
@@ -165,6 +177,7 @@ export {
   placeCentered,
   sideSign,
   sideAnchor,
+  placeBelowLine,
 } from './layouts/labels.js';
 export { lineSeriesLayout, LINE_SERIES_DEFAULTS } from './layouts/lineSeries/index.js';
 export type {
@@ -235,7 +248,8 @@ export type {
   ChoroplethLayout,
 } from './layouts/hexMap/types.js';
 export { wrapText } from './utils/wrapText.js';
-export { relativeLuminance, contrastRatio, pickContrastInk } from './utils/contrastColor.js';
+export { padBox, paddingPair } from './utils/padBox.js';
+export { observeBBox } from './attachments/observeBBox.js';
 
 // Constants
 export { default as Orientation } from './constants/orientation.js';

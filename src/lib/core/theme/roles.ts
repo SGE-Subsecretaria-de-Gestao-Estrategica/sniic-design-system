@@ -1,15 +1,6 @@
 import { DefaultTheme } from "./constants";
-import type { BaselineStyle, ChartTheme, ConnectorStyle } from "./types";
+import type { ChartTheme, ConnectorStyle } from "./types";
 import { resolveThemeStyles } from "./utils";
-
-// Resolvers for the stroke roles: props > theme role > DefaultTheme role.
-
-export function resolveBaseline(
-  props: BaselineStyle,
-  theme?: ChartTheme,
-): Required<BaselineStyle> {
-  return resolveThemeStyles(props, theme?.baseline, DefaultTheme.baseline) as Required<BaselineStyle>;
-}
 
 export type ResolvedConnector = {
   strokeWidth: number;
@@ -17,6 +8,11 @@ export type ResolvedConnector = {
   strokeDasharray: string;
 };
 
+/**
+ * The connector role, props > theme role > DefaultTheme role. Unlike the
+ * other roles it can't go through `resolveThemeStyles` alone: its width and
+ * dash pattern are derived from the stroke it connects.
+ */
 export function resolveConnector(
   connectedWidth: number,
   props: { strokeWidth?: number; strokeOpacity?: number; strokeDasharray?: string },

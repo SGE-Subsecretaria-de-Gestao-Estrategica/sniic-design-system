@@ -9,7 +9,8 @@
 	import Axis from '$lib/core/components/axis/Axis.svelte';
 	import GridColumns from '$lib/core/components/grid/GridColumns.svelte';
 	import Bar from '$lib/core/components/shape/Bar.svelte';
-	import BarStack from '$lib/core/components/shape/BarStack.svelte';
+	import BarStack from '$lib/core/components/barStack/BarStack.svelte';
+	import { barStackLayout } from '$lib/core/layouts/barStack';
 	import Text from '$lib/core/components/Text.svelte';
 	import { DefaultTheme, getCategoricalColor, getChartTheme } from '$lib/core/theme';
 	import type { ChartTheme } from '$lib/core/theme/types';
@@ -139,19 +140,20 @@
 		<GridColumns scale={xScale} height={barAreaH} numTicks={5} />
 
 		<BarStack
-			horizontal
-			data={sorted}
-			keys={effectiveKeys}
-			category={(d) => String(d[categoryKey])}
-			value={(d, key) => Number(d[key]) || 0}
+			layout={barStackLayout(sorted, {
+				horizontal: true,
+				keys: effectiveKeys,
+				getCategory: (d) => String(d[categoryKey]),
+				getValue: (d, key) => Number(d[key]) || 0,
+				xScale,
+				yScale
+			})}
 			color={(_key, i) => seriesColor(i)}
-			{xScale}
-			{yScale}
 			rx={0}
 		>
 			{#snippet children({ barStacks })}
 				{#each barStacks as stack (stack.key)}
-					{#each stack.bars as bar (`${stack.key}-${bar.index}`)}
+					{#each stack.bars as bar (bar.index)}
 						<Bar
 							x={bar.x}
 							y={bar.y}

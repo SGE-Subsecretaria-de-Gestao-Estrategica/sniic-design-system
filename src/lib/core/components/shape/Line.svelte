@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { AddSVGProps } from "$lib/types/Base";
   import type { LineProps } from "$lib/types/Line";
-  import { getChartTheme, resolveBaseline } from "$lib/core/theme";
+  import { DefaultTheme, getChartTheme, resolveThemeStyles } from "$lib/core/theme";
 
   let {
     from = { x: 0, y: 0 },
@@ -22,7 +22,11 @@
   // With a role, unset stroke props come from the theme; without, as given.
   let stroked = $derived(
     role === "baseline"
-      ? resolveBaseline({ stroke, strokeWidth: strokeWidth as number | undefined }, theme)
+      ? resolveThemeStyles(
+          { stroke, strokeWidth: strokeWidth as number | undefined },
+          theme?.baseline,
+          DefaultTheme.baseline,
+        )
       : { stroke, strokeWidth },
   );
 
@@ -31,6 +35,7 @@
 
 <line
   stroke-linecap="round"
+  shape-rendering={isRectilinear ? "crispEdges" : "auto"}
   {...restProps}
   stroke={stroked.stroke}
   stroke-width={stroked.strokeWidth}
@@ -43,5 +48,4 @@
   x2={to.x}
   y2={to.y}
   {fill}
-  shape-rendering={isRectilinear ? "crispEdges" : "auto"}
 />

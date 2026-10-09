@@ -1,5 +1,20 @@
 import type { ArcConfig } from "$lib/types/Arc";
 import type { AreaPathConfig } from "$lib/types/Area";
+import type {
+  CapsuleBarConfig,
+  CapsuleBarGeometry,
+  CapsuleBox,
+  CapsuleDot,
+  CapsuleFrame,
+  CapsuleOrientation,
+} from "$lib/types/CapsuleBar";
+import type {
+  CapsuleStackConfig,
+  CapsuleStackGeometry,
+  CapsuleStackPiece,
+  CapsuleStackSegment,
+} from "$lib/types/CapsuleStack";
+import type { Point, Rect } from "$lib/core/layouts/types";
 import type { LinePathConfig } from "$lib/types/Line";
 import type { RoundedRectConfig } from "$lib/types/RoundedRect";
 import * as d3 from "d3";
@@ -159,3 +174,112 @@ export function roundedRect({
     .join(" ");
 }
 
+// ----------------------------------
+// Capsule: the Cultura em Números bar
+// ----------------------------------
+
+export function capsuleFrame(box: CapsuleBox, orientation: CapsuleOrientation): CapsuleFrame {
+  const { x = 0, y = 0, width = 0, height = 0, reverse = false } = box;
+  const horizontal = orientation === "horizontal";
+  return {
+    horizontal,
+    // SVG y points down, so an unreversed vertical capsule grows toward -y.
+    dir: horizontal === reverse ? -1 : 1,
+    length: Math.max(0, horizontal ? width : height),
+    thickness: Math.max(0, horizontal ? height : width),
+    baseAt: horizontal ? (reverse ? x + width : x) : reverse ? y : y + height,
+    acrossAt: horizontal ? y : x,
+  };
+}
+
+/** The point `distance` from the base, `offset` across from the box's edge. */
+function pointAlong(frame: CapsuleFrame, distance: number, offset: number): Point {
+  const along = frame.baseAt + frame.dir * distance;
+  const across = frame.acrossAt + offset;
+  return frame.horizontal ? { x: along, y: across } : { x: across, y: along };
+}
+
+/** The full-thickness band between two distances from the base. */
+function bandAlong(frame: CapsuleFrame, from: number, to: number): Rect {
+  const a = frame.baseAt + frame.dir * from;
+  const b = frame.baseAt + frame.dir * to;
+  const start = Math.min(a, b);
+  const size = Math.abs(b - a);
+  return frame.horizontal
+    ? { x: start, y: frame.acrossAt, width: size, height: frame.thickness }
+    : { x: frame.acrossAt, y: start, width: frame.thickness, height: size };
+}
+
+/** The side of the box the tip points to. */
+export function tipSide(frame: CapsuleFrame) {
+  if (frame.horizontal) return frame.dir > 0 ? "right" : "left";
+  return frame.dir > 0 ? "bottom" : "top";
+}
+
+/**
+ * A flat-based capsule whose half-disc tip ends `length` from the base. It
+ * reaches at least one diameter behind the tip so the half-disc is always
+ * whole; a capsule shorter than that pokes past the base, for the caller to
+ * clip — a tiny value shows as a sliver of the disc, never a full circle.
+ */
+function capsulePath(frame: CapsuleFrame, length: number): string {
+  const span = Math.max(length, frame.thickness);
+  const box = bandAlong(frame, length - span, length);
+  return generateRoundedRect(box.x, box.y, box.width, box.height, tipSide(frame), frame.thickness / 2);
+}
+
+/** Dot sitting concentric with the tip's half-disc. */
+function placeCapDot(frame: CapsuleFrame, length: number, ratio: number): CapsuleDot {
+  const r = frame.thickness / 2;
+  return { ...pointAlong(frame, length - r, r), radius: r * ratio };
+}
+
+/**
+ * The capsule bar in a box: a flat base, a fully round tip and a dot
+ * concentric with the tip.
+ */
+export function capsuleBar({ orientation, dotRatio, ...box }: CapsuleBarConfig): CapsuleBarGeometry {
+  const frame = capsuleFrame(box, orientation);
+  const { length, thickness } = frame;
+  const r = thickness / 2;
+
+  return {
+    length,
+    thickness,
+    clip: bandAlong(frame, 0, length),
+    path: capsulePath(frame, length),
+    gradient: { from: pointAlong(frame, 0, r), to: pointAlong(frame, length, r) },
+    dot: placeCapDot(frame, length, dotRatio),
+  };
+}
+
+/**
+ * A capsule split into segments: one flat base and one round tip for the
+ * stack as a whole, the segments plain bands inside it — so no segment gets
+ * rounded corners that would shave off area its value does not lose. The
+ * box is the stack's; its length is the segments' sum.
+ */
+export function capsuleStack<S extends CapsuleStackSegment>(
+  segments: readonly S[],
+  { orientation, gap, ...box }: CapsuleStackConfig,
+): CapsuleStackGeometry<S> {
+  const frame = capsuleFrame(box, orientation);
+
+  let cursor = 0;
+  const pieces = segments.flatMap((segment, index): CapsuleStackPiece<S>[] => {
+    if (!(segment.length > 0)) return [];
+    const from = cursor;
+    cursor += segment.length;
+    return [{ ...segment, index, from, to: cursor, rect: bandAlong(frame, from, cursor) }];
+  });
+  const total = cursor;
+
+  return {
+    total,
+    thickness: frame.thickness,
+    clip: bandAlong(frame, 0, total),
+    path: capsulePath(frame, total),
+    pieces,
+    gaps: pieces.slice(1).map((piece) => bandAlong(frame, piece.from - gap / 2, piece.from + gap / 2)),
+  };
+}

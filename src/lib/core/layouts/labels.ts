@@ -51,3 +51,11 @@ export function placeLeft(
 export function placeCentered(anchor: Point): LabelPlacement {
   return { x: anchor.x, y: anchor.y, textAnchor: "middle", verticalAnchor: "middle" };
 }
+
+/**
+ * Top of a block stacked under a line of text set at `fontSize` from `y` —
+ * one line box (1.15em) plus `gap`, which defaults to 0.55em.
+ */
+export function placeBelowLine(y: number, fontSize: number, gap = fontSize * 0.55): number {
+  return y + fontSize * 1.15 + gap;
+}

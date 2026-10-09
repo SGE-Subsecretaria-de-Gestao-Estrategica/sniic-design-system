@@ -17,7 +17,7 @@ import type {
   SegmentedAxis,
   SegmentedAxisSpacing,
   SegmentScale,
-} from "../segmentedAxis/types";
+} from "../segmentedAxis";
 
 export type { LabelSide };
 

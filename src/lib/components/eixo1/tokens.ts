@@ -133,7 +133,7 @@ export const tickLabelProps = (
 /**
  * `colors` and `colorGradients` below track `./cores.ts` exactly — same five
  * brand hues (`primary` vermelho, `primaryVariant` rosa, `secondary` roxo,
- * `secondaryVariant` azul, `accent` verde `#68CF27`) and the `accent` gradient
+ * `secondaryVariant` azul, `accent` verde `#4ACA5D`) and the `accent` gradient
  * is `rampaVerde` verbatim. Keep them in sync if `cores.ts` changes.
  */
 export const colors = {
@@ -141,7 +141,7 @@ export const colors = {
   primaryVariant: '#EC6596',
   secondary: '#4B2F92',
   secondaryVariant: '#4F68DA',
-  accent: '#68CF27',
+  accent: '#4ACA5D',
 };
 
 export const colorGradients = {
@@ -157,7 +157,7 @@ export const colorGradients = {
   // Base: #4F68DA (secondaryVariant)
   secondaryVariant: ['#4660D2', '#6378D4', '#7588DB', '#8798E3', '#99A8EA'],
 
-  // Base: #68CF27 (accent) — rampaVerde de ./cores.ts, dos degraus mais escuros
+  // Base: #4ACA5D (accent) — rampaVerde de ./cores.ts, dos degraus mais escuros
   // ao mais claro (o mais claro é a cor da marca).
-  accent: ['#183D00', '#2A6201', '#3D8702', '#51AF03', '#68CF27'],
+  accent: ['#0F3D16', '#1D6328', '#2B883A', '#3AB04D', '#4ACA5D'],
 };

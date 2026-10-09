@@ -1,18 +1,19 @@
 <script lang="ts">
+  import type { Snippet } from 'svelte';
   import { themes, themeToStyle } from '../utils/chartTheme.js';
 
   /** Storybook injects the current globals via `globals` prop. */
   interface Props {
-    /** @deprecated — Storybook's old slot API passes children as a slot */
     globals?: { backgrounds?: { value?: string } };
+    children?: Snippet;
   }
 
-  let { globals }: Props = $props();
+  let { globals, children }: Props = $props();
 
   const themeName = $derived(globals?.backgrounds?.value ?? 'light');
   const style = $derived(themeToStyle(themes[themeName] ?? themes.light));
 </script>
 
 <div style={style}>
-  <slot />
+  {@render children?.()}
 </div>

@@ -28,21 +28,29 @@ export function resolveThemeStyle<T, K extends keyof T>(
   return propValue ?? themeValue ?? defaultValue;
 }
 
-export function resolveThemeStyles<T extends Record<string, any>>(
+/** A style once resolved: whatever the defaults set is no longer optional. */
+export type ResolvedStyles<T, D> = Omit<T, keyof D> & {
+  [K in keyof T & keyof D]-?: Exclude<T[K], undefined>;
+};
+
+export function resolveThemeStyles<
+  T extends Record<string, any>,
+  D extends Partial<T> = Partial<T>,
+>(
   props: T,
   theme: Partial<T> | undefined,
-  defaults: Partial<T>
-): T {
-  const result = { ...defaults };
+  defaults: D
+): ResolvedStyles<T, D> {
+  const result: Partial<T> = { ...defaults };
 
   const styleNames = Object.keys(props) as (keyof T)[];
   for (const styleName of styleNames) {
     const propVal = props[styleName];
     const themeVal = theme?.[styleName];
-    const defVal = defaults?.[styleName];
+    const defVal = defaults?.[styleName] as T[typeof styleName] | undefined;
 
-    result[styleName] = resolveThemeStyle(propVal, themeVal, defVal) as T[typeof styleName];
+    result[styleName] = resolveThemeStyle(propVal, themeVal, defVal);
   }
 
-  return result as T;
+  return result as unknown as ResolvedStyles<T, D>;
 }

@@ -142,7 +142,7 @@
           x={(d) => xScale(d.label) ?? 0}
           y={(d) => yScale(d.value)}
         >
-          {#snippet marker({ x, y, datum })}
+          {#snippet marker({ x, y, data: datum })}
             <g>
               <title>{s.name} — {datum.label}: {datum.value}</title>
               <Circle

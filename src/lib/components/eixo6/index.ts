@@ -1,28 +1,46 @@
 /**
- * Eixo 6 — Trabalho e renda na Economia Criativa.
+ * Gráficos interativos controlados por etapa — nascidos no Eixo 6 e a
+ * referência para os demais.
  *
- * Four interactive, prop-driven charts meant to be embedded in a host
- * application. Every one of them:
+ * Os nomes dizem a forma, não o tema; o texto da publicação entra por prop.
+ * Cada gráfico:
  *
- * - takes already-parsed rows (see `data.ts` for the shapes and parsers);
- * - fills the width of its container, so the host controls layout;
- * - ships a crosshair or per-mark tooltip plus keyboard scrubbing;
- * - accepts `step`, `highlight` and `focusIndex` so a scrollytelling page can
- *   drive the narrative from outside. `step = -1` (the default) renders the
- *   finished chart.
+ * - recebe linhas já parseadas (ver `data.ts` para os formatos) — o pacote não
+ *   traz dados nem loaders;
+ * - preenche a largura do contêiner, então o host controla o layout;
+ * - tem crosshair ou tooltip por marca, navegação por teclado e tabela
+ *   acessível;
+ * - aceita `step`, `highlight` e `focusIndex`, para que uma página de
+ *   scrollytelling conduza a narrativa de fora. `step = -1` (o padrão)
+ *   desenha o gráfico completo.
  *
- * The `*_STEPS` arrays describe each chart's stages in order, so the host can
- * generate its scroll sections from the same source the chart reads.
+ * As `*_STEPS` descrevem as etapas de cada gráfico, em ordem, para o host
+ * gerar as seções de scroll a partir da mesma fonte que o gráfico lê.
  */
 
-export { default as TrabalhadoresCulturaChart } from './TrabalhadoresCulturaChart.svelte';
-export { default as SetoresComparadosChart } from './SetoresComparadosChart.svelte';
-export { default as InformalidadeChart } from './InformalidadeChart.svelte';
-export { default as RacaCorChart } from './RacaCorChart.svelte';
+export { default as LinhaParticipacaoChart } from './LinhaParticipacaoChart.svelte';
+export { default as LinhasComparadasChart } from './LinhasComparadasChart.svelte';
+export { default as LinhasDiferencaChart } from './LinhasDiferencaChart.svelte';
+export { default as BolhasComparadasChart } from './BolhasComparadasChart.svelte';
+export { default as BarrasRankingChart } from './BarrasRankingChart.svelte';
+export { default as BarrasDivergentesChart } from './BarrasDivergentesChart.svelte';
+export { default as LinhasAntesDepoisChart } from './LinhasAntesDepoisChart.svelte';
+export { default as BarrasCascataChart } from './BarrasCascataChart.svelte';
+export { default as ColunasEmpilhadasChart } from './ColunasEmpilhadasChart.svelte';
+export { default as LinhasPaineisChart } from './LinhasPaineisChart.svelte';
+export { default as CurvaConcentracaoChart } from './CurvaConcentracaoChart.svelte';
+export { default as FaixasParticipacaoChart } from './FaixasParticipacaoChart.svelte';
+export { default as BolhasMatrizChart } from './BolhasMatrizChart.svelte';
+export { default as TabelaBarrasChart } from './TabelaBarrasChart.svelte';
+export { default as CristasDensidadeChart } from './CristasDensidadeChart.svelte';
+export { default as MapaUfChart } from './MapaUfChart.svelte';
+export { default as MapaMunicipiosChart } from './MapaMunicipiosChart.svelte';
+export { default as MapaHexagonalChart } from './MapaHexagonalChart.svelte';
+export { default as MapaHexagonalLegenda } from './MapaHexagonalLegenda.svelte';
 
 export * from './steps.js';
 
-export * from './data.js';
+export type * from './data.js';
 export { createBreakScale, paddedExtent, responsiveMargin } from './scales.js';
 export type { BreakScale } from './scales.js';
 export type {

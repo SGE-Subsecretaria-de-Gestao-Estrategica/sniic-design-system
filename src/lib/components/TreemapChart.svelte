@@ -20,7 +20,7 @@
 		format?: (v: number) => string;
 		padding?: number;
 		paddingOuter?: number;
-		icons?: Record<string, Component>;
+		icons?: Partial<Record<string, Component>>;
 		/** Sets the theme for this chart; inherits an ancestor theme context when omitted. */
 		theme?: ChartTheme;
 	}

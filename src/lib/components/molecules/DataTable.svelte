@@ -169,10 +169,6 @@
     return offsets;
   });
 
-  const totalHeight = $derived(
-    headerHeight + rowHeights.reduce((s, h) => s + h, 0)
-  );
-
   function textAnchor(align: string | undefined) {
     if (align === 'right') return 'end';
     if (align === 'center') return 'middle';
@@ -212,7 +208,7 @@
   />
 
   <!-- Data rows -->
-  {#each rows as row, ri (ri)}
+  {#each rows as _, ri (ri)}
     {@const ry = rowYOffsets[ri]}
 
     <!-- Cell values (wrapped) -->

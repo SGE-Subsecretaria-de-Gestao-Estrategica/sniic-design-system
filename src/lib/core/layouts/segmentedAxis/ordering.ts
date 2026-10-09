@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import type { Accessor } from "$lib/types/Accessor";
+import type { Accessor } from "../types";
 import type { XValue } from "../types";
 
 /** How many breaks `x` comes after (its raw segment number). */

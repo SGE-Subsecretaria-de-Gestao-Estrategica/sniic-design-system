@@ -9,9 +9,11 @@
  * conhece dados, textos ou paleta de projeto: tudo entra por prop — inclusive
  * `corTexto`, o tom do texto escuro (por omissão, o quase preto do Eixo 1).
  *
- * Combinam com as bases do Eixo 1 (`BarraRankingChart`,
- * `BarraDivergenteChart`, `ColunaCategoriaChart`, `CoropletoUfChart`…):
- * passe `raio={RAIO_BARRA}` a elas para que os cantos das barras batam.
+ * `BarraRankingChart`, `BarraDivergenteChart`, `ColunaCategoriaChart` e
+ * `CoropletoUfChart` vieram das bases do Eixo 1, que deixaram de existir —
+ * os gráficos genéricos de Cultura em Números cobrem o mesmo papel. Estas
+ * quatro ficaram porque o boletim da LPG as usa para impressão; passe
+ * `raio={RAIO_BARRA}` a elas para que os cantos das barras batam.
  */
 
 export { default as BarraComposicaoChart } from './BarraComposicaoChart.svelte';
@@ -29,3 +31,12 @@ export type { AnotacaoDispersao, Isolinha, PontoDispersao } from './DispersaoLog
 export { default as Destaque, DESTAQUE, alturaDestaque, larguraValorDestaque, linhasDestaque } from './Destaque.svelte';
 
 export { RAIO_BARRA, segmentoPath } from './forma';
+
+export { default as BarraRankingChart } from './BarraRankingChart.svelte';
+export type { LinhaRanking } from './BarraRankingChart.svelte';
+export { default as BarraDivergenteChart } from './BarraDivergenteChart.svelte';
+export type { LinhaDivergente } from './BarraDivergenteChart.svelte';
+export { default as ColunaCategoriaChart } from './ColunaCategoriaChart.svelte';
+export type { CategoriaRow } from './ColunaCategoriaChart.svelte';
+export { default as CoropletoUfChart } from './CoropletoUfChart.svelte';
+export type { ValorUf, Municipio as CoropletoMunicipio } from './CoropletoUfChart.svelte';

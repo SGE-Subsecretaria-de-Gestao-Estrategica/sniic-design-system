@@ -8,7 +8,8 @@
 	import Chart from '$lib/core/components/Chart.svelte';
 	import Axis from '$lib/core/components/axis/Axis.svelte';
 	import GridRows from '$lib/core/components/grid/GridRows.svelte';
-	import BarStack from '$lib/core/components/shape/BarStack.svelte';
+	import BarStack from '$lib/core/components/barStack/BarStack.svelte';
+	import { barStackLayout } from '$lib/core/layouts/barStack';
 	import Legend from '$lib/core/components/legend/Legend.svelte';
 	import { DefaultTheme, getCategoricalColor, getChartTheme } from '$lib/core/theme';
 	import type { ChartTheme } from '$lib/core/theme/types';
@@ -131,13 +132,14 @@
 		<GridRows scale={yScale} width={innerWidth} numTicks={4} />
 
 		<BarStack
-			data={processed}
-			keys={effectiveKeys}
-			category={(d) => String(d[categoryKey])}
-			value={(d, key) => Number(d[key]) || 0}
+			layout={barStackLayout(processed, {
+				keys: effectiveKeys,
+				getCategory: (d) => String(d[categoryKey]),
+				getValue: (d, key) => Number(d[key]) || 0,
+				xScale,
+				yScale
+			})}
 			color={(_key, i) => seriesColor(i)}
-			{xScale}
-			{yScale}
 			rx={0}
 		/>
 

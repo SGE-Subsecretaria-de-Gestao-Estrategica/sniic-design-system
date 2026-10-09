@@ -1,6 +1,9 @@
+// This file has been automatically migrated to valid ESM format by Storybook.
 import { mergeConfig } from 'vite';
-import path from 'path';
+import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 

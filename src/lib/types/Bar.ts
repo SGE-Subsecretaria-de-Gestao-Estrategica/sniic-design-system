@@ -1,11 +1,7 @@
-import type { ScaleBand } from 'd3';
 import type { Snippet } from 'svelte';
 import type { ClassValue, SVGAttributes } from 'svelte/elements';
-import type { Accessor, AccessorForArrayItem } from './Accessor';
-import type { D3Scale } from './Scale';
-import type { StringLike } from './Base';
-
-export type BarScale<Output = number> = D3Scale<Output, any, any>;
+import type { BarGroupBar, BarGroupItem, BarGroupLayout } from '$lib/core/layouts/barGroup';
+import type { BarStackBar, BarStackLayout, BarStackSeries } from '$lib/core/layouts/barStack';
 
 export type BarOwnProps = {
   x?: number;
@@ -27,49 +23,21 @@ export type BarOwnProps = {
 export type BarProps = BarOwnProps &
   Omit<SVGAttributes<SVGRectElement>, keyof BarOwnProps>;
 
-/** One rendered rectangle, as handed to the `children` snippet. */
-export type ComputedBar<Key extends StringLike = string> = {
-  key: Key;
-  index: number;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+/** A bar as `BarStack`/`BarGroup` paint it: the layout's rect plus its colour. */
+export type ComputedBar<B> = B & { color: string };
+
+export type ComputedBarStack<D, K extends string = string> = Omit<BarStackSeries<D, K>, "bars"> & {
   color: string;
-  /** The stacked/grouped value this rect represents. */
-  value: number;
+  bars: ComputedBar<BarStackBar<D, K>>[];
 };
 
-export type ComputedBarStack<Key extends StringLike = string> = {
-  key: Key;
-  index: number;
-  color: string;
-  bars: ComputedBar<Key>[];
+export type ComputedBarGroup<D, K extends string = string> = Omit<BarGroupItem<D, K>, "bars"> & {
+  bars: ComputedBar<BarGroupBar<D, K>>[];
 };
 
-export type ComputedBarGroup<Key extends StringLike = string> = {
-  /** The category this group belongs to. */
-  index: number;
-  x0: number;
-  y0: number;
-  bars: ComputedBar<Key>[];
-};
-
-type SeriesSharedProps<Datum, Key extends StringLike> = {
-  data?: Datum[];
-  /** Series keys, in series order. */
-  keys?: Key[];
+type SeriesSharedProps<K extends string> = {
   /** Colour per series; defaults to the theme's categorical palette. */
-  color?: AccessorForArrayItem<Key, string>;
-  /** Series value; defaults to reading `datum[key]`. */
-  value?: (d: Datum, key: Key) => number;
-  /** Category accessor — its output feeds the band scale. */
-  category: Accessor<Datum, StringLike>;
-  /**
-   * When true, categories run down `yScale` (band) and values along `xScale`
-   * (linear). When false, the reverse.
-   */
-  horizontal?: boolean;
+  color?: (series: K, index: number) => string;
   /** Corner radius, forwarded to every rect. */
   rx?: number | string;
   ry?: number | string;
@@ -78,33 +46,14 @@ type SeriesSharedProps<Datum, Key extends StringLike> = {
   className?: ClassValue;
 };
 
-export type BarStackProps<
-  Datum,
-  Key extends StringLike = string,
-  XScale extends BarScale = BarScale,
-  YScale extends BarScale = BarScale,
-> = SeriesSharedProps<Datum, Key> & {
-  xScale: XScale;
-  yScale: YScale;
-  /** Passed to `d3.stack().order()`. */
-  order?: (series: any) => number[];
-  /** Passed to `d3.stack().offset()`. */
-  offset?: (series: any, order: number[]) => void;
-  children?: Snippet<[{ barStacks: ComputedBarStack<Key>[] }]>;
+export type BarStackProps<D, K extends string = string> = SeriesSharedProps<K> & {
+  /** From `barStackLayout`. */
+  layout: BarStackLayout<D, K>;
+  children?: Snippet<[{ barStacks: ComputedBarStack<D, K>[] }]>;
 };
 
-export type BarGroupProps<
-  Datum,
-  Key extends StringLike = string,
-  XScale extends BarScale = BarScale,
-  YScale extends BarScale = BarScale,
-> = SeriesSharedProps<Datum, Key> & {
-  /** Outer band scale — one band per category. */
-  xScale: XScale;
-  yScale: YScale;
-  /** Inner band scale over `keys`; built from the outer bandwidth when omitted. */
-  groupScale?: ScaleBand<string>;
-  /** Gap between bars within a group, as a fraction of the inner bandwidth. */
-  groupPadding?: number;
-  children?: Snippet<[{ barGroups: ComputedBarGroup<Key>[] }]>;
+export type BarGroupProps<D, K extends string = string> = SeriesSharedProps<K> & {
+  /** From `barGroupLayout`. */
+  layout: BarGroupLayout<D, K>;
+  children?: Snippet<[{ barGroups: ComputedBarGroup<D, K>[] }]>;
 };

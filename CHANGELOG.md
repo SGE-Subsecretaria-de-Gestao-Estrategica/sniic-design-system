@@ -2,6 +2,93 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+- **`TabelaBarrasChart`** (*Tabela com barras*), with `TabelaBarrasColuna`, `TabelaBarrasLinha` and `tabelaBarrasSteps(columns, { total })`: one row per category, one column per measure, each cell a `CapsuleBar` on its column's own scale — for tables of measures in units that don't mix. Per-column `format` and dashed `reference`; `null` is written as *não informado*, never drawn as zero; an optional `total` row is written, not drawn; `sortBy` ranks by a column. Steps follow the columns — one stage per column (bringing it in, stepping the read ones back), then the whole table with the total; `stepLabel` gives each column its stage copy. Story (with Scrollytelling) and catalog card under *Comparar categorias*.
+- **`BarrasRankingChart`**: `reference` and `referenceLabel` — a dashed line behind the bars (a parity, a target, an average), named under the last row; the scale stretches to keep it in view. Values get a background halo so the line never cuts through them. New story *Com referência*.
+- **Theme**: palettes per eixo, exported from the package root — `eixo1Palette`, `eixo6Palette`, `eixoPalettes` (by eixo number), `EixoPalette`, plus the shared `basePalette` (`#FEFFFC`, `#F0F2F1`, `#ECEEED`) and `neutralPalette` (`#808679`, `#4D5148`, `#2D2E2B`, `#1C1C1C`), and `defaultEixo`.
+- **`MapaMunicipiosChart`**: mosaic mode — `breaks` (+ `classLabels`) paints every municipality in its class on the theme's sequential ramp, with a legend; the state under the pointer reports how its municipalities split across the classes, `highlight` takes a state code, `top` defaults to 0, and the steps are `MAPA_CLASSES_STEPS`. Covers what `MosaicoMunicipalChart` did. New stories *Mosaico por classes* and *Mosaico em etapas*.
+- Storybook: `cultnum-bg` background gets its own `--chart-*` preset, in base/neutral colours.
+- **`MapaUfChart`**: categorical mode — `categories: MapaUfCategoria[]` (`label`, optional `color`) makes each `value` a category index; states carry only their code, and legend, tooltip and table name the category (`categoryLabel` heads the table). Without `color`, categories follow the ramp in order. `breaks` is now optional. New story *Categorias*.
+
+### Removed (breaking)
+- **Eixo 1**: the chart bases with a generic Cultura em Números counterpart — `AntesDepoisChart` (→ `LinhasAntesDepoisChart`), `CascataChart` (→ `BarrasCascataChart`), `ComposicaoChart` and `Eixo1RibbonChart` (→ `ColunasEmpilhadasChart`), `ConcentracaoChart` (→ `CurvaConcentracaoChart`), `CristasChart` (→ `CristasDensidadeChart`), `FaixaLinhasChart` (→ `LinhasComparadasChart`), `HexMapaUfChart` (→ `MapaHexagonalChart`), `HistomapChart` (→ `FaixasParticipacaoChart`), `LinhaProporcaoChart` (→ `LinhaParticipacaoChart`), `MatrizBolhasChart` (→ `BolhasMatrizChart`), `PequenosMultiplosChart` (→ `LinhasPaineisChart`), `MosaicoMunicipalChart` (→ `MapaMunicipiosChart` with `breaks`) — and `MatrizPontosChart`, with no replacement (its generic form was dropped too, below). Their exported types go with them.
+- **Eixo 6 family**: `PontosPaineisChart` (*Matriz de pontos*), with `PontosPainel`, `PontosFatia` and `PONTOS_PAINEIS_STEPS`, its story and its catalog card. The chart won't be used.
+
+### Changed (breaking)
+- **Theme**: `DefaultTheme` (and every fallback that reads it) is Eixo 6 again, not Eixo 1.
+- **Eixo 1 palette**: the accent is `#4ACA5D` (was `#68CF27`); `eixo1Cores.rampaVerde` is rebuilt around it on the same OKLab lightness steps (`#0F3D16 … #4ACA5D`), and `eixo1Tokens.colors.accent` / `colorGradients.accent` follow.
+- **Colours**: white, black and greys hardcoded in the core primitives, the Eixo 6 charts and the print bases are now `basePalette` / `neutralPalette` — white → `base[100]`, light greys → `base[300]`/`base[200]`, mid greys → `neutral[100]`, subtitles → `neutral[200]`, text → `neutral[300]`, black → `neutral[400]`. `pickContrastInk` defaults to `base[100]` / `neutral[400]`.
+- **Figuras**: `BarraRankingChart`, `BarraDivergenteChart`, `ColunaCategoriaChart` and `CoropletoUfChart` moved from the Eixo 1 bases to `figuras` — same names, props and exports, because the LPG bulletin prints with them. `eixo1Cores`, `eixo1Tokens`, `eixo1LayoutLegend` and `MalhaMunicipiosProjetada` stay exported.
+- **`MapaMunicipiosChart`** no longer paints all 5,570 municipalities by class: the land stays neutral and only the `top` (default 10) largest values are highlighted — shape filled, numbered marker, ranked list beside or under the map. `breaks` and `classLabels` are gone; new props `names` (IBGE code → name), `top`, `valueLabel`, `ranking` and `zoomTo` (IBGE codes to frame, animated with `d3.interpolateZoom`; cuts instead under reduced motion). Its steps are now `MAPA_DESTAQUES_STEPS` (território → destaques → ranking); `MAPA_CLASSES_STEPS` stays for `MapaUfChart`.
+- **`MapaHexagonalChart`**: `MAPA_HEXAGONAL_STEPS` grows from 3 to 8 stages: after the reference, one stage per region (Norte, Nordeste, Centro-Oeste, Sudeste, Sul) outlines it and dims the others. Hosts that hard-coded three sections need five more. No region is outlined by default any more — before, those where most units cleared the reference were; pass `emphasizedRegions` to outline some. `highlight` also accepts a region name.
+
+### Fixed
+- **`HoverLayer`**: the pointer is a hand, not a crosshair — the line charts now match the ones built on `HitTarget`.
+- **Malha hexagonal** (`mapaUf`): the *Sul* label sat over SC/RS; it now sits to the left, above RS. Moves in `HexMapaUfChart` too.
+
+### Storybook
+- *Mapa por município*: new `Storytelling com zoom` story — text scrolls on one side while the map, sticky on the other, flies to each highlighted municipality.
+- Sidebar organised by project: `Cultura em Números/{Catálogo por função, Primitivas, Gráficos}`, `PNAB/{Fundamentos, Átomos, Moléculas, Gráficos}` (the former `Design System`, `Atoms`, `Molecules`, `Charts`) and `LPG/Figuras` (the former `Charts/Figuras`). `Core/*` is now `Cultura em Números/Primitivas/*`. Story files moved to `src/stories/{cultura-em-numeros,pnab,lpg}/`. Story ids changed, so old Storybook links break.
+- New `Cultura em Números/Catálogo por função`: the 20 charts grouped by the question they answer, each card linking to its docs page.
+- Every Cultura em Números chart has a docs page (autodocs): what it shows, when to use it and when not to, data shape, steps and `highlight`, the import line, and the props table. The `Padrão` story is args-driven, so its controls work; every story has a description.
+- `FrameProps` (`height`, `title`, `subtitle`, `source`) documented, for the props tables.
+
+## [3.0.0] - 2026-09-29
+
+### Removed (breaking)
+- **Eixo 1**: the 42 finished figures that carried the publication's data and copy (`TripeUfChart`, `PerfilCncChart`, `MetaRclChart`, `HistomapFederalChart`, `AgentesPorMunicipioChart`…), their JSON data, their stories and `fontes.ts`. They live in `cultura-em-numeros-eixo-1/data-vis`, the only place their numbers are kept up to date.
+- **Eixo 1**: `loadMalhaMunicipiosProjetada`, `loadGestaoMunicipios2021` and the `GestaoMunicipios2021` / `GestaoMunicipioInstitucionalizacao` types, plus `public/data/eixo1/` (the 1.1MB municipal mesh and the 2021 template), which the build copied into `dist/`.
+
+### Renamed (breaking)
+- **Eixo 6**: the four interactive charts are named by form, not by topic, and take the publication's copy as props:
+
+  | Before | After |
+  |---|---|
+  | `TrabalhadoresCulturaChart` | `LinhaParticipacaoChart` |
+  | `SetoresComparadosChart` | `LinhasComparadasChart` |
+  | `InformalidadeChart` | `LinhasDiferencaChart` |
+  | `RacaCorChart` | `BolhasComparadasChart` |
+  | `TrabalhadoresCulturaDatum` `{ year, workers, share }` | `LinhaParticipacaoDatum` `{ year, value, share }` |
+  | `SetorAnoDatum` `{ group, year, workers }` | `LinhasComparadasDatum` `{ group, year, value }` |
+  | `InformalidadeDatum` `{ group, year, rate }` | `LinhasDiferencaDatum` `{ group, year, value }` |
+  | `RacaCorDatum` / `RacaCorScope` (`'EC' \| 'BR'`) | `BolhasComparadasDatum` / `BolhasComparadasScope` (`'grupo' \| 'referencia'`) |
+  | `TRABALHADORES_CULTURA_STEPS`, `SETORES_STEPS`, `INFORMALIDADE_STEPS`, `RACA_COR_STEPS` | `LINHA_PARTICIPACAO_STEPS`, `LINHAS_COMPARADAS_STEPS`, `LINHAS_DIFERENCA_STEPS`, `BOLHAS_COMPARADAS_STEPS` (generic labels — pass your own copy) |
+
+- **Eixo 6**: text the charts used to hardcode is now a prop with a neutral default — `LinhaParticipacaoChart` (`seriesLabel`, `valueLabel`, `shareLabel`, `shareIntro`, `shareSuffix`), `LinhasComparadasChart` (`valueLabel`, `othersLabel`), `LinhasDiferencaChart` (`measureLabel`, `gapIntro`), `BolhasComparadasChart` (`categoryLabel`; `scopeLabels` keys are now `grupo` / `referencia`). To keep the old look, pass the old copy.
+- **Eixo 6**: defaults no longer assume the publication. `breakYear` is optional (no break unless given; `createBreakScale` defaults to none); `featured` / `baseline` default to the first / second group in `data`; `BolhasComparadasChart.excluded` defaults to `[]`.
+- **Eixo 6**: removed `parseTrabalhadoresCultura`, `parseSetores`, `parseInformalidade`, `parseRacaCor`, their `load*` counterparts, `RAIS_BREAK_YEAR`, `SETOR_DESTAQUE`, `INFORMALIDADE_DESTAQUE`, and `public/data/eixo6/` (the publication's CSVs, which the build copied into `dist/`). Reading those files into the chart types is the host's job now, like Eixo 1's data.
+
+### Added
+- **Eixo 6 family**: `BarrasRankingChart` (+ `BarrasRankingDatum`, `BARRAS_RANKING_STEPS`) — the ranking redone in the reference style: one `CapsuleBar` per category from a shared zero, largest first, value past the tip, name in a gutter whose rows grow with wrapped names; tooltip with value and share of total, whole-row keyboard/pointer targets, accessible table, `step` (bars → values) and `highlight`. Replaces the `Barra de ranking` story; the print-scale `BarraRankingChart` base stays exported for existing figures.
+- **Eixo 6 family**: `BarrasDivergentesChart` (+ `BarrasDivergentesDatum`, `BARRAS_DIVERGENTES_STEPS`) — the diverging bars redone in the reference style: two `CapsuleBar`s per category from a shared zero on one scale, both sides in the default bar gradient unless `sideColors` says otherwise, side names above each half, zero placed where the longest left bar ends so a small side leaves no empty half. Steps: right side → left side → values. Replaces the `Barra divergente` story; the print-scale `BarraDivergenteChart` base stays exported.
+- **Eixo 6 family**: `LinhasAntesDepoisChart` (+ `LinhasAntesDepoisDatum`, `LINHAS_ANTES_DEPOIS_STEPS`) — "antes e depois" redone in the reference style: one `Dumbbell` per category over faint grid columns and a bottom axis, values outside each pair (swapping sides when the value fell), legend with dot keys, tooltip with both values and the signed change. Steps: before → change → values. Replaces the `Antes e depois` story; the print-scale eixo1 `AntesDepoisChart` stays exported.
+- **Eixo 6 family**: the rest of the Cultura em Números charts redone in the reference style, each with tooltip, keyboard targets, accessible table, `step` and `highlight`; the print-scale eixo1 bases stay exported:
+  - `ColunasEmpilhadasChart` — stacked `CapsuleStack` columns; `normalize` (composition, with `spans`), `rank` + `ribbons` (ribbon chart). Replaces the *Coluna por categoria*, *Composição* and *Ribbon* stories.
+  - `LinhasComparadasChart` gains `colorBy: 'series'` and `formatValue`, and ticks on the measured years. Replaces *Faixa de linhas* (story *Linhas por série*).
+  - `LinhasPaineisChart` — small multiples with a shared reference. Replaces *Pequenos múltiplos*.
+  - `CurvaConcentracaoChart` — Lorenz curve with marks. Replaces *Concentração*.
+  - `FaixasParticipacaoChart` — histomap with reading blocks. Replaces *Histomap*.
+  - `BolhasMatrizChart`, `PontosPaineisChart`, `CristasDensidadeChart`. Replace *Matriz de bolhas*, *Matriz de pontos*, *Cristas*.
+  - `MapaUfChart`, `MapaMunicipiosChart`, `MapaHexagonalChart`. Replace *Coroplético por UF*, *Mosaico municipal*, *Mapa hexagonal*.
+  - *Linha e proporção* is the same form as `LinhaParticipacaoChart` (line + share bubbles), so its story was dropped rather than duplicated.
+- **core**: `CapsuleStack` — a `CapsuleBar` split into segments, the round tip belonging to the whole stack. Story in `Core/CapsuleStack`.
+- **core**: `HitTarget` takes `d` (+ `transform`) for a path target — a map region answering over its own outline.
+- **Eixo 6 family**: `BarrasCascataChart` (+ `BarrasCascataDatum`, `BARRAS_CASCATA_STEPS`) — the waterfall redone in the reference style: vertical `CapsuleBar`s, stocks standing on zero and changes floating on the running total (losses hang, reversed), clipped to their exact interval; dashed connectors carry the running total; no y axis, values past each tip and the closing stock emphasised in the accent; `detail` lines under a name; per-step `fill`. Steps: opening stock → changes → closing stock. Replaces the `Cascata` story; the print-scale eixo1 `CascataChart` stays exported.
+- **core**: `Dumbbell` — two values joined by the line charts' thick round-capped stroke, the ordinary marker on the start and the accent, larger dot on the end; any direction; all defaults from the theme. Story in `Core/Dumbbell`.
+- **Eixo 6 family**: `LegendItem.dot` draws a legend key as a dot.
+- **core**: `CapsuleBar` takes `reverse`, growing leftwards (or downwards) from its base.
+- **core**: `HitTarget` takes `width`/`height` for a rect target (a whole bar row) besides the default circle.
+- **core**: `CapsuleBar` — the Cultura em Números bar: flat base, round tip, a gradient brightening toward the tip (theme `primaryVariant` → `primary`) and a dot concentric with the tip, echoing the line markers. Horizontal or vertical; a bar shorter than its cap is clipped at the base into a sliver, never inflated. Story in `Core/CapsuleBar`.
+- **Eixo 1**: `eixo1Cores` and `eixo1Tokens` namespaces and `eixo1LayoutLegend`, so figures built on the bases outside this package use the same palette, type scale and legend layout.
+
+### Unchanged
+- The 18 Eixo 1 bases and the `figuras` bases keep their names and props.
+
+### Storybook
+- Every Cultura em Números chart has a story in one flat `Cultura em Números/*` folder (`src/stories/cultura-em-numeros/`), named by chart form ("Linhas com diferença", "Bolhas comparadas", "Cascata"…) and fed generic, illustrative data — no split by eixo, no publication copy. The Eixo 6 charts are the reference: their stories show the static chart, the step-by-step reveal and the scrollytelling wiring. The municipal mesh used by the `MosaicoMunicipalChart` story sits next to them and is not shipped.
+
 ## [1.0.30] - 2026-09-02
 
 ### Added

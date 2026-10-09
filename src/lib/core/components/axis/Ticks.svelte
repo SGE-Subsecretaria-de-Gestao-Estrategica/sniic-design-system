@@ -1,4 +1,9 @@
 <script lang="ts" generics="Scale extends AxisScale">
+  import {
+    DefaultTheme,
+    getChartTheme,
+    resolveThemeStyles,
+  } from "$lib/core/theme";
   import type { AxisScale, TicksRendererProps } from "$lib/types/Axis";
   import Orientation from "$lib/core/constants/orientation";
   import Group from "../Group.svelte";
@@ -12,12 +17,18 @@
     tickClassName,
     tickComponent,
     tickLabelProps: allTickLabelProps,
-    tickStroke = "#222",
+    tickStroke,
     tickTransform,
     ticks,
     strokeWidth,
     tickLineProps,
   }: TicksRendererProps<Scale> = $props();
+
+  const theme = getChartTheme();
+
+  let style = $derived(
+    resolveThemeStyles({ tickStroke, strokeWidth }, theme?.axis, DefaultTheme.axis),
+  );
 </script>
 
 {#each ticks as { value, index, from, to, formattedValue } (`tick-${value}-${index}`)}
@@ -36,8 +47,8 @@
       <Line
         {from}
         {to}
-        stroke={tickStroke}
-        {strokeWidth}
+        stroke={style.tickStroke}
+        strokeWidth={style.strokeWidth}
         stroke-linecap="square"
         {...tickLineProps}
       />

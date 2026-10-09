@@ -27,6 +27,9 @@ export function getPillarTheme(pillarId: number) {
     seriesLabel: text,
     tickLabel: { ...text, fill: palette.neutral[200] },
     caption: { ...text, fill: palette.neutral[200], fontSize: Tokens.fontSize.sm },
+    calloutValue: { ...text, fill: palette.primary, fontSize: 19, fontWeight: Tokens.fontWeight.bold },
+    calloutDescription: { ...text, fontSize: 13 },
+    breakLabel: { ...text, fill: palette.neutral[100] },
   }
 
   const baseline = {
@@ -55,7 +58,11 @@ export function getPillarTheme(pillarId: number) {
         hideAxisLine: true,
         hideTicks: true,
         hideZero: false,
+        stroke: palette.neutral[300],
+        strokeWidth: Tokens.strokeWidth.xs,
+        tickStroke: palette.neutral[300],
         tickLength: Tokens.spacing.md,
+        labelOffset: 14,
         tickLabelProps: textRoles.tickLabel,
     },
     grid: {
@@ -81,6 +88,9 @@ export function getPillarTheme(pillarId: number) {
       strokeWidth: 0,
       rx: Tokens.radii.sm,
     },
+    barGroup: {
+      groupPadding: 0.1,
+    },
     arc: {
       fill: palette.primary.toString(),
       stroke: palette.base[100],
@@ -100,6 +110,37 @@ export function getPillarTheme(pillarId: number) {
         size: 5,
         fill: pillarPalette.primaryVariant
       }
+    },
+    capsule: {
+      // The gradient stops short of the full tip colour so the dot, in that
+      // colour, still reads against the end of a long bar.
+      fill: [
+        pillarPalette.primaryVariant,
+        d3.interpolateLab(pillarPalette.primaryVariant, pillarPalette.primary)(0.6),
+      ] as const,
+      dotFill: pillarPalette.primary,
+      dotRatio: 0.55,
+      gapFill: palette.base[100],
+      gap: 2,
+    },
+    dumbbell: {
+      stroke: pillarPalette.primary,
+      strokeWidth: 12,
+      fromFill: pillarPalette.primaryVariant,
+      toFill: pillarPalette.accent,
+      fromSize: 5,
+      toSize: 8,
+    },
+    labelMask: {
+      fill: palette.base[100],
+      fillOpacity: 0.75,
+      padding: [Tokens.spacing.sm, 2] as const,
+      radius: Tokens.radii.none,
+    },
+    timelineBreak: {
+      stroke: palette.neutral[100],
+      size: Tokens.spacing.sm,
+      label: "QUEBRA",
     },
     missing: {
       fill: palette.base[300],

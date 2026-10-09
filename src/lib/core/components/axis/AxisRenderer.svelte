@@ -1,4 +1,9 @@
 <script lang="ts" generics="Scale extends AxisScale">
+  import {
+    DefaultTheme,
+    getChartTheme,
+    resolveThemeStyles,
+  } from "$lib/core/theme";
   import Orientation from "$lib/core/constants/orientation";
   import type { AxisRendererProps, AxisScale } from "$lib/types/Axis";
   import type { TextProps } from "$lib/types/Text";
@@ -20,23 +25,34 @@
     horizontal,
     label = "",
     labelClassName,
-    labelOffset = 14,
+    labelOffset,
     labelProps,
     orientation = Orientation.bottom,
     scale,
-    stroke = "#222",
+    stroke,
     strokeDasharray,
-    strokeWidth = 1,
+    strokeWidth,
     tickClassName,
     tickLineProps,
     tickLabelProps,
-    tickLength = 8,
-    tickStroke = "#222",
+    tickLength,
+    tickStroke,
     tickTransform,
     ticks,
     tickComponent,
     ticksComponent,
   }: AxisRendererProps<Scale> = $props();
+
+  const theme = getChartTheme();
+
+  // Used directly (not through `Axis`), unset styles still come from the theme.
+  let style = $derived(
+    resolveThemeStyles(
+      { stroke, strokeWidth, tickStroke, tickLength, labelOffset },
+      theme?.axis,
+      DefaultTheme.axis,
+    ),
+  );
 
   let combinedLabelProps = $derived({
     ...defaultTextProps,
@@ -87,10 +103,10 @@
     tickClassName,
     tickComponent,
     tickLabelProps: allTickLabelProps,
-    tickStroke,
+    tickStroke: style.tickStroke,
     tickTransform,
     ticks,
-    strokeWidth,
+    strokeWidth: style.strokeWidth,
     tickLineProps,
   });
 </script>
@@ -106,8 +122,8 @@
     class={["axis-line", axisLineClassName]}
     from={axisFromPoint}
     to={axisToPoint}
-    {stroke}
-    stroke-width={strokeWidth}
+    stroke={style.stroke}
+    stroke-width={style.strokeWidth}
     stroke-dasharray={strokeDasharray}
   />
 {/if}
@@ -116,12 +132,12 @@
   <Text
     class={["axis-label", labelClassName]}
     {...getLabelTransform({
-      labelOffset,
+      labelOffset: style.labelOffset,
       labelProps: combinedLabelProps,
       orientation,
       range: scale.range(),
       tickLabelFontSize: maxTickLabelFontSize,
-      tickLength,
+      tickLength: style.tickLength,
     })}
     {...combinedLabelProps}
     text={label}
