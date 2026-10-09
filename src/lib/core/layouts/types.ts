@@ -1,5 +1,7 @@
 import type { Accessor } from "$lib/types/Accessor";
 
+export type { Accessor };
+
 export type XValue = Date | number;
 
 export type XScaleFn = (x: XValue) => number;

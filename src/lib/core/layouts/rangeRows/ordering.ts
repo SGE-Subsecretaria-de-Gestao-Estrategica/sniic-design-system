@@ -1,6 +1,6 @@
 import * as d3 from "d3";
 import orderKeys from "$lib/core/utils/orderKeys";
-import type { Accessor } from "$lib/types/Accessor";
+import type { Accessor } from "../types";
 import type { SortOrder } from "../types";
 import type { RangeRowsEntry } from "./types";
 

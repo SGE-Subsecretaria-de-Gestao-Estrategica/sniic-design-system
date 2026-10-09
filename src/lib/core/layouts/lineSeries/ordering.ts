@@ -1,6 +1,6 @@
 import * as d3 from "d3";
 import applyExplicitOrder from "$lib/core/utils/applyExplicitOrder";
-import type { Accessor } from "$lib/types/Accessor";
+import type { Accessor } from "../types";
 import type { XValue } from "../types";
 import type { LineSeriesEntry } from "./types";
 
