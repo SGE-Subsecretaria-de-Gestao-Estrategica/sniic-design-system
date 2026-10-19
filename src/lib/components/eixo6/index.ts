@@ -27,6 +27,7 @@ export { default as BarrasDivergentesChart } from './BarrasDivergentesChart.svel
 export { default as LinhasAntesDepoisChart } from './LinhasAntesDepoisChart.svelte';
 export { default as BarrasCascataChart } from './BarrasCascataChart.svelte';
 export { default as ColunasEmpilhadasChart } from './ColunasEmpilhadasChart.svelte';
+export { default as FitasRanqueadasChart } from './FitasRanqueadasChart.svelte';
 export { default as LinhasPaineisChart } from './LinhasPaineisChart.svelte';
 export { default as CurvaConcentracaoChart } from './CurvaConcentracaoChart.svelte';
 export { default as FaixasParticipacaoChart } from './FaixasParticipacaoChart.svelte';

@@ -7,6 +7,7 @@
   import Fieldset from "../ui/Fieldset.svelte";
   import AggregationField from "./AggregationField.svelte";
   import ChoiceOption from "./ChoiceOption.svelte";
+  import ColorsOption from "./ColorsOption.svelte";
   import NumberOption from "./NumberOption.svelte";
   import OrderOption from "./OrderOption.svelte";
   import TextOption from "./TextOption.svelte";
@@ -23,6 +24,8 @@
     encoding: Encoding;
     aggregate: Aggregation;
     options: Record<string, JsonValue>;
+    /** For the colour swatches. */
+    pillar: number;
     onaggregate: (aggregate: Aggregation) => void;
     /** `undefined` restores the option's default. */
     onoption: (optionId: string, value: JsonValue | undefined) => void;
@@ -36,6 +39,7 @@
     encoding,
     aggregate,
     options,
+    pillar,
     onaggregate,
     onoption,
   }: Props = $props();
@@ -98,6 +102,17 @@
         {stored}
         onchange={(value) => onoption(option.id, value)}
       />
+    {:else if option.kind === "colors"}
+      {@const values = valuesOf(option.channel)}
+      {#if values.length}
+        <ColorsOption
+          {option}
+          {values}
+          {stored}
+          {pillar}
+          onchange={(value) => onoption(option.id, value)}
+        />
+      {/if}
     {:else if option.kind === "toggle"}
       <ToggleOption
         {option}

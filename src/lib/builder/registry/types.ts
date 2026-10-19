@@ -57,6 +57,12 @@ type ValuesOptionDef = BaseOptionDef & {
   whole?: string 
 }
 
+/** A colour per value of a channel (e.g. per series), from the palette's choices. */
+type ColorsOptionDef = BaseOptionDef & {
+  kind: "colors";
+  channel: string;
+}
+
 type TextOptionDef = BaseOptionDef & { 
   kind: "text"; 
   placeholder?: string 
@@ -79,7 +85,8 @@ export type OptionDef<L> =
   | TextOptionDef
   | NumberOptionDef
   | ToggleOptionDef
-  | ValuesOptionDef;
+  | ValuesOptionDef
+  | ColorsOptionDef;
 
   
 export type OptionOf<K extends OptionDef<never>["kind"]> = Extract<
@@ -108,6 +115,8 @@ export type ParamDef = {
 export type BuildContext = {
   read: ChannelReader;
   box: LayoutBox;
+  /** The figure's margins around `box`, for parts drawn in them (e.g. end labels). */
+  margin: Margin;
   fit: { width: number | null; height: number | null };
   options: Record<string, JsonValue>;
   params: Record<string, number>;

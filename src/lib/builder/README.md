@@ -131,6 +131,7 @@ the layout's type.
 | `lineSeries` | x (date or number), y, series (optional) | G6.07 |
 | `lineBubbleRow` | x, y, size | G6.05: a line panel over a bubble row |
 | `lineDifference` | x, y, series (exactly two values) | G6.08: two lines over their difference |
+| `rankedRibbons` | x (date or number), value, series | Fitas ranqueadas: ribbons stacked by value at each year, crossing where the ranking changes |
 | `rangeRows` | category, group, value | G6.20 |
 | `bubbleColumns` | category, value, group (optional) | G6.12 |
 | `hexChoropleth` | uf, value, slice (optional) | G6.10: one value per state, coloured by steps |
@@ -168,9 +169,10 @@ A chart's own settings, stored in `style.options`. Each declares:
 | `values` | checkboxes | a list of a channel's values; one `whole` checkbox (`true`) while the channel has no column |
 | `number` | number field | a number in the data's own unit (a reference value) |
 | `toggle` | checkbox | `true`, or nothing |
+| `colors` | one select per value of a channel, with a swatch | `{ value: choiceId }`; choices from `seriesColorChoices` (`views/colors.ts`): the primary → primary variant stops (as many as values), secondary, secondary variant, accent |
 | `text` | text field | the text |
 
-Readers: `readChoice`, `readText`, `readNumber`, `readToggle`, `readStringList`,
+Readers: `readColorMap`, `pickColor`, `readChoice`, `readText`, `readNumber`, `readToggle`, `readStringList`,
 `isPicked`, `readOrdering`. A stored value that no longer fits the data is
 ignored, never an error. The helpers the options panel uses are here too
 (`choiceValue`, `ordersOpenedBy`, `pickedValues`, `togglePicked`, `moveItem`,

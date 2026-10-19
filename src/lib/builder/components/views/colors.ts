@@ -1,4 +1,7 @@
 import chroma from "chroma-js";
+import { getGradientStops } from "$lib/core/utils/getGradientRamp";
+import { readColorMap } from "../../registry/options";
+import type { JsonValue } from "../../spec/types";
 import type { PillarTheme } from "./types";
 
 export type ColorPair = { main: string; variant: string };
@@ -67,4 +70,56 @@ export function labelColorOn(background: string, theme: PillarTheme): string {
   return chroma.contrast(light, background) >= MIN_LIGHT_LABEL_CONTRAST
     ? light
     : theme.palette.neutral[300];
+}
+
+/** A colour a series can be given: a stop of the primary gradient, or one of the other palette colours. */
+export type SeriesColorChoice = { id: string; label: string; color: string };
+
+/**
+ * The colours offered per series: `steps` stops from primary to primary
+ * variant (the stops `BubbleColumnsView`'s gradients run through), then
+ * secondary, secondary variant and accent.
+ */
+export function seriesColorChoices(
+  steps: number,
+  theme: PillarTheme,
+): SeriesColorChoice[] {
+  const { palette } = theme;
+  const stops = getGradientStops(Math.max(2, steps), [
+    palette.primary,
+    palette.primaryVariant,
+  ]);
+  return [
+    ...stops.map((color, i) => ({
+      id: `gradient-${i}`,
+      label: `Primária → variante · ${i + 1} de ${stops.length}`,
+      color,
+    })),
+    { id: "secondary", label: "Secundária", color: palette.secondary },
+    {
+      id: "secondaryVariant",
+      label: "Secundária variante",
+      color: palette.secondaryVariant,
+    },
+    { id: "accent", label: "Acento", color: palette.accent },
+  ];
+}
+
+/**
+ * The colour of each series: the stored choice when it is still offered,
+ * otherwise `groupColor` of its position.
+ */
+export function pickedSeriesColors(
+  series: readonly string[],
+  stored: JsonValue | undefined,
+  theme: PillarTheme,
+): Map<string, string> {
+  const choices = seriesColorChoices(series.length, theme);
+  const picked = readColorMap(stored);
+  return new Map(
+    series.map((key, i) => {
+      const choice = choices.find((c) => c.id === picked[key]);
+      return [key, choice?.color ?? groupColor(i, theme)];
+    }),
+  );
 }

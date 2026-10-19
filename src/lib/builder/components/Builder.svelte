@@ -45,6 +45,7 @@
       encoding={builder.spec.encoding}
       aggregate={builder.spec.aggregate}
       options={builder.spec.style.options}
+      pillar={builder.spec.style.pillar}
       onaggregate={(aggregate) => builder.setAggregate(aggregate)}
       onoption={(id, value) => builder.setOption(id, value)}
     />

@@ -6,8 +6,6 @@
  * segments stay on one x axis — the gap is the annotation, not a second scale.
  */
 import * as d3 from 'd3';
-import getStringWidth from '$lib/core/utils/getStringWidth';
-import { wrapText } from '$lib/core/utils/wrapText';
 import { basePalette, eixo6Palette } from '$lib/core/theme/tokens';
 
 export type BreakScale = {
@@ -144,17 +142,7 @@ export function separateLabels<T extends { key: string; y: number }>(
 	return new Map(sorted.map((item) => [item.key, item.y]));
 }
 
-/**
- * How many lines a `<Text>` with this `width` will wrap `text` into.
- *
- * Row layouts need it before drawing, so a long category name in a narrow
- * gutter grows its row instead of running into the next one. It measures with
- * the same unstyled measurer `<Text>` wraps with, so the count agrees with
- * what gets drawn.
- */
-export function wrappedLineCount(text: string, width: number) {
-	return wrapText(text, (line) => getStringWidth(line, '') ?? line.length * 7, width).length;
-}
+export { default as wrappedLineCount } from '$lib/core/utils/wrappedLineCount';
 
 type PaletteLike = {
 	primary?: string;

@@ -222,3 +222,27 @@ export function readOrdering(options: Options): {
     return { sort: "none", categoryOrder: readManualOrder(options) };
   return { sort: readChoice(options, "sort", SORT_ORDERS, "descending") };
 }
+
+/** The choices of a "colors" option, by value; only the string entries count. */
+export function readColorMap(
+  stored: JsonValue | undefined,
+): Record<string, string> {
+  if (!stored || typeof stored !== "object" || Array.isArray(stored)) return {};
+  return Object.fromEntries(
+    Object.entries(stored).filter(
+      (entry): entry is [string, string] => typeof entry[1] === "string",
+    ),
+  );
+}
+
+/** What to store after picking colour `id` for `value` (`undefined` = automatic); `undefined` when nothing is left. */
+export function pickColor(
+  stored: JsonValue | undefined,
+  value: string,
+  id: string | undefined,
+): Record<string, string> | undefined {
+  const next = { ...readColorMap(stored) };
+  if (id) next[value] = id;
+  else delete next[value];
+  return Object.keys(next).length ? next : undefined;
+}

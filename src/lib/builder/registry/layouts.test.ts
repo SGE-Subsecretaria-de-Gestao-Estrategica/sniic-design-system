@@ -15,6 +15,7 @@ describe("ChartLayouts", () => {
       | "lineSeries"
       | "lineBubbleRow"
       | "lineDifference"
+      | "rankedRibbons"
       | "rangeRows"
       | "bubbleColumns"
       | "hexChoropleth"

@@ -67,6 +67,11 @@ export const COLUNAS_EMPILHADAS_STEPS: ChartStep[] = [
 	{ id: 'valores', label: 'O valor de cada parcela' }
 ];
 
+export const FITAS_RANQUEADAS_STEPS: ChartStep[] = [
+	{ id: 'fitas', label: 'As fitas e o que cada ano soma' },
+	{ id: 'valores', label: 'O valor de cada série, e onde cada uma termina' }
+];
+
 export const LINHAS_PAINEIS_STEPS: ChartStep[] = [
 	{ id: 'referencia', label: 'A referência, repetida em cada painel' },
 	{ id: 'paineis', label: 'Cada grupo diante da referência' },
