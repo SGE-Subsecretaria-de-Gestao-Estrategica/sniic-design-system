@@ -3,7 +3,13 @@ import { describe, expect, it } from "vitest";
 import { getPillarTheme } from "$lib/core/theme";
 import { choroplethStepColors } from "$lib/core/layouts/hexMap";
 import { pillarPalettes } from "$lib/core/theme/tokens";
-import { labelColorOn, rampColors } from "./colors";
+import {
+  groupColor,
+  labelColorOn,
+  pickedSeriesColors,
+  rampColors,
+  seriesColorChoices,
+} from "./colors";
 
 describe("rampColors", () => {
   it("matches the G6.10 ramps on pillar 6", () => {
@@ -72,5 +78,48 @@ describe("labelColorOn", () => {
 
   it("keeps the dark label on the whole primary ramp, as in G6.10.2", () => {
     expect(lightFrom("primary")).not.toContain(true);
+  });
+});
+
+describe("seriesColorChoices", () => {
+  const theme = getPillarTheme(6);
+  const { palette } = theme;
+
+  it("offers one primary → variant stop per series, then the other palette colours", () => {
+    const choices = seriesColorChoices(4, theme);
+    expect(choices.map((c) => c.id)).toEqual([
+      "gradient-0",
+      "gradient-1",
+      "gradient-2",
+      "gradient-3",
+      "secondary",
+      "secondaryVariant",
+      "accent",
+    ]);
+    expect(chroma(choices[0].color).hex()).toBe(chroma(palette.primary).hex());
+    expect(chroma(choices[3].color).hex()).toBe(
+      chroma(palette.primaryVariant).hex(),
+    );
+  });
+
+  it("keeps both ends of the gradient for a single series", () => {
+    expect(
+      seriesColorChoices(1, theme).filter((c) => c.id.startsWith("gradient")),
+    ).toHaveLength(2);
+  });
+});
+
+describe("pickedSeriesColors", () => {
+  const theme = getPillarTheme(6);
+
+  it("uses the stored choice, and the group colour of the position otherwise", () => {
+    const colors = pickedSeriesColors(
+      ["A", "B", "C"],
+      { A: "accent", B: "gone", Z: "secondary" },
+      theme,
+    );
+    expect(colors.get("A")).toBe(theme.palette.accent);
+    expect(colors.get("B")).toBe(groupColor(1, theme));
+    expect(colors.get("C")).toBe(groupColor(2, theme));
   });
 });

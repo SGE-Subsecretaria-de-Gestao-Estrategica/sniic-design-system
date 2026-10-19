@@ -57,10 +57,11 @@ type ValuesOptionDef = BaseOptionDef & {
   whole?: string 
 }
 
-/** A colour per value of a channel (e.g. per series), from the palette's choices. */
-type ColorsOptionDef = BaseOptionDef & {
+/** A colour per item of the layout (e.g. per series), from the palette's choices. */
+type ColorsOptionDef<L> = BaseOptionDef & {
   kind: "colors";
-  channel: string;
+  /** The items as the layout has them, so the panel and the drawing agree. */
+  current: (layout: L) => string[];
 }
 
 type TextOptionDef = BaseOptionDef & { 
@@ -86,7 +87,7 @@ export type OptionDef<L> =
   | NumberOptionDef
   | ToggleOptionDef
   | ValuesOptionDef
-  | ColorsOptionDef;
+  | ColorsOptionDef<L>;
 
   
 export type OptionOf<K extends OptionDef<never>["kind"]> = Extract<

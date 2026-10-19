@@ -9,7 +9,7 @@
 
   type Props = {
     option: OptionOf<"colors">;
-    /** The values of the column mapped to the option's channel. */
+    /** The items to colour, as the layout has them. */
     values: readonly string[];
     stored: JsonValue | undefined;
     pillar: number;

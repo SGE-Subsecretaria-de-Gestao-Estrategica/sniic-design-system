@@ -228,6 +228,55 @@ describe("lineDifference", () => {
   });
 });
 
+describe("rankedRibbons", () => {
+  const view = (spec: ReturnType<typeof resolve>["spec"], raw = seriesRows) => {
+    const result = resolveChart(spec, coerceRows(raw, SERIES, ","), defaultRegistry);
+    if (result.status !== "ready" || result.view.chart !== "rankedRibbons")
+      throw new Error(JSON.stringify(result));
+    return result;
+  };
+
+  it("ranks the series at each year, the largest on top", () => {
+    const { spec } = resolve("rankedRibbons", SERIES, seriesRows);
+    const { layout } = view(spec).view as Extract<
+      ReturnType<typeof view>["view"],
+      { chart: "rankedRibbons" }
+    >;
+    expect(layout.series).toEqual(["Cultura", "Agricultura"]);
+    expect(layout.columns.map((c) => c.slots.at(-1)!.series)).toEqual([
+      "Agricultura",
+      "Agricultura",
+      "Agricultura",
+    ]);
+  });
+
+  it("keeps room for the totals only while they are shown", () => {
+    const { spec } = resolve("rankedRibbons", SERIES, seriesRows);
+    const topOf = (s: typeof spec) => {
+      const v = view(s).view;
+      if (v.chart !== "rankedRibbons") throw new Error();
+      return Math.min(...v.layout.columns.map((c) => c.top));
+    };
+    const withTotals = setOption(spec, "totals", true, defaultRegistry).spec;
+    expect(topOf(spec)).toBeCloseTo(0);
+    expect(topOf(withTotals)).toBeGreaterThan(0);
+  });
+
+  it("leaves the ribbon gap between bands", () => {
+    const { spec } = resolve("rankedRibbons", SERIES, seriesRows);
+    const v = view(setParam(spec, "ribbonGap", 6, defaultRegistry).spec).view;
+    if (v.chart !== "rankedRibbons") throw new Error();
+    const [lower, upper] = v.layout.columns[0].slots;
+    expect(lower.y0 - upper.y1).toBeCloseTo(6);
+  });
+
+  it("warns that negative values count as zero", () => {
+    const raw = seriesRows.map((r, i) => (i === 0 ? { ...r, valor: "-5" } : r));
+    const { spec } = resolve("rankedRibbons", SERIES, raw);
+    expect(view(spec, raw).warnings.join(" ")).toMatch(/1 valor negativo/);
+  });
+});
+
 describe("RAIS break", () => {
   const LONG: ColumnSchema[] = [
     { name: "ano", type: "number" },
@@ -297,6 +346,20 @@ describe("RAIS break", () => {
     expect(diff.stems.map((stem) => line.xAxis.segmentOf(stem.xValue))).toEqual(
       [0, 0, 0, 1, 1],
     );
+  });
+
+  it("splits the ribbons too, bridging them across the break", () => {
+    const { spec } = resolve("rankedRibbons", LONG, longRows);
+    const broken = layoutOf(
+      "rankedRibbons",
+      setOption(spec, "raisBreak", true, defaultRegistry).spec,
+    );
+    if (broken.chart !== "rankedRibbons") throw new Error();
+    expect(broken.layout.xAxis.segments.map((s) => s.ticks)).toEqual([
+      [2019, 2020, 2021],
+      [2022, 2023],
+    ]);
+    expect(broken.layout.ribbons.every((r) => r.bridges.length === 1)).toBe(true);
   });
 
   it("keeps one segment when the data sits on one side of the break", () => {
@@ -503,6 +566,19 @@ describe("drawing-only options", () => {
     );
   });
 
+  it("leave the ribbons' layout alone too", () => {
+    const { spec } = resolve("rankedRibbons", SERIES, seriesRows);
+    const rows = coerceRows(seriesRows, SERIES, ",");
+    let styled = setOption(spec, "valueLabels", "ends", defaultRegistry).spec;
+    styled = setOption(styled, "seriesColors", { Cultura: "accent" }, defaultRegistry).spec;
+    const plain = resolveChart(spec, rows, defaultRegistry);
+    const drawn = resolveChart(styled, rows, defaultRegistry);
+    if (plain.status !== "ready" || drawn.status !== "ready") throw new Error();
+    expect(JSON.stringify(drawn.view.layout)).toBe(
+      JSON.stringify(plain.view.layout),
+    );
+  });
+
   it("are the ones a chart marks, and every layout option stays out of them", () => {
     const drawingOnly = (chart: ChartId) =>
       (defaultRegistry.require(chart).options ?? [])
@@ -521,6 +597,10 @@ describe("drawing-only options", () => {
       "endNote",
     ]);
     expect(drawingOnly("horizontalBars")).toEqual([]);
+    expect(drawingOnly("rankedRibbons")).toEqual([
+      "valueLabels",
+      "seriesColors",
+    ]);
     expect(drawingOnly("hexChoropleth")).toEqual([
       "ramp",
       "rampOrder",

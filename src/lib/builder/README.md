@@ -169,7 +169,7 @@ A chart's own settings, stored in `style.options`. Each declares:
 | `values` | checkboxes | a list of a channel's values; one `whole` checkbox (`true`) while the channel has no column |
 | `number` | number field | a number in the data's own unit (a reference value) |
 | `toggle` | checkbox | `true`, or nothing |
-| `colors` | one select per value of a channel, with a swatch | `{ value: choiceId }`; choices from `seriesColorChoices` (`views/colors.ts`): the primary → primary variant stops (as many as values), secondary, secondary variant, accent |
+| `colors` | one select per item the layout lists (`current`), with a swatch | `{ value: choiceId }`; choices from `seriesColorChoices` (`views/colors.ts`): the primary → primary variant stops (as many as values), secondary, secondary variant, accent |
 | `text` | text field | the text |
 
 Readers: `readColorMap`, `pickColor`, `readChoice`, `readText`, `readNumber`, `readToggle`, `readStringList`,

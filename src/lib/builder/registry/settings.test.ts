@@ -12,7 +12,9 @@ import {
   MANUAL,
   moveItem,
   ordersOpenedBy,
+  pickColor,
   pickedValues,
+  readColorMap,
   readNumber,
   readOrdering,
   readText,
@@ -186,6 +188,24 @@ describe("option helpers", () => {
     expect(readNumber({ threshold: 0 }, "threshold")).toBe(0);
     expect(readNumber({ threshold: "0.4" }, "threshold")).toBeUndefined();
     expect(readNumber({}, "threshold")).toBeUndefined();
+  });
+
+  it("reads a colour map, keeping only the text entries", () => {
+    expect(readColorMap({ A: "accent", B: 3 })).toEqual({ A: "accent" });
+    expect(readColorMap(["accent"])).toEqual({});
+    expect(readColorMap(undefined)).toEqual({});
+  });
+
+  it("picks a colour per value, and drops the map once all are automatic", () => {
+    expect(pickColor(undefined, "A", "accent")).toEqual({ A: "accent" });
+    expect(pickColor({ A: "accent" }, "B", "secondary")).toEqual({
+      A: "accent",
+      B: "secondary",
+    });
+    expect(pickColor({ A: "accent", B: "secondary" }, "A", undefined)).toEqual({
+      B: "secondary",
+    });
+    expect(pickColor({ A: "accent" }, "A", undefined)).toBeUndefined();
   });
 
   it("reads a text trimmed, and empty as nothing", () => {

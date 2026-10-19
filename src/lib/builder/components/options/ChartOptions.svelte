@@ -102,8 +102,8 @@
         {stored}
         onchange={(value) => onoption(option.id, value)}
       />
-    {:else if option.kind === "colors"}
-      {@const values = valuesOf(option.channel)}
+    {:else if option.kind === "colors" && ready}
+      {@const values = option.current(ready.view.layout)}
       {#if values.length}
         <ColorsOption
           {option}

@@ -40,13 +40,22 @@ export const rankedRibbonsChart = defineChart({
   sizing: { width: "free", height: "free" },
   defaultSize: { width: FULL_PAGE_WIDTH, height: 320 },
   margin: "right",
-  build: (rows, { read, box, margin, options, params }) => {
+  build: (rows, { read, box, margin, options, params, warn }) => {
     const getX = read.x("x");
+    const getValue = read.number("value");
+    const negatives = rows.filter((row) => getValue(row) < 0).length;
+    if (negatives) {
+      warn(
+        negatives === 1
+          ? "1 valor negativo foi tratado como zero: as fitas só empilham valores positivos."
+          : `${negatives} valores negativos foram tratados como zero: as fitas só empilham valores positivos.`,
+      );
+    }
     // The names wrap in the right margin, past the gap to the plot.
     const nameWidth = margin.right - RANKED_RIBBONS_DEFAULTS.endLabelGap;
     return rankedRibbonsLayout(rows, {
       getX,
-      getY: read.number("value"),
+      getY: getValue,
       getSeries: read.text("series"),
       width: box.width,
       height: box.height,
@@ -71,7 +80,7 @@ export const rankedRibbonsChart = defineChart({
       drawingOnly: true,
       label: "Cor de cada fita",
       kind: "colors",
-      channel: "series",
+      current: (layout) => layout.series,
     },
     RAIS_BREAK_OPTION,
   ],
