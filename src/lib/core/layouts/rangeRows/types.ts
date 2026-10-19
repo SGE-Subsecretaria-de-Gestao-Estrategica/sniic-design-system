@@ -39,8 +39,11 @@ export type RangeRowsLayoutConfig<D> = Partial<RangeRowsSpacing> &
   sort?: SortOrder;
   /** Categories listed here come first, in this order. */
   categoryOrder?: readonly string[];
-  /** Pin the value domain instead of deriving it from the data. */
-  valueDomain?: readonly [number, number];
+  /**
+   * Pin the value domain (the x scale's) instead of deriving it from the
+   * data. Either end may be left `undefined` to keep the derived one.
+   */
+  valueDomain?: readonly [number | undefined, number | undefined];
 };
 
 export type RangeRowsEntry<D> = {

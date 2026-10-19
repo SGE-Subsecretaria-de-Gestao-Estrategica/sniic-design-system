@@ -2,8 +2,11 @@ import * as d3 from "d3";
 import padExtent from "./padExtent";
 
 export type DomainOptions = {
-  /** Use this domain as is. */
-  pinned?: readonly [number, number];
+  /**
+   * Use these ends as is. An `undefined` end is derived from the data (and
+   * padded) as if nothing were pinned.
+   */
+  pinned?: readonly [number | undefined, number | undefined];
   /** Stretch the domain to include 0 (bars, stems). */
   includeZero?: boolean;
   /** Multiply both ends (room for labels past the largest value). */
@@ -13,18 +16,21 @@ export type DomainOptions = {
 };
 
 /**
- * A value domain: the pinned one, or the data extent, optionally zero-based,
- * scaled by `headroom` and padded. Empty data gives [0, 0].
+ * A value domain: the data extent, optionally zero-based, scaled by
+ * `headroom` and padded, with any pinned end taking the place of the derived
+ * one. Empty data gives [0, 0].
  */
 export default function resolveDomain(
   values: readonly number[],
   { pinned, includeZero, headroom, padding }: DomainOptions = {},
 ): [number, number] {
-  if (pinned) return [pinned[0], pinned[1]];
+  const [pinnedLo, pinnedHi] = pinned ?? [];
+  if (pinnedLo !== undefined && pinnedHi !== undefined) return [pinnedLo, pinnedHi];
   let [lo, hi] = (d3.extent(values) as [number, number] | [undefined, undefined]).map(
     (v) => v ?? 0,
   ) as [number, number];
   if (includeZero) [lo, hi] = [Math.min(0, lo), Math.max(0, hi)];
   if (headroom !== undefined) [lo, hi] = [lo * headroom, hi * headroom];
-  return padding !== undefined ? padExtent([lo, hi], padding) : [lo, hi];
+  if (padding !== undefined) [lo, hi] = padExtent([lo, hi], padding);
+  return [pinnedLo ?? lo, pinnedHi ?? hi];
 }

@@ -99,6 +99,42 @@ describe("rangeRows", () => {
     expect(groups).toEqual(["Feminino", "Masculino"]);
     expect(rows[0].markers).toHaveLength(2);
   });
+
+  it("pins either end of the x domain, keeping the other automatic", () => {
+    const { spec, result } = resolve("rangeRows", GROUPED, groupedRows);
+    if (result.view.chart !== "rangeRows") throw new Error();
+    // Automatic: 1000–3200 padded by 10% of the range on each side.
+    expect(result.view.layout.valueScale.domain()).toEqual([780, 3420]);
+
+    const rows = coerceRows(groupedRows, GROUPED, ",");
+    const withOptions = (options: Record<string, number>) => {
+      let next = spec;
+      for (const [id, value] of Object.entries(options)) {
+        next = setOption(next, id, value, defaultRegistry).spec;
+      }
+      const resolved = resolveChart(next, rows, defaultRegistry);
+      if (resolved.status !== "ready" || resolved.view.chart !== "rangeRows")
+        throw new Error();
+      return {
+        domain: resolved.view.layout.valueScale.domain(),
+        warnings: resolved.warnings,
+      };
+    };
+
+    const fromZero = withOptions({ domainMin: 0 });
+    expect(fromZero.domain).toEqual([0, 3420]);
+    expect(fromZero.warnings).toEqual([]);
+
+    const both = withOptions({ domainMin: 0, domainMax: 5000 });
+    expect(both.domain).toEqual([0, 5000]);
+
+    const clipped = withOptions({ domainMax: 2000 });
+    expect(clipped.warnings.join(" ")).toMatch(/fora do intervalo/);
+
+    const inverted = withOptions({ domainMin: 4000, domainMax: 1000 });
+    expect(inverted.domain).toEqual([780, 3420]);
+    expect(inverted.warnings.join(" ")).toMatch(/precisa ser menor/);
+  });
 });
 
 describe("bubbleColumns", () => {

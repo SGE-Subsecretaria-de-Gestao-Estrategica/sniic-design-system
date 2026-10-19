@@ -33,8 +33,9 @@ export const bubbleColumnsChart = defineChart({
     },
     {
       id: "rowSpacing",
+      // Negative values let the circles of neighbouring rows overlap.
       label: "Espaço entre linhas (px)",
-      min: 0,
+      min: -64,
       max: 64,
       step: 1,
       default: BUBBLE_COLUMNS_DEFAULTS.labelGap,
@@ -70,7 +71,8 @@ export const bubbleColumnsChart = defineChart({
       radius,
       // Room for the largest circle in every cell, so circles never overlap.
       columnHalfWidth: maxRadius,
-      rowGap: 2 * maxRadius + params.rowSpacing,
+      // At least 1 px, so a negative spacing never stacks or swaps rows.
+      rowGap: Math.max(1, 2 * maxRadius + params.rowSpacing),
       columnGap: params.columnGap,
       getGroup,
       mainGroup: mainGroup && groups.has(mainGroup) ? mainGroup : undefined,
