@@ -20,7 +20,7 @@ import {
   type Band,
   type RibbonPoint,
 } from "./geometry";
-import { rowsByColumn, seriesKeys } from "./ordering";
+import { fixedStackOrder, rowsByColumn, seriesKeys, stackColumn } from "./ordering";
 import type {
   RankedRibbon,
   RankedRibbonsColumn,
@@ -31,7 +31,8 @@ import type {
 
 /**
  * Ranked ribbons: one ribbon per series running across the columns (years),
- * stacked by value at each column with the largest on top. A ribbon holds
+ * stacked by value at each column, the largest on top or at the bottom
+ * (`rankDirection`), or in one fixed order (`ranked: false`). A ribbon holds
  * its thickness flat for a plateau around each column and bends between
  * columns, so ribbons cross where the ranking changes. The x axis may break
  * (`breaksAfter`): each side gets its own segment and the ribbons cross the
@@ -46,6 +47,9 @@ export function rankedRibbonsLayout<D>(
   const series = seriesKeys(data, getSeries, config.seriesOrder);
   const rows = rowsByColumn(data, getX, getSeries);
   const valueOf = (row: D | undefined) => (row ? Math.max(0, getY(row) || 0) : 0);
+  const ranked = config.ranked ?? true;
+  const direction = ranked ? (config.rankDirection ?? "largestOnTop") : null;
+  const stackOrder = fixedStackOrder(series, config.stackOrder);
 
   // Columns, grouped into segments by the breaks.
   const segmentTicks = valuesBySegment(data, getX, config.breaksAfter ?? []);
@@ -76,15 +80,17 @@ export function rankedRibbonsLayout<D>(
     const byKey = rows.get(+xValue);
     const total = totals[index];
     const isLast = index === lastIndex;
-    // Smallest at the base; on a tie, the earlier series sits higher.
-    const ordered = series
-      .map((s, seriesIndex) => ({ series: s, seriesIndex, row: byKey?.get(s), value: valueOf(byKey?.get(s)) }))
-      .sort((a, b) => a.value - b.value || b.seriesIndex - a.seriesIndex);
+    // Built from the base up.
+    const ordered = stackColumn(
+      series.map((s, seriesIndex) => ({ series: s, seriesIndex, row: byKey?.get(s), value: valueOf(byKey?.get(s)) })),
+      direction,
+      stackOrder,
+    ).reverse();
     let cursor = height;
     const slots = ordered.map((s, i): RankedRibbonsSlot<D> => {
       const y1 = cursor;
       const y0 = y1 - yScale(s.value);
-      // A zero tapers into the base and takes no gap.
+      // A zero takes no height and no gap: the ribbon tapers between its neighbours.
       if (s.value > 0) cursor = y0 - spacing.ribbonGap;
       return {
         key: `${s.series}::${+xValue}`,
@@ -227,5 +233,16 @@ export function rankedRibbonsLayout<D>(
     width,
   };
 
-  return { width, height, columns, ribbons, series, xAxis, yScale, valueLabelPadding: spacing.valueLabelPadding };
+  return {
+    width,
+    height,
+    columns,
+    ribbons,
+    series,
+    ranked,
+    stackOrder,
+    xAxis,
+    yScale,
+    valueLabelPadding: spacing.valueLabelPadding,
+  };
 }

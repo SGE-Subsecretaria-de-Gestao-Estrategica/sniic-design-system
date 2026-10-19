@@ -4,6 +4,8 @@ import type { ColumnSchema, RawRow } from "../../data/types";
 import { defaultRegistry } from "..";
 import type { ChartId } from "../layouts";
 import { resolveChart } from "../../resolve/resolveChart";
+import type { JsonValue } from "../../spec/types";
+import { MANUAL } from "../options";
 import {
   autoEncode,
   createSpec,
@@ -268,6 +270,45 @@ describe("rankedRibbons", () => {
     if (v.chart !== "rankedRibbons") throw new Error();
     const [lower, upper] = v.layout.columns[0].slots;
     expect(lower.y0 - upper.y1).toBeCloseTo(6);
+  });
+
+  it("puts the largest at the bottom, or keeps one order, as chosen", () => {
+    const { spec } = resolve("rankedRibbons", SERIES, seriesRows);
+    const tops = (s: typeof spec) => {
+      const v = view(s).view;
+      if (v.chart !== "rankedRibbons") throw new Error();
+      return v.layout.columns.map((c) => c.slots.at(-1)!.series);
+    };
+    const set = (s: typeof spec, id: string, value: JsonValue) =>
+      setOption(s, id, value, defaultRegistry).spec;
+    expect(tops(set(spec, "rankDirection", "largestAtBottom"))).toEqual([
+      "Cultura",
+      "Cultura",
+      "Cultura",
+    ]);
+    const fixed = set(spec, "ranked", false);
+    expect(tops(fixed)).toEqual(["Cultura", "Cultura", "Cultura"]);
+    const manual = set(
+      set(fixed, "stackSort", MANUAL),
+      "stackOrder",
+      ["Agricultura", "Cultura"],
+    );
+    expect(tops(manual)).toEqual(["Agricultura", "Agricultura", "Agricultura"]);
+    // The manual order only counts while the ribbons aren't ranked.
+    expect(tops(set(manual, "ranked", true))).toEqual(tops(spec));
+  });
+
+  it("lists the colours as the last year stacks, keeping the automatic colours by series", () => {
+    const { spec } = resolve("rankedRibbons", SERIES, seriesRows);
+    const v = view(setOption(spec, "rankDirection", "largestAtBottom", defaultRegistry).spec).view;
+    if (v.chart !== "rankedRibbons") throw new Error();
+    const option = defaultRegistry
+      .require("rankedRibbons")
+      .options!.find((o) => o.id === "seriesColors")!;
+    if (option.kind !== "colors") throw new Error();
+    expect(option.current(v.layout)).toEqual(["Cultura", "Agricultura"]);
+    expect(option.listed!(v.layout)).toEqual(["Cultura", "Agricultura"]);
+    expect(option.listed!(view(spec).view.layout as never)).toEqual(["Agricultura", "Cultura"]);
   });
 
   it("warns that negative values count as zero", () => {

@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Row } from "../../data/types";
-  import { choiceValue, ordersOpenedBy } from "../../registry/options";
+  import { optionShown, ordersOpenedBy } from "../../registry/options";
   import type { AnyChartDefinition, OptionStep } from "../../registry/types";
   import type { ChartResolution } from "../../resolve/types";
   import type { Aggregation, Encoding, JsonValue } from "../../spec/types";
@@ -46,7 +46,11 @@
 
   const ready = $derived(resolution.status === "ready" ? resolution : null);
   const shown = $derived(
-    (definition.options ?? []).filter((option) => option.step === step),
+    (definition.options ?? []).filter(
+      (option) =>
+        option.step === step &&
+        optionShown(definition.options, options, option),
+    ),
   );
   // How repeated rows are combined is a data choice.
   const combined = $derived(step === "mapping" ? (ready?.combined ?? 0) : 0);
@@ -108,6 +112,7 @@
         <ColorsOption
           {option}
           {values}
+          listed={option.listed?.(ready.view.layout) ?? values}
           {stored}
           {pillar}
           onchange={(value) => onoption(option.id, value)}
@@ -131,7 +136,7 @@
         {stored}
         onchange={(value) => onoption(option.id, value)}
       />
-    {:else if option.kind === "order" && ready && (!option.when || choiceValue(definition.options, options, option.when.option) === option.when.equals)}
+    {:else if option.kind === "order" && ready}
       <OrderOption
         label={option.label}
         order={option.current(ready.view.layout)}

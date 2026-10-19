@@ -34,6 +34,9 @@ export type RankedRibbonsSpacing = {
   valueLabelPadding: number;
 };
 
+/** Where the largest value of a column goes when the stack is ranked. */
+export type RankDirection = "largestOnTop" | "largestAtBottom";
+
 export type RankedRibbonsLayoutConfig<D> = Partial<RankedRibbonsSpacing> &
   Partial<SegmentedAxisSpacing> &
   XAccessor<D> &
@@ -48,6 +51,18 @@ export type RankedRibbonsLayoutConfig<D> = Partial<RankedRibbonsSpacing> &
     breaksAfter?: readonly XValue[];
     /** Series listed here come first (their `index`, so their colour); the rest keep data order. */
     seriesOrder?: readonly string[];
+    /**
+     * Stack each column by value, so the ribbons cross where the ranking
+     * changes. Default true. Off, every column stacks in `stackOrder`.
+     */
+    ranked?: boolean;
+    /** While ranked: where the largest value goes. Default `largestOnTop`. */
+    rankDirection?: RankDirection;
+    /**
+     * While not ranked: the stack, top to bottom. Series listed here come
+     * first; the rest keep series order. Doesn't change `index` (colours).
+     */
+    stackOrder?: readonly string[];
     /** Keep room above the stacks for the totals. Default true. */
     totals?: boolean;
     /** Close each ribbon with its last value and name, right of the plot. Default true. */
@@ -73,7 +88,7 @@ export type RankedRibbonsSlot<D> = {
   value: number;
   /** Share of the column's total. */
   share: number;
-  /** Position in the stack from the top (0 = largest). */
+  /** Position in the stack from the top (0 = top). */
   rank: number;
   /** Centre of the column and the edges of the plateau. */
   x: number;
@@ -149,6 +164,10 @@ export type RankedRibbonsLayout<D> = LayoutBox & {
   ribbons: RankedRibbon<D>[];
   /** Series keys in series order. */
   series: string[];
+  /** Whether each column is stacked by value. */
+  ranked: boolean;
+  /** The fixed stack, top to bottom, used when not ranked: `stackOrder` first, then series order. */
+  stackOrder: string[];
   /** Columns sit on its ticks; segments and breaks follow `breaksAfter`. Use it for gridlines and the axis. */
   xAxis: SegmentedAxis;
   /** Value → band thickness. */

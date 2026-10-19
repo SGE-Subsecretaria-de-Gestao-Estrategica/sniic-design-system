@@ -24,6 +24,34 @@ export function choiceValue(
   return def?.kind === "choice" ? def.default : undefined;
 }
 
+/** The value an option has now: the stored one, or its default (a toggle is `true` or `false`). */
+export function optionValue(
+  defs: Defs = [],
+  options: Options,
+  id: string,
+): JsonValue | undefined {
+  const def = defs.find((d) => d.id === id);
+  if (def?.kind === "toggle") return readToggle(options, id, def.default);
+  return choiceValue(defs, options, id);
+}
+
+/** Whether the panel shows `def`: its `when` holds, and so does its condition option's own. */
+export function optionShown(
+  defs: Defs = [],
+  options: Options,
+  def: OptionDef<never>,
+  depth = 0,
+): boolean {
+  if (!def.when) return true;
+  // A cycle of conditions shows nothing.
+  if (depth > defs.length) return false;
+  if (optionValue(defs, options, def.when.option) !== def.when.equals) {
+    return false;
+  }
+  const parent = defs.find((d) => d.id === def.when!.option);
+  return !parent || optionShown(defs, options, parent, depth + 1);
+}
+
 /** The "order" options that picking `value` in choice `id` opens. */
 export function ordersOpenedBy<L>(
   defs: readonly OptionDef<L>[] = [],
@@ -107,8 +135,14 @@ export function readNumber(options: Options, id: string): number | undefined {
     : undefined;
 }
 
-export function readToggle(options: Options, id: string): boolean {
-  return options[id] === true;
+/** A stored toggle, or `fallback` (its default) when nothing is stored. */
+export function readToggle(
+  options: Options,
+  id: string,
+  fallback = false,
+): boolean {
+  const value = options[id];
+  return typeof value === "boolean" ? value : fallback;
 }
 
 /** Whether `value` is ticked in a "values" option; a stored `true` ticks everything. */

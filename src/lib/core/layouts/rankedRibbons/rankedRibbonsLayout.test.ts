@@ -223,3 +223,38 @@ describe("rankedRibbonsLayout", () => {
     }
   });
 });
+
+describe("rankedRibbonsLayout ordering", () => {
+  const topToBottom = (slots: { series: string }[]) =>
+    [...slots].reverse().map((s) => s.series);
+
+  it("puts the largest value at the bottom when asked", () => {
+    const layout = rankedRibbonsLayout(rows, { ...config, rankDirection: "largestAtBottom" });
+    const [first, second] = layout.columns;
+    expect(topToBottom(first.slots)).toEqual(["B", "A"]);
+    expect(topToBottom(second.slots)).toEqual(["A", "B"]);
+    expect(first.slots[0]).toMatchObject({ series: "A", y1: 200, rank: 1 });
+  });
+
+  it("keeps series order in every column when not ranked", () => {
+    const layout = rankedRibbonsLayout(rows, { ...config, ranked: false });
+    expect(layout.ranked).toBe(false);
+    expect(layout.stackOrder).toEqual(["A", "B"]);
+    for (const column of layout.columns) {
+      expect(topToBottom(column.slots)).toEqual(["A", "B"]);
+    }
+  });
+
+  it("stacks in the given order without changing the colour index", () => {
+    const layout = rankedRibbonsLayout(rows, { ...config, ranked: false, stackOrder: ["B"] });
+    expect(layout.stackOrder).toEqual(["B", "A"]);
+    expect(topToBottom(layout.columns[0].slots)).toEqual(["B", "A"]);
+    expect(layout.series).toEqual(["A", "B"]);
+    expect(layout.ribbons.find((r) => r.key === "A")!.index).toBe(0);
+  });
+
+  it("ignores the fixed order while ranked", () => {
+    const layout = rankedRibbonsLayout(rows, { ...config, stackOrder: ["B"] });
+    expect(topToBottom(layout.columns[0].slots)).toEqual(["A", "B"]);
+  });
+});

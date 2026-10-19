@@ -84,28 +84,46 @@ describe("labelColorOn", () => {
 describe("seriesColorChoices", () => {
   const theme = getPillarTheme(6);
   const { palette } = theme;
+  const hex = (c: string) => chroma(c).hex();
 
-  it("offers one primary → variant stop per series, then the other palette colours", () => {
-    const choices = seriesColorChoices(4, theme);
+  it("offers the pillar colours, two ramps of one stop per series, then the neutrals", () => {
+    const choices = seriesColorChoices(3, theme);
     expect(choices.map((c) => c.id)).toEqual([
-      "gradient-0",
-      "gradient-1",
-      "gradient-2",
-      "gradient-3",
+      "primary",
+      "primaryVariant",
       "secondary",
       "secondaryVariant",
       "accent",
+      "gradient-0",
+      "gradient-1",
+      "gradient-2",
+      "secondaryGradient-0",
+      "secondaryGradient-1",
+      "secondaryGradient-2",
+      "neutral-100",
+      "neutral-200",
+      "neutral-300",
+      "neutral-400",
     ]);
-    expect(chroma(choices[0].color).hex()).toBe(chroma(palette.primary).hex());
-    expect(chroma(choices[3].color).hex()).toBe(
-      chroma(palette.primaryVariant).hex(),
+    expect(new Set(choices.map((c) => c.group))).toEqual(
+      new Set(["base", "primarySteps", "secondarySteps", "neutral"]),
     );
   });
 
-  it("keeps both ends of the gradient for a single series", () => {
-    expect(
-      seriesColorChoices(1, theme).filter((c) => c.id.startsWith("gradient")),
-    ).toHaveLength(2);
+  it("runs each ramp from the colour to its variant", () => {
+    const choices = seriesColorChoices(4, theme);
+    const color = (id: string) => hex(choices.find((c) => c.id === id)!.color);
+    expect(color("gradient-0")).toBe(hex(palette.primary));
+    expect(color("gradient-3")).toBe(hex(palette.primaryVariant));
+    expect(color("secondaryGradient-0")).toBe(hex(palette.secondary));
+    expect(color("secondaryGradient-3")).toBe(hex(palette.secondaryVariant));
+    expect(color("neutral-300")).toBe(hex(palette.neutral[300]));
+  });
+
+  it("keeps both ends of each ramp for a single series", () => {
+    const choices = seriesColorChoices(1, theme);
+    expect(choices.filter((c) => c.group === "primarySteps")).toHaveLength(2);
+    expect(choices.filter((c) => c.group === "secondarySteps")).toHaveLength(2);
   });
 });
 

@@ -33,6 +33,7 @@
     formatTotal = (column) => String(column.total),
     totalFill,
     showEnds = true,
+    endValueFill,
     formatName = (ribbon) => ribbon.key,
     nameWidth,
     labelsOpacity = 1,
@@ -170,6 +171,7 @@
               variant="dataLabel"
               placement={ribbon.end.value}
               text={formatValue(ribbon.last)}
+              fill={resolveValue(endValueFill, ribbon) ?? fillOf.get(ribbon.key)}
             />
             <PlacedLabel
               variant="seriesLabel"

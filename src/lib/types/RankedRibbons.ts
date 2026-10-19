@@ -34,6 +34,8 @@ export type RankedRibbonsProps<D> = LayoutComponentProps<RankedRibbonsLayout<D>>
 
   // End labels right of the plot (theme roles: `dataLabel`, `seriesLabel`)
   showEnds?: boolean;
+  /** Colour of the last value. Default: its ribbon's fill. */
+  endValueFill?: ValueOrAccessor<[ribbon: RankedRibbon<D>], string | undefined>;
   formatName?: (ribbon: RankedRibbon<D>) => string;
   nameWidth?: number;
 

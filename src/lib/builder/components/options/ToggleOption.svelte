@@ -6,16 +6,21 @@
   type Props = {
     option: OptionOf<"toggle">;
     stored: JsonValue | undefined;
-    /** `undefined` = off. */
-    onchange: (value: true | undefined) => void;
+    /** `undefined` = back to the option's default. */
+    onchange: (value: boolean | undefined) => void;
   };
 
   let { option, stored, onchange }: Props = $props();
+
+  const fallback = $derived(option.default ?? false);
 </script>
 
 <Checkbox
-  checked={stored === true}
-  onchange={(e) => onchange(e.currentTarget.checked || undefined)}
+  checked={typeof stored === "boolean" ? stored : fallback}
+  onchange={(e) => {
+    const checked = e.currentTarget.checked;
+    onchange(checked === fallback ? undefined : checked);
+  }}
 >
   {option.label}
 </Checkbox>

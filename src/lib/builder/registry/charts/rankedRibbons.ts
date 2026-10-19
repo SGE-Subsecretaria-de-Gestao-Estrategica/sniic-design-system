@@ -1,12 +1,43 @@
 import {
   RANKED_RIBBONS_DEFAULTS,
   rankedRibbonsLayout,
+  type RankDirection,
 } from "$lib/core/layouts/rankedRibbons";
 import wrappedLineCount from "$lib/core/utils/wrappedLineCount";
-import { readToggle, valueLabelsOption } from "../options";
+import {
+  MANUAL,
+  readChoice,
+  readStringList,
+  readToggle,
+  valueLabelsOption,
+} from "../options";
+import type { JsonValue } from "../../spec/types";
 import { RAIS_BREAK_OPTION, raisBreaksAfter } from "../rais";
 import { defineChart } from "../registry";
 import { FULL_PAGE_WIDTH } from "../widths";
+
+const RANK_DIRECTIONS: readonly RankDirection[] = [
+  "largestOnTop",
+  "largestAtBottom",
+];
+
+/** The stack's order for the layout: ranked one way or the other, or fixed (file or manual order). */
+function readStacking(options: Record<string, JsonValue>) {
+  const ranked = readToggle(options, "ranked", true);
+  return {
+    ranked,
+    rankDirection: readChoice(
+      options,
+      "rankDirection",
+      RANK_DIRECTIONS,
+      "largestOnTop",
+    ),
+    stackOrder:
+      !ranked && options.stackSort === MANUAL
+        ? readStringList(options, "stackOrder")
+        : undefined,
+  };
+}
 
 export const rankedRibbonsChart = defineChart({
   id: "rankedRibbons",
@@ -60,6 +91,7 @@ export const rankedRibbonsChart = defineChart({
       width: box.width,
       height: box.height,
       breaksAfter: raisBreaksAfter(options, rows, getX),
+      ...readStacking(options),
       totals: readToggle(options, "totals"),
       ribbonGap: params.ribbonGap,
       plateau: params.plateau,
@@ -67,6 +99,45 @@ export const rankedRibbonsChart = defineChart({
     });
   },
   options: [
+    {
+      id: "ranked",
+      step: "style",
+      label: "Ranquear as fitas em cada ano",
+      kind: "toggle",
+      default: true,
+    },
+    {
+      id: "rankDirection",
+      step: "style",
+      label: "Maior valor de cada ano",
+      kind: "choice",
+      when: { option: "ranked", equals: true },
+      choices: [
+        { value: "largestOnTop", label: "No topo" },
+        { value: "largestAtBottom", label: "Embaixo" },
+      ],
+      default: "largestOnTop",
+    },
+    {
+      id: "stackSort",
+      step: "style",
+      label: "Ordem das fitas (de cima para baixo)",
+      kind: "choice",
+      when: { option: "ranked", equals: false },
+      choices: [
+        { value: "file", label: "Ordem do arquivo" },
+        { value: MANUAL, label: "Ordem manual" },
+      ],
+      default: "file",
+    },
+    {
+      id: "stackOrder",
+      step: "style",
+      label: "Ordem manual",
+      kind: "order",
+      when: { option: "stackSort", equals: MANUAL },
+      current: (layout) => layout.stackOrder,
+    },
     valueLabelsOption("all"),
     {
       id: "totals",
@@ -81,6 +152,10 @@ export const rankedRibbonsChart = defineChart({
       label: "Cor de cada fita",
       kind: "colors",
       current: (layout) => layout.series,
+      // As stacked in the last year, top to bottom, where the end labels sit.
+      listed: (layout) =>
+        layout.columns.at(-1)?.slots.map((slot) => slot.series).reverse() ??
+        layout.series,
     },
     RAIS_BREAK_OPTION,
   ],

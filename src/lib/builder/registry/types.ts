@@ -26,11 +26,19 @@ export type Margin = {
 
 export type OptionStep = "mapping" | "style";
 
+/**
+ * Shows an option only while another one has a value: a choice's value, or
+ * a toggle's `true` / `false`. An option whose condition's option is hidden
+ * is hidden too.
+ */
+export type OptionCondition = { option: string; equals: string | boolean };
+
 type BaseOptionDef = {
   id: string;
   label: string;
   step: OptionStep;
   drawingOnly?: true;
+  when?: OptionCondition;
 }
 
 type ChoiceOptionDef = BaseOptionDef & {
@@ -42,7 +50,6 @@ type ChoiceOptionDef = BaseOptionDef & {
 type OrderOptionDef<L> = BaseOptionDef & {
   kind: "order";
   current: (layout: L) => string[];
-  when?: { option: string; equals: string };
 }
 
 type ValueOptionDef = BaseOptionDef & { 
@@ -60,8 +67,10 @@ type ValuesOptionDef = BaseOptionDef & {
 /** A colour per item of the layout (e.g. per series), from the palette's choices. */
 type ColorsOptionDef<L> = BaseOptionDef & {
   kind: "colors";
-  /** The items as the layout has them, so the panel and the drawing agree. */
+  /** The items as the layout has them, so the panel and the drawing agree. Their position sets the automatic colour. */
   current: (layout: L) => string[];
+  /** The order the panel lists them in, when it isn't `current`'s (e.g. as stacked on screen). */
+  listed?: (layout: L) => string[];
 }
 
 type TextOptionDef = BaseOptionDef & { 
@@ -75,8 +84,10 @@ type NumberOptionDef = BaseOptionDef & {
   note?: string;
 }
 
-type ToggleOptionDef = BaseOptionDef & { 
-  kind: "toggle" 
+type ToggleOptionDef = BaseOptionDef & {
+  kind: "toggle";
+  /** Ticked until the user unticks it. Default false. */
+  default?: boolean;
 }
 
 export type OptionDef<L> = 
