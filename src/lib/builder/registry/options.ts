@@ -24,6 +24,34 @@ export function choiceValue(
   return def?.kind === "choice" ? def.default : undefined;
 }
 
+/** The value an option has now: the stored one, or its default (a toggle is `true` or `false`). */
+export function optionValue(
+  defs: Defs = [],
+  options: Options,
+  id: string,
+): JsonValue | undefined {
+  const def = defs.find((d) => d.id === id);
+  if (def?.kind === "toggle") return readToggle(options, id, def.default);
+  return choiceValue(defs, options, id);
+}
+
+/** Whether the panel shows `def`: its `when` holds, and so does its condition option's own. */
+export function optionShown(
+  defs: Defs = [],
+  options: Options,
+  def: OptionDef<never>,
+  depth = 0,
+): boolean {
+  if (!def.when) return true;
+  // A cycle of conditions shows nothing.
+  if (depth > defs.length) return false;
+  if (optionValue(defs, options, def.when.option) !== def.when.equals) {
+    return false;
+  }
+  const parent = defs.find((d) => d.id === def.when!.option);
+  return !parent || optionShown(defs, options, parent, depth + 1);
+}
+
 /** The "order" options that picking `value` in choice `id` opens. */
 export function ordersOpenedBy<L>(
   defs: readonly OptionDef<L>[] = [],
@@ -107,8 +135,14 @@ export function readNumber(options: Options, id: string): number | undefined {
     : undefined;
 }
 
-export function readToggle(options: Options, id: string): boolean {
-  return options[id] === true;
+/** A stored toggle, or `fallback` (its default) when nothing is stored. */
+export function readToggle(
+  options: Options,
+  id: string,
+  fallback = false,
+): boolean {
+  const value = options[id];
+  return typeof value === "boolean" ? value : fallback;
 }
 
 /** Whether `value` is ticked in a "values" option; a stored `true` ticks everything. */
@@ -221,4 +255,28 @@ export function readOrdering(options: Options): {
   if (options.sort === MANUAL)
     return { sort: "none", categoryOrder: readManualOrder(options) };
   return { sort: readChoice(options, "sort", SORT_ORDERS, "descending") };
+}
+
+/** The choices of a "colors" option, by value; only the string entries count. */
+export function readColorMap(
+  stored: JsonValue | undefined,
+): Record<string, string> {
+  if (!stored || typeof stored !== "object" || Array.isArray(stored)) return {};
+  return Object.fromEntries(
+    Object.entries(stored).filter(
+      (entry): entry is [string, string] => typeof entry[1] === "string",
+    ),
+  );
+}
+
+/** What to store after picking colour `id` for `value` (`undefined` = automatic); `undefined` when nothing is left. */
+export function pickColor(
+  stored: JsonValue | undefined,
+  value: string,
+  id: string | undefined,
+): Record<string, string> | undefined {
+  const next = { ...readColorMap(stored) };
+  if (id) next[value] = id;
+  else delete next[value];
+  return Object.keys(next).length ? next : undefined;
 }

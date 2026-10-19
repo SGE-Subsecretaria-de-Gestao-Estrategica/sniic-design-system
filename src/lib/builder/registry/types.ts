@@ -26,11 +26,19 @@ export type Margin = {
 
 export type OptionStep = "mapping" | "style";
 
+/**
+ * Shows an option only while another one has a value: a choice's value, or
+ * a toggle's `true` / `false`. An option whose condition's option is hidden
+ * is hidden too.
+ */
+export type OptionCondition = { option: string; equals: string | boolean };
+
 type BaseOptionDef = {
   id: string;
   label: string;
   step: OptionStep;
   drawingOnly?: true;
+  when?: OptionCondition;
 }
 
 type ChoiceOptionDef = BaseOptionDef & {
@@ -42,7 +50,6 @@ type ChoiceOptionDef = BaseOptionDef & {
 type OrderOptionDef<L> = BaseOptionDef & {
   kind: "order";
   current: (layout: L) => string[];
-  when?: { option: string; equals: string };
 }
 
 type ValueOptionDef = BaseOptionDef & { 
@@ -57,6 +64,15 @@ type ValuesOptionDef = BaseOptionDef & {
   whole?: string 
 }
 
+/** A colour per item of the layout (e.g. per series), from the palette's choices. */
+type ColorsOptionDef<L> = BaseOptionDef & {
+  kind: "colors";
+  /** The items as the layout has them, so the panel and the drawing agree. Their position sets the automatic colour. */
+  current: (layout: L) => string[];
+  /** The order the panel lists them in, when it isn't `current`'s (e.g. as stacked on screen). */
+  listed?: (layout: L) => string[];
+}
+
 type TextOptionDef = BaseOptionDef & { 
   kind: "text"; 
   placeholder?: string 
@@ -68,8 +84,10 @@ type NumberOptionDef = BaseOptionDef & {
   note?: string;
 }
 
-type ToggleOptionDef = BaseOptionDef & { 
-  kind: "toggle" 
+type ToggleOptionDef = BaseOptionDef & {
+  kind: "toggle";
+  /** Ticked until the user unticks it. Default false. */
+  default?: boolean;
 }
 
 export type OptionDef<L> = 
@@ -79,7 +97,8 @@ export type OptionDef<L> =
   | TextOptionDef
   | NumberOptionDef
   | ToggleOptionDef
-  | ValuesOptionDef;
+  | ValuesOptionDef
+  | ColorsOptionDef<L>;
 
   
 export type OptionOf<K extends OptionDef<never>["kind"]> = Extract<
@@ -108,6 +127,8 @@ export type ParamDef = {
 export type BuildContext = {
   read: ChannelReader;
   box: LayoutBox;
+  /** The figure's margins around `box`, for parts drawn in them (e.g. end labels). */
+  margin: Margin;
   fit: { width: number | null; height: number | null };
   options: Record<string, JsonValue>;
   params: Record<string, number>;

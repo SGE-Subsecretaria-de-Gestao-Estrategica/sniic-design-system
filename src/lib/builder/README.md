@@ -131,6 +131,7 @@ the layout's type.
 | `lineSeries` | x (date or number), y, series (optional) | G6.07 |
 | `lineBubbleRow` | x, y, size | G6.05: a line panel over a bubble row |
 | `lineDifference` | x, y, series (exactly two values) | G6.08: two lines over their difference |
+| `rankedRibbons` | x (date or number), value, series | Fitas ranqueadas: ribbons stacked by value at each year (largest on top or at the bottom), crossing where the ranking changes; or, unranked, in the file's order or a manual one |
 | `rangeRows` | category, group, value | G6.20 |
 | `bubbleColumns` | category, value, group (optional) | G6.12 |
 | `hexChoropleth` | uf, value, slice (optional) | G6.10: one value per state, coloured by steps |
@@ -158,22 +159,27 @@ A chart's own settings, stored in `style.options`. Each declares:
 - `step`: `mapping` or `style` (which wizard step shows it)
 - `drawingOnly`: only the view reads it, so `build` doesn't receive it and
   changing it doesn't rebuild the layout
+- `when` (any kind): shown only while another option has a value (a choice's
+  value, or a toggle's `true` / `false`), and only while that option is shown
+  itself (`optionShown`). `build` still gets a hidden option's stored value,
+  so it reads the condition too.
 - a `kind`:
 
 | Kind | Control | Stored |
 |---|---|---|
 | `choice` | select | one of its values (has a default) |
-| `order` | list with ↑ / ↓ | category names; `when` ties it to a value of a choice |
+| `order` | list with ↑ / ↓ | category names; usually behind a `when` on a choice's manual value |
 | `value` | select | one value of a channel's column |
 | `values` | checkboxes | a list of a channel's values; one `whole` checkbox (`true`) while the channel has no column |
 | `number` | number field | a number in the data's own unit (a reference value) |
-| `toggle` | checkbox | `true`, or nothing |
+| `toggle` | checkbox | `true` / `false` when it differs from its `default` (off unless set), or nothing |
+| `colors` | one select per item the layout lists (`current`, whose order sets the automatic colours), with a swatch; `listed` changes only the order the panel shows them in | `{ value: choiceId }`; choices from `seriesColorChoices` (`views/colors.ts`), listed in the `SERIES_COLOR_GROUPS`: the pillar's five colours; the primary → primary variant stops (`gradient-i`) and the secondary → secondary variant stops (`secondaryGradient-i`), as many as values; neutral 100 to 400 |
 | `text` | text field | the text |
 
-Readers: `readChoice`, `readText`, `readNumber`, `readToggle`, `readStringList`,
+Readers: `readColorMap`, `pickColor`, `readChoice`, `readText`, `readNumber`, `readToggle` (takes the default), `readStringList`,
 `isPicked`, `readOrdering`. A stored value that no longer fits the data is
 ignored, never an error. The helpers the options panel uses are here too
-(`choiceValue`, `ordersOpenedBy`, `pickedValues`, `togglePicked`, `moveItem`,
+(`choiceValue`, `optionValue`, `optionShown`, `ordersOpenedBy`, `pickedValues`, `togglePicked`, `moveItem`,
 `layoutOptions`).
 
 Shared options: `SORT_OPTION` + `CATEGORY_ORDER_OPTION` (manual order sits

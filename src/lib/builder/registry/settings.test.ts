@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { JsonValue } from "../spec/types";
 import {
   addMargins,
   isMarginPresetId,
@@ -11,8 +12,11 @@ import {
   layoutOptions,
   MANUAL,
   moveItem,
+  optionShown,
   ordersOpenedBy,
+  pickColor,
   pickedValues,
+  readColorMap,
   readNumber,
   readOrdering,
   readText,
@@ -188,9 +192,71 @@ describe("option helpers", () => {
     expect(readNumber({}, "threshold")).toBeUndefined();
   });
 
+  it("reads a colour map, keeping only the text entries", () => {
+    expect(readColorMap({ A: "accent", B: 3 })).toEqual({ A: "accent" });
+    expect(readColorMap(["accent"])).toEqual({});
+    expect(readColorMap(undefined)).toEqual({});
+  });
+
+  it("picks a colour per value, and drops the map once all are automatic", () => {
+    expect(pickColor(undefined, "A", "accent")).toEqual({ A: "accent" });
+    expect(pickColor({ A: "accent" }, "B", "secondary")).toEqual({
+      A: "accent",
+      B: "secondary",
+    });
+    expect(pickColor({ A: "accent", B: "secondary" }, "A", undefined)).toEqual({
+      B: "secondary",
+    });
+    expect(pickColor({ A: "accent" }, "A", undefined)).toBeUndefined();
+  });
+
   it("reads a text trimmed, and empty as nothing", () => {
     expect(readText({ caption: "  Nota " }, "caption")).toBe("Nota");
     expect(readText({ caption: "   " }, "caption")).toBeUndefined();
     expect(readText({ caption: 3 }, "caption")).toBeUndefined();
+  });
+});
+
+describe("conditional options", () => {
+  const defs = [
+    { id: "ranked", step: "style", label: "", kind: "toggle", default: true },
+    {
+      id: "stackSort",
+      step: "style",
+      label: "",
+      kind: "choice",
+      when: { option: "ranked", equals: false },
+      choices: [
+        { value: "file", label: "" },
+        { value: MANUAL, label: "" },
+      ],
+      default: "file",
+    },
+    {
+      id: "stackOrder",
+      step: "style",
+      label: "",
+      kind: "order",
+      when: { option: "stackSort", equals: MANUAL },
+      current: () => [],
+    },
+  ] as const;
+  const shown = (options: Record<string, JsonValue>) =>
+    defs.filter((d) => optionShown(defs, options, d)).map((d) => d.id);
+
+  it("reads a toggle's default until one is stored", () => {
+    expect(readToggle({}, "ranked", true)).toBe(true);
+    expect(readToggle({ ranked: false }, "ranked", true)).toBe(false);
+  });
+
+  it("shows an option only while its condition holds, all the way up", () => {
+    expect(shown({})).toEqual(["ranked"]);
+    expect(shown({ ranked: false })).toEqual(["ranked", "stackSort"]);
+    expect(shown({ ranked: false, stackSort: MANUAL })).toEqual([
+      "ranked",
+      "stackSort",
+      "stackOrder",
+    ]);
+    expect(shown({ stackSort: MANUAL })).toEqual(["ranked"]);
   });
 });

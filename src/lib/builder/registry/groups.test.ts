@@ -13,7 +13,7 @@ describe("groupCharts", () => {
       ]),
     ).toEqual([
       ["categories", ["horizontalBars", "rangeRows", "bubbleColumns"]],
-      ["lines", ["lineSeries", "lineBubbleRow", "lineDifference"]],
+      ["lines", ["lineSeries", "lineBubbleRow", "lineDifference", "rankedRibbons"]],
       ["hexMaps", ["hexChoropleth", "hexTwinBars"]],
     ]);
   });

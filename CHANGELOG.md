@@ -35,6 +35,13 @@ All notable changes to this project will be documented in this file.
 - Every Cultura em Números chart has a docs page (autodocs): what it shows, when to use it and when not to, data shape, steps and `highlight`, the import line, and the props table. The `Padrão` story is args-driven, so its controls work; every story has a description.
 - `FrameProps` (`height`, `title`, `subtitle`, `source`) documented, for the props tables.
 
+## [3.1.0] - 2026-10-19
+
+### Added
+- **`FitasRanqueadasChart`** (*Fitas ranqueadas*), with `FITAS_RANQUEADAS_STEPS`: one ribbon per series running year to year, stacked by value with the largest on top, crossing where the ranking changes. Each year is a short plateau and the ribbons bend between years; gridlines mark the years (no baseline). The last year's value closes each ribbon in the right gutter with its name, like the end of a line, and is not repeated inside. Values inside the ribbons pick the light or the dark ink against the ribbon's colour and run into the bends while the text stays clear. New props: `valueLabels` (`'all'` or `'ends'`), `showTotals`, `ribbonGap` (space between ribbons, not the outline) and `breakBefore` (a methodological break such as RAIS: the years split and the ribbons cross the gap faded, as the lines cross it dashed). Story (with *Quebra da série*) and catalog card under *Composição*, in place of *Colunas com fitas*.
+- **Core**: `rankedRibbonsLayout` (pure, with `RANKED_RIBBONS_DEFAULTS`) and the `RankedRibbons` component that draws it. Theme roles `totalLabel` (one size and one weight above `valueLabel`) and `ribbon` (outline and leader line).
+- **Core utils**: `getGradientStops(count, colors)`, the stops `getGradientRamp` builds its gradients from.
+
 ## [3.0.0] - 2026-09-29
 
 ### Removed (breaking)

@@ -15,6 +15,7 @@
   import LineDifferenceView from "./views/LineDifferenceView.svelte";
   import LineSeriesView from "./views/LineSeriesView.svelte";
   import RangeRowsView from "./views/RangeRowsView.svelte";
+  import RankedRibbonsView from "./views/RankedRibbonsView.svelte";
 
   type Props = {
     chart: ReadyChart;
@@ -65,6 +66,8 @@
         <LineBubbleRowView layout={view.layout} {...shared} />
       {:else if view.chart === "lineDifference"}
         <LineDifferenceView layout={view.layout} {...shared} />
+      {:else if view.chart === "rankedRibbons"}
+        <RankedRibbonsView layout={view.layout} {...shared} />
       {:else if view.chart === "rangeRows"}
         <RangeRowsView layout={view.layout} {...shared} />
       {:else if view.chart === "bubbleColumns"}

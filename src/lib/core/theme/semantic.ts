@@ -23,6 +23,8 @@ export function getPillarTheme(pillarId: number) {
     text,
     dataLabel: { ...text, fontSize: Tokens.fontSize.lg, fontWeight: Tokens.fontWeight.bold },
     valueLabel: { ...text, fontSize: Tokens.fontSize.sm },
+    // A sum over value labels: one size and one weight above them.
+    totalLabel: { ...text, fontSize: Tokens.fontSize.md, fontWeight: Tokens.fontWeight.bold },
     categoryLabel: text,
     seriesLabel: text,
     tickLabel: { ...text, fill: palette.neutral[200] },
@@ -122,6 +124,13 @@ export function getPillarTheme(pillarId: number) {
       dotRatio: 0.55,
       gapFill: palette.base[100],
       gap: 2,
+    },
+    ribbon: {
+      // Outlined in the page colour, so at a crossing one ribbon reads as passing over.
+      outlineStroke: palette.base[100],
+      outlineWidth: Tokens.strokeWidth.sm,
+      leaderStroke: palette.neutral[100],
+      leaderWidth: Tokens.strokeWidth.xs,
     },
     dumbbell: {
       stroke: pillarPalette.primary,

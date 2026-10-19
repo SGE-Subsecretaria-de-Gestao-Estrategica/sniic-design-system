@@ -1,12 +1,13 @@
 <script lang="ts">
   import type { Row } from "../../data/types";
-  import { choiceValue, ordersOpenedBy } from "../../registry/options";
+  import { optionShown, ordersOpenedBy } from "../../registry/options";
   import type { AnyChartDefinition, OptionStep } from "../../registry/types";
   import type { ChartResolution } from "../../resolve/types";
   import type { Aggregation, Encoding, JsonValue } from "../../spec/types";
   import Fieldset from "../ui/Fieldset.svelte";
   import AggregationField from "./AggregationField.svelte";
   import ChoiceOption from "./ChoiceOption.svelte";
+  import ColorsOption from "./ColorsOption.svelte";
   import NumberOption from "./NumberOption.svelte";
   import OrderOption from "./OrderOption.svelte";
   import TextOption from "./TextOption.svelte";
@@ -23,6 +24,8 @@
     encoding: Encoding;
     aggregate: Aggregation;
     options: Record<string, JsonValue>;
+    /** For the colour swatches. */
+    pillar: number;
     onaggregate: (aggregate: Aggregation) => void;
     /** `undefined` restores the option's default. */
     onoption: (optionId: string, value: JsonValue | undefined) => void;
@@ -36,13 +39,18 @@
     encoding,
     aggregate,
     options,
+    pillar,
     onaggregate,
     onoption,
   }: Props = $props();
 
   const ready = $derived(resolution.status === "ready" ? resolution : null);
   const shown = $derived(
-    (definition.options ?? []).filter((option) => option.step === step),
+    (definition.options ?? []).filter(
+      (option) =>
+        option.step === step &&
+        optionShown(definition.options, options, option),
+    ),
   );
   // How repeated rows are combined is a data choice.
   const combined = $derived(step === "mapping" ? (ready?.combined ?? 0) : 0);
@@ -98,6 +106,18 @@
         {stored}
         onchange={(value) => onoption(option.id, value)}
       />
+    {:else if option.kind === "colors" && ready}
+      {@const values = option.current(ready.view.layout)}
+      {#if values.length}
+        <ColorsOption
+          {option}
+          {values}
+          listed={option.listed?.(ready.view.layout) ?? values}
+          {stored}
+          {pillar}
+          onchange={(value) => onoption(option.id, value)}
+        />
+      {/if}
     {:else if option.kind === "toggle"}
       <ToggleOption
         {option}
@@ -116,7 +136,7 @@
         {stored}
         onchange={(value) => onoption(option.id, value)}
       />
-    {:else if option.kind === "order" && ready && (!option.when || choiceValue(definition.options, options, option.when.option) === option.when.equals)}
+    {:else if option.kind === "order" && ready}
       <OrderOption
         label={option.label}
         order={option.current(ready.view.layout)}
