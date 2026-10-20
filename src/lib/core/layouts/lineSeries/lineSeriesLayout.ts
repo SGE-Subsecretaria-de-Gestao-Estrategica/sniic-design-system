@@ -95,12 +95,15 @@ export function lineSeriesLayout<D>(
         paths,
         bridges,
         last,
-        // Above: hangs from the line, under the end value. Below: stacks under it.
-        nameLabel: placeRight(
-          last,
-          spacing.endLabelGap,
-          side === "above" ? 0 : spacing.endValueGap + spacing.endValueHeight,
-        ),
+        // Above: hangs from the line, under the end value. Below: stacks under
+        // it. Without an end value: centred on the last point.
+        nameLabel: !endLabels
+          ? placeRight(last, spacing.endLabelGap, 0, "middle")
+          : placeRight(
+              last,
+              spacing.endLabelGap,
+              side === "above" ? 0 : spacing.endValueGap + spacing.endValueHeight,
+            ),
       };
     },
   );

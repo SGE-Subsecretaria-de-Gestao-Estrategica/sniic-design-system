@@ -195,6 +195,24 @@ export const ACCENT_END_OPTION = {
   whole: "Último marcador na cor de acento",
 } as const;
 
+/**
+ * Lines and ribbons: the last value of each series emphasized right of its
+ * last point (`dataLabel`, beside the series name), or drawn like the other
+ * values. On by default. Changes the label placement, so not drawing-only.
+ */
+export const END_VALUE_OPTION = {
+  id: "endValue",
+  step: "style",
+  label: "Destacar o último valor à direita",
+  kind: "toggle",
+  default: true,
+} as const;
+
+/** Whether the "endValue" option keeps the emphasized last value (default on). */
+export function readEndValue(options: Options): boolean {
+  return readToggle(options, END_VALUE_OPTION.id, END_VALUE_OPTION.default);
+}
+
 export const SORT_ORDERS: readonly SortOrder[] = [
   "descending",
   "ascending",

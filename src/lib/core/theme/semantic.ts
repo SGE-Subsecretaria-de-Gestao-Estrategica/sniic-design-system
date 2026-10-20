@@ -27,7 +27,7 @@ export function getPillarTheme(pillarId: number) {
     totalLabel: { ...text, fontSize: Tokens.fontSize.md, fontWeight: Tokens.fontWeight.bold },
     categoryLabel: text,
     seriesLabel: text,
-    tickLabel: { ...text, fill: palette.neutral[200] },
+    tickLabel: { ...text, fill: palette.neutral[300] },
     caption: { ...text, fill: palette.neutral[200], fontSize: Tokens.fontSize.sm },
     calloutValue: { ...text, fill: palette.primary, fontSize: 19, fontWeight: Tokens.fontWeight.bold },
     calloutDescription: { ...text, fontSize: 13 },

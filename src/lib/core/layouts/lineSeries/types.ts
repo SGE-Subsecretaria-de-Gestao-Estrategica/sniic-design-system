@@ -63,7 +63,11 @@ export type LineSeriesLayoutConfig<D> = Partial<LineSeriesSpacing> &
   seriesOrder?: readonly string[];
   /** Side of the value labels, for every series or per series. Default "above". */
   labelSide?: LabelSide | ((series: string) => LabelSide);
-  /** Place the last value label to the right of the last point. Default true. */
+  /**
+   * Place the last value label to the right of the last point. Default true.
+   * Off, it sits above / below like the others and the name is centred on
+   * the point.
+   */
   endLabels?: boolean;
 };
 

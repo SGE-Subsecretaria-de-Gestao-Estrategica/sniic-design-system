@@ -75,6 +75,7 @@ export function rankedRibbonsLayout<D>(
   const flat = segmentTicks.flatMap((ticks, segment) => ticks.map((xValue, i) => ({ xValue, segment, x: xs[segment][i] })));
   const lastIndex = flat.length - 1;
   const endLabels = config.endLabels ?? true;
+  const endValues = endLabels && (config.endValues ?? true);
 
   const columns: RankedRibbonsColumn<D>[] = flat.map(({ xValue, segment, x }, index) => {
     const byKey = rows.get(+xValue);
@@ -106,7 +107,7 @@ export function rankedRibbonsLayout<D>(
         x1: x + half,
         y0,
         y1,
-        isEndLabel: isLast && endLabels,
+        isEndLabel: isLast && endValues,
         labelFits: false,
         labelReach: { left: null, right: null },
         label: placeCentered({ x, y: (y0 + y1) / 2 }),
@@ -192,18 +193,21 @@ export function rankedRibbonsLayout<D>(
       .filter((r) => r.last.value > 0)
       .sort((a, b) => a.last.y0 - b.last.y0);
     const lines = config.endNameLines ?? (() => 1);
-    const blocks = closing.map((r) => spacing.endValueHeight + spacing.endNameHeight * Math.max(1, lines(r.key)));
+    const valueHeight = endValues ? spacing.endValueHeight : 0;
+    const blocks = closing.map((r) => valueHeight + spacing.endNameHeight * Math.max(1, lines(r.key)));
     const anchors = closing.map((r) => (r.last.y0 + r.last.y1) / 2);
     const tops = spreadBlocks(anchors, blocks, spacing.endLabelSpacing, height);
     const labelX = width + spacing.endLabelGap;
     closing.forEach((r, i) => {
       const top = tops[i];
+      // The leader points at the block's first line: the value, or the name.
+      const firstLine = endValues ? spacing.endValueHeight : spacing.endNameHeight;
       r.end = {
-        value: placeRight({ x: labelX, y: top }, 0),
-        name: placeRight({ x: labelX, y: top }, 0, spacing.endValueHeight),
+        value: endValues ? placeRight({ x: labelX, y: top }, 0) : undefined,
+        name: placeRight({ x: labelX, y: top }, 0, valueHeight),
         leader: {
           from: { x: width + 2, y: anchors[i] },
-          to: { x: labelX - 4, y: top + spacing.endValueHeight / 2 },
+          to: { x: labelX - 4, y: top + firstLine / 2 },
         },
       };
     });

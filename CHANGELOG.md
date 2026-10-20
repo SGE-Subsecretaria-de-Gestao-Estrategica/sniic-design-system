@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- **Builder**: *Destacar o último valor à direita* (`END_VALUE_OPTION`, on by default) on the line charts (Linhas, Linhas com bolhas, Linhas com diferença) and on Fitas ranqueadas. Off, the last value is drawn like the series' other values; the series name stays on the right.
+- **`rankedRibbonsLayout`**: `endValues` (default true). Off, the last column's values stay in their bands and the end label holds only the name (`RankedRibbonsEnd.value` is then absent).
 - **`TabelaBarrasChart`** (*Tabela com barras*), with `TabelaBarrasColuna`, `TabelaBarrasLinha` and `tabelaBarrasSteps(columns, { total })`: one row per category, one column per measure, each cell a `CapsuleBar` on its column's own scale — for tables of measures in units that don't mix. Per-column `format` and dashed `reference`; `null` is written as *não informado*, never drawn as zero; an optional `total` row is written, not drawn; `sortBy` ranks by a column. Steps follow the columns — one stage per column (bringing it in, stepping the read ones back), then the whole table with the total; `stepLabel` gives each column its stage copy. Story (with Scrollytelling) and catalog card under *Comparar categorias*.
 - **`BarrasRankingChart`**: `reference` and `referenceLabel` — a dashed line behind the bars (a parity, a target, an average), named under the last row; the scale stretches to keep it in view. Values get a background halo so the line never cuts through them. New story *Com referência*.
 - **Theme**: palettes per eixo, exported from the package root — `eixo1Palette`, `eixo6Palette`, `eixoPalettes` (by eixo number), `EixoPalette`, plus the shared `basePalette` (`#FEFFFC`, `#F0F2F1`, `#ECEEED`) and `neutralPalette` (`#808679`, `#4D5148`, `#2D2E2B`, `#1C1C1C`), and `defaultEixo`.
@@ -17,6 +19,8 @@ All notable changes to this project will be documented in this file.
 - **Eixo 6 family**: `PontosPaineisChart` (*Matriz de pontos*), with `PontosPainel`, `PontosFatia` and `PONTOS_PAINEIS_STEPS`, its story and its catalog card. The chart won't be used.
 
 ### Changed (breaking)
+- **Theme**: the `tickLabel` role (axis ticks, legend entries) is `neutral[300]`, like body text (was `neutral[200]`).
+- **`lineSeriesLayout`**: with `endLabels: false`, the series name is centred on the last point (it kept the offset for an end value that wasn't there).
 - **Theme**: `DefaultTheme` (and every fallback that reads it) is Eixo 6 again, not Eixo 1.
 - **Eixo 1 palette**: the accent is `#4ACA5D` (was `#68CF27`); `eixo1Cores.rampaVerde` is rebuilt around it on the same OKLab lightness steps (`#0F3D16 … #4ACA5D`), and `eixo1Tokens.colors.accent` / `colorGradients.accent` follow.
 - **Colours**: white, black and greys hardcoded in the core primitives, the Eixo 6 charts and the print bases are now `basePalette` / `neutralPalette` — white → `base[100]`, light greys → `base[300]`/`base[200]`, mid greys → `neutral[100]`, subtitles → `neutral[200]`, text → `neutral[300]`, black → `neutral[400]`. `pickContrastInk` defaults to `base[100]` / `neutral[400]`.

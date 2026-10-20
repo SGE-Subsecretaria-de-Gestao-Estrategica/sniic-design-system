@@ -4,7 +4,9 @@ import {
 } from "$lib/core/layouts/lineSeries";
 import {
   ACCENT_END_OPTION,
+  END_VALUE_OPTION,
   HIGHLIGHT_OPTION,
+  readEndValue,
   valueLabelsOption,
 } from "../options";
 import { RAIS_BREAK_OPTION, raisBreaksAfter } from "../rais";
@@ -63,10 +65,12 @@ export const lineSeriesChart = defineChart({
       yPaddingRatio: params.yPaddingRatio,
       valueLabelGap: params.valueLabelGap,
       endLabelGap: params.endLabelGap,
+      endLabels: readEndValue(options),
     });
   },
   options: [
     valueLabelsOption("ends"),
+    END_VALUE_OPTION,
     HIGHLIGHT_OPTION,
     ACCENT_END_OPTION,
     RAIS_BREAK_OPTION,

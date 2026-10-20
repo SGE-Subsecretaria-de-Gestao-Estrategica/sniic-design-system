@@ -156,7 +156,7 @@ describe("rankedRibbonsLayout", () => {
     const layout = rankedRibbonsLayout(rows, config);
     const a = layout.ribbons.find((r) => r.key === "A")!;
     const b = layout.ribbons.find((r) => r.key === "B")!;
-    expect(a.end?.value.x).toBeGreaterThan(300);
+    expect(a.end?.value?.x).toBeGreaterThan(300);
     expect(b.end).toBeUndefined();
     expect(layout.columns[2].slots.every((s) => s.isEndLabel)).toBe(true);
     expect(layout.columns[1].slots.some((s) => s.isEndLabel)).toBe(false);
@@ -216,10 +216,35 @@ describe("rankedRibbonsLayout", () => {
     const blockOf = (s: string, n: (s: string) => number) =>
       RANKED_RIBBONS_DEFAULTS.endValueHeight + RANKED_RIBBONS_DEFAULTS.endNameHeight * n(s);
     for (const [layout, n] of [[one, () => 1], [two, lines]] as const) {
-      const [upper, lower] = [...layout.ribbons].sort((a, b) => a.end!.value.y - b.end!.value.y);
-      expect(lower.end!.value.y - upper.end!.value.y).toBeGreaterThanOrEqual(
+      const [upper, lower] = [...layout.ribbons].sort((a, b) => a.end!.value!.y - b.end!.value!.y);
+      expect(lower.end!.value!.y - upper.end!.value!.y).toBeGreaterThanOrEqual(
         blockOf(upper.key, n) + RANKED_RIBBONS_DEFAULTS.endLabelSpacing - 1e-9,
       );
+    }
+  });
+});
+
+describe("rankedRibbonsLayout end values", () => {
+  it("keeps the last value in its band when endValues is off", () => {
+    const layout = rankedRibbonsLayout(rows, { ...config, endValues: false });
+    expect(layout.columns.at(-1)!.slots.some((s) => s.isEndLabel)).toBe(false);
+    const ended = layout.ribbons.filter((r) => r.end);
+    expect(ended.length).toBeGreaterThan(0);
+    for (const ribbon of ended) {
+      expect(ribbon.end!.value).toBeUndefined();
+      // The name takes the block's first line.
+      expect(ribbon.end!.leader.to.y).toBeCloseTo(
+        ribbon.end!.name.y + RANKED_RIBBONS_DEFAULTS.endNameHeight / 2,
+      );
+    }
+  });
+
+  it("draws the last value right of the plot by default", () => {
+    const layout = rankedRibbonsLayout(rows, config);
+    const last = layout.columns.at(-1)!.slots;
+    expect(last.every((s) => s.isEndLabel)).toBe(true);
+    for (const ribbon of layout.ribbons.filter((r) => r.end)) {
+      expect(ribbon.end!.value).toBeDefined();
     }
   });
 });

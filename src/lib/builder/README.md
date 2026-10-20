@@ -184,7 +184,9 @@ ignored, never an error. The helpers the options panel uses are here too
 
 Shared options: `SORT_OPTION` + `CATEGORY_ORDER_OPTION` (manual order sits
 behind the sort select's "Ordem manual"), `valueLabelsOption`,
-`HIGHLIGHT_OPTION`, `ACCENT_END_OPTION`, and `RAIS_BREAK_OPTION` (`rais.ts`:
+`HIGHLIGHT_OPTION`, `ACCENT_END_OPTION`, `END_VALUE_OPTION` (lines and
+ribbons: the last value emphasized right of the plot, or like the others;
+read with `readEndValue`), and `RAIS_BREAK_OPTION` (`rais.ts`:
 breaks the x axis after 2021, for dates or years as numbers).
 
 ### Params, formats, sizes
