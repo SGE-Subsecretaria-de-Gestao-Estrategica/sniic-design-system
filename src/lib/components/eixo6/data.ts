@@ -162,18 +162,6 @@ export type MapaUfCategoria = {
  */
 export type MapaHexagonalValor = { uf: string; a: number; b?: number | null };
 
-/** The category of one federative unit for `MapaHexagonalCategoricoChart`, by its name. */
-export type MapaHexagonalCategoricoValor = { uf: string; category: string };
-
-/** One category of `MapaHexagonalCategoricoChart`: its order in the list is its order on the map. */
-export type MapaHexagonalCategoria = {
-	label: string;
-	/** Without it, the category takes the ramp step of its position (or a palette hue, unordered). */
-	color?: string;
-	/** Copy for its scrollytelling stage; defaults to `label`. */
-	stepLabel?: string;
-};
-
 /**
  * The copy of `MapaHexagonalLegenda`. Each `*Label` is the bold lead-in, each
  * `*Text` the explanation after it; `**double asterisks**` set a word in bold.

@@ -26,10 +26,10 @@
 	import { getPillarTheme } from '$lib/core/theme';
 	import { fontSize, fontWeight, strokeWidth } from '$lib/core/theme/tokens';
 	import { BRAZIL_STATE_LABELS, type BrazilState } from '$lib/charts/brazilStates';
-	import ChartShell from './ChartShell.svelte';
-	import type { MapaHexagonalCategoria, MapaHexagonalCategoricoValor } from './data.js';
-	import { sequentialRamp, seriesColors } from './scales.js';
-	import type { FrameProps, ScrollytellingProps } from './types.js';
+	import ChartShell from '../eixo6/ChartShell.svelte';
+	import { sequentialRamp, seriesColors } from '../eixo6/scales.js';
+	import type { FrameProps, ScrollytellingProps } from '../eixo6/types.js';
+	import type { MapaHexagonalCategoria, MapaHexagonalCategoricoValor } from './mapaHexagonalCategorico.js';
 
 	type Props = FrameProps &
 		ScrollytellingProps & {
@@ -48,7 +48,7 @@
 			legendCounts?: boolean;
 			/** How far regions are pulled apart, as a share of the hexagon radius (0 to 1). */
 			regionGap?: number;
-			/** Overrides the Eixo 6 palette — used for style previews in other eixos. */
+			/** Overrides the Eixo 1 palette. */
 			pillarId?: number;
 		};
 
@@ -68,7 +68,7 @@
 		highlight = null,
 		focusIndex = null,
 		interactive = true,
-		pillarId = 6
+		pillarId = 1
 	}: Props = $props();
 
 	let theme = $derived(getPillarTheme(pillarId));

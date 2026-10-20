@@ -11,7 +11,14 @@
  * tipográfica de impressão A4 (`tokens.ts`), o layout de legenda em pastilhas
  * (`legend.ts`), as rampas da marca (`cores.ts`), a malha hexagonal e a das
  * UFs (`mapaUf.ts`, `data/malha-ufs.json`) e o tipo da malha municipal que
- * `MapaMunicipiosChart` recebe por prop. Saem como namespaces (`eixo1Cores`,
+ * `MapaMunicipiosChart` recebe por prop.
+ *
+ * E o gráfico próprio do eixo: `MapaHexagonalCategoricoChart`, a situação de
+ * cada UF (estágios de adesão, por exemplo) na malha hexagonal, com as etapas
+ * `mapaHexagonalCategoricoSteps`. Usa a moldura e as escalas de Cultura em
+ * Números (`../eixo6`) com a paleta do Eixo 1.
+ *
+ * Os tokens saem como namespaces (`eixo1Cores`,
  * `eixo1Tokens`) para não colidir com os `colors`/`fontSize` genéricos do
  * pacote.
  */
@@ -22,3 +29,7 @@ export * as eixo1Cores from './cores';
 export * as eixo1Tokens from './tokens';
 export { layoutLegend as eixo1LayoutLegend } from './legend';
 export type { LegendItem as Eixo1LegendItem, LegendLayout as Eixo1LegendLayout } from './legend';
+
+export { default as MapaHexagonalCategoricoChart } from './MapaHexagonalCategoricoChart.svelte';
+export { mapaHexagonalCategoricoSteps } from './mapaHexagonalCategorico';
+export type { MapaHexagonalCategoria, MapaHexagonalCategoricoValor } from './mapaHexagonalCategorico';

@@ -1,8 +1,8 @@
 <script lang="ts" module>
   import type { ComponentProps } from 'svelte';
   import { defineMeta } from '@storybook/addon-svelte-csf';
-  import MapaHexagonalCategoricoChart from '$lib/components/eixo6/MapaHexagonalCategoricoChart.svelte';
-  import { mapaHexagonalCategoricoSteps } from '$lib/components/eixo6/steps';
+  import MapaHexagonalCategoricoChart from '$lib/components/eixo1/MapaHexagonalCategoricoChart.svelte';
+  import { mapaHexagonalCategoricoSteps } from '$lib/components/eixo1/mapaHexagonalCategorico';
   import Etapas from './_Etapas.svelte';
   import Scrolly from './_Scrolly.svelte';
   import { eixo6Palette, sharedPalette } from '$lib/core/theme/tokens';
