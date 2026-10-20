@@ -49,6 +49,7 @@ export { default as PlacedLabel } from './components/label/PlacedLabel.svelte';
 export { default as HexTiles } from './components/hexMap/HexTiles.svelte';
 export { default as HexChoropleth } from './components/hexMap/HexChoropleth.svelte';
 export { default as HexTwinBars } from './components/hexMap/HexTwinBars.svelte';
+export { default as HexCategorical } from './components/hexMap/HexCategorical.svelte';
 
 // Range rows (dumbbell)
 export { default as RangeRows } from './components/rangeRows/RangeRows.svelte';
@@ -230,6 +231,7 @@ export type {
 
 export {
   choroplethLayout,
+  categoricalLayout,
   choroplethStepColors,
   twinBarsLayout,
   hexRadiusForWidth,
@@ -251,6 +253,9 @@ export type {
   ChoroplethLayoutConfig,
   ChoroplethDatum,
   ChoroplethLayout,
+  CategoricalLayoutConfig,
+  CategoricalDatum,
+  CategoricalLayout,
 } from './layouts/hexMap/types.js';
 export { wrapText } from './utils/wrapText.js';
 export { padBox, paddingPair } from './utils/padBox.js';

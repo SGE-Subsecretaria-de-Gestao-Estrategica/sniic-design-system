@@ -146,3 +146,18 @@ export function tabelaBarrasSteps(
 		{ id: 'tabela', label: options.total ? 'A tabela inteira, com o total' : 'A tabela inteira' }
 	];
 }
+
+/**
+ * `MapaHexagonalCategoricoChart`. One stage per category, in the chart's
+ * order: each paints its UFs and keeps the earlier ones, so an ordered set —
+ * stages of a process — builds up from the first to the last. Built from the
+ * categories, like `tabelaBarrasSteps`.
+ */
+export function mapaHexagonalCategoricoSteps(
+	categories: { label: string; stepLabel?: string }[]
+): ChartStep[] {
+	return categories.map((category, c) => ({
+		id: `categoria-${c}`,
+		label: category.stepLabel ?? category.label
+	}));
+}

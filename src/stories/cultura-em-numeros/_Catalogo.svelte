@@ -97,6 +97,7 @@
       cartoes: [
         { nome: 'Mapa por UF', componente: 'MapaUfChart', pergunta: 'Como um indicador varia entre os estados?', grafico: G.MapaUfChart, props: { values: ex.valoresPorUf(7, 4, 62).map(({ uf, valor }) => ({ uf, value: valor })), breaks: [10, 20, 30, 50], formatValue: pct } },
         { nome: 'Mapa hexagonal', componente: 'MapaHexagonalChart', pergunta: 'Dois valores por estado: quem supera a referência?', grafico: G.MapaHexagonalChart, props: { values: hexagonos, reference: Math.round(hexagonos.reduce((s, v) => s + v.b, 0) / hexagonos.length), referenceLabel: 'Média', legend: 'none' } },
+        { nome: 'Mapa hexagonal categórico', componente: 'MapaHexagonalCategoricoChart', pergunta: 'Em que situação está cada estado?', grafico: G.MapaHexagonalCategoricoChart, props: { values: ex.categoriasPorUf(5, ['Estágio inicial', 'Estágio intermediário', 'Estágio avançado'], [3, 1, 4]), categories: [{ label: 'Estágio inicial' }, { label: 'Estágio intermediário' }, { label: 'Estágio avançado' }], categoryLabel: 'Estágio' } },
         { nome: 'Mapa por município', componente: 'MapaMunicipiosChart', pergunta: 'Onde estão os municípios com os maiores valores?', grafico: G.MapaMunicipiosChart, props: {}, sobDemanda: true },
       ],
     },
