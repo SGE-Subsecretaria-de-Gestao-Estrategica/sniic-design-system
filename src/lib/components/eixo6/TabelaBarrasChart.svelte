@@ -11,6 +11,11 @@
 	 * are only compared within their column: the header names the measure, and
 	 * position — not colour — tells the columns apart.
 	 *
+	 * When the columns are the same measure from different sources, `scale =
+	 * 'shared'` puts them on one scale, so equal values are equal lengths and
+	 * the bars compare across the row too. The builder's "Tabela com barras"
+	 * draws the same table from a CSV, on `barTableLayout`.
+	 *
 	 * A value that was not reported is written as such and never drawn as a
 	 * zero. A column can carry a reference (a parity, a target) as a dashed
 	 * line, and the table can close on a total row, written but not drawn —
@@ -42,6 +47,12 @@
 			rows: TabelaBarrasLinha[];
 			/** Closing row — written, not drawn. */
 			total?: TabelaBarrasLinha;
+			/**
+			 * One scale per column (default), for measures in units that don't
+			 * mix; or one scale for every column, for the same measure from
+			 * several sources.
+			 */
+			scale?: 'independent' | 'shared';
 			/** Index of the column to rank the rows by, largest first; `null` keeps the order of `rows`. */
 			sortBy?: number | null;
 			/** Text of each value, for columns without their own `format`. */
@@ -60,6 +71,7 @@
 		columns,
 		rows,
 		total,
+		scale = 'independent',
 		sortBy = null,
 		formatValue = (value: number) => formatLocale.format(',~f')(value),
 		missingLabel = 'não informado',
@@ -131,17 +143,31 @@
 			: [...rows].sort((a, b) => (b.values[sortBy] ?? -Infinity) - (a.values[sortBy] ?? -Infinity))
 	);
 
-	/** Per column: the scale, and the room its longest value needs past the tip. */
-	let scales = $derived(
+	/**
+	 * Per column: the largest value (or reference) and the room its longest
+	 * value needs past the tip. A shared scale takes the largest of them all
+	 * and the tightest room, so a length means the same in every column.
+	 */
+	let extents = $derived(
 		columns.map((column, c) => {
 			const values = rows.map((r) => r.values[c]).filter((v): v is number => v !== null && v !== undefined);
-			const max = Math.max(d3.max(values) ?? 0, column.reference ?? 0) || 1;
 			const valueSpace =
 				Math.max(...rows.map((r) => measure(textOf(r.values[c] ?? null, c), valueSize)), 0) + Tokens.spacing.sm;
-			const barMax = Math.max(0, columnWidth - valueSpace);
-			return d3.scaleLinear().domain([0, max]).range([0, barMax]);
+			return {
+				max: Math.max(d3.max(values) ?? 0, column.reference ?? 0),
+				barMax: Math.max(0, columnWidth - valueSpace)
+			};
 		})
 	);
+	let scales = $derived.by(() => {
+		const sharedMax = d3.max(extents, (e) => e.max) || 1;
+		const sharedBarMax = d3.min(extents, (e) => e.barMax) ?? 0;
+		return extents.map((e) =>
+			scale === 'shared'
+				? d3.scaleLinear().domain([0, sharedMax]).range([0, sharedBarMax])
+				: d3.scaleLinear().domain([0, e.max || 1]).range([0, e.barMax])
+		);
+	});
 
 	let headerLines = $derived(
 		Math.max(1, ...columns.map((column) => wrappedLineCount(column.label, columnWidth)))

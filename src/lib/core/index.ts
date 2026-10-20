@@ -37,6 +37,9 @@ export { default as RankedRibbons } from './components/rankedRibbons/RankedRibbo
 // Horizontal bars
 export { default as HorizontalBars } from './components/horizontalBars/HorizontalBars.svelte';
 
+// Bar table (a column of capsule bars per measure or source)
+export { default as BarTable } from './components/barTable/BarTable.svelte';
+
 // Line series, bubble row, difference stems
 export { default as LineSeries } from './components/lineSeries/LineSeries.svelte';
 export { default as BubbleRow } from './components/bubbleRow/BubbleRow.svelte';
@@ -135,6 +138,8 @@ export type {
   HorizontalBar,
   HorizontalBarsLayout,
 } from './layouts/horizontalBars/types.js';
+export { barTableLayout, BAR_TABLE_DEFAULTS } from './layouts/barTable/index.js';
+export type * from './layouts/barTable/types.js';
 export type {
   XValue,
   XScaleFn,

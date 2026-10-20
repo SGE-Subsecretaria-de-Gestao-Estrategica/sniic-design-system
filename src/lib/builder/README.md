@@ -128,6 +128,7 @@ the layout's type.
 | Id | Channels | From |
 |---|---|---|
 | `horizontalBars` | category, value | G6.26 |
+| `barTable` | category, value, column | Tabela com barras: a row per category, a column of capsule bars per value of `column` (a measure, or a source of the same measure); one value scale by default, one per column on request; a missing cell is written, not drawn |
 | `lineSeries` | x (date or number), y, series (optional) | G6.07 |
 | `lineBubbleRow` | x, y, size | G6.05: a line panel over a bubble row |
 | `lineDifference` | x, y, series (exactly two values) | G6.08: two lines over their difference |

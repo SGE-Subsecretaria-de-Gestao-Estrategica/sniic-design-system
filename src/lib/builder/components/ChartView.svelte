@@ -7,6 +7,7 @@
   import type { ReadyChart } from "../resolve/types";
   import { createFormatter } from "../spec/format";
   import type { StyleSpec } from "../spec/types";
+  import BarTableView from "./views/BarTableView.svelte";
   import BubbleColumnsView from "./views/BubbleColumnsView.svelte";
   import HexChoroplethView from "./views/HexChoroplethView.svelte";
   import HexTwinBarsView from "./views/HexTwinBarsView.svelte";
@@ -60,6 +61,8 @@
     >
       {#if view.chart === "horizontalBars"}
         <HorizontalBarsView layout={view.layout} {...shared} />
+      {:else if view.chart === "barTable"}
+        <BarTableView layout={view.layout} {...shared} />
       {:else if view.chart === "lineSeries"}
         <LineSeriesView layout={view.layout} {...shared} />
       {:else if view.chart === "lineBubbleRow"}

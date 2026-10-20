@@ -329,6 +329,20 @@ export const cristas: CristaDensidade[] = [
 
 /** Cinco grupos por três medidas de unidades diferentes, com o total que as fecha. */
 export const tabelaColunas = ['Ações', 'Participantes', 'Unidades envolvidas'];
+
+/**
+ * A mesma medida em quatro fontes, para a escala compartilhada: cada coluna
+ * é uma fonte. A Fonte D não informa a Categoria 6.
+ */
+export const tabelaFontes = ['Fonte A', 'Fonte B', 'Fonte C', 'Fonte D'];
+export const tabelaFontesLinhas: TabelaBarrasLinha[] = [
+  { label: 'Categoria 1', values: [420, 380, 150, 610] },
+  { label: 'Categoria 2', values: [310, 350, 90, 240] },
+  { label: 'Categoria 3', values: [260, 150, 310, 200] },
+  { label: 'Categoria 4', values: [180, 210, 70, 130] },
+  { label: 'Categoria 5', values: [95, 120, 260, 80] },
+  { label: 'Categoria 6', values: [40, 60, 30, null] },
+];
 export const tabelaLinhas: TabelaBarrasLinha[] = [
   { label: 'Grupo A', values: [149, 9_412, 44] },
   { label: 'Grupo B', values: [368, 22_905, 134] },

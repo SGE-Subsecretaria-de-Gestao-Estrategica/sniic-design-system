@@ -14,6 +14,7 @@ import {
   setEncoding,
   setOption,
   setParam,
+  setStyle,
 } from "../../spec/spec";
 
 function resolve(
@@ -89,6 +90,64 @@ describe("lineSeries", () => {
       "Agricultura",
     ]);
     expect(result.combined).toBe(0);
+  });
+});
+
+describe("barTable", () => {
+  const table = (spec: Parameters<typeof resolveChart>[0]) => {
+    const result = resolveChart(
+      spec,
+      coerceRows(groupedRows, GROUPED, ","),
+      defaultRegistry,
+    );
+    if (result.status !== "ready" || result.view.chart !== "barTable") {
+      throw new Error(JSON.stringify(result));
+    }
+    return { ...result, layout: result.view.layout };
+  };
+
+  it("draws a column per value, every column on the same rows", () => {
+    const { spec, result } = resolve("barTable", GROUPED, groupedRows, {
+      category: "dominio",
+      column: "sexo",
+    });
+    if (result.view.chart !== "barTable") throw new Error();
+    const { layout } = result.view;
+    expect(layout.columns.map((c) => c.key)).toEqual(["Feminino", "Masculino"]);
+    expect(layout.rows.map((r) => r.category)).toEqual(["Design", "Teatro", "Música"]);
+    expect(result.warnings).toEqual([]);
+
+    const reordered = table(
+      setOption(spec, "columnOrder", ["Masculino"], defaultRegistry).spec,
+    );
+    expect(reordered.layout.columns[0].key).toBe("Masculino");
+  });
+
+  it("fits the bars to the height asked for", () => {
+    const { spec } = resolve("barTable", GROUPED, groupedRows, {
+      category: "dominio",
+      column: "sexo",
+    });
+    const result = table(setStyle(spec, { height: 300 }).spec);
+    expect(result.figure.height).toBe(300);
+    expect(result.solved.barThickness).toBeGreaterThan(0);
+  });
+
+  it("warns about missing cells and narrow columns", () => {
+    const partial = groupedRows.filter(
+      (r) => !(r.dominio === "Teatro" && r.sexo === "Feminino"),
+    );
+    const { spec } = resolve("barTable", GROUPED, partial, {
+      category: "dominio",
+      column: "sexo",
+    });
+    const result = resolveChart(
+      setStyle(spec, { width: 200 }).spec,
+      coerceRows(partial, GROUPED, ","),
+      defaultRegistry,
+    );
+    if (result.status !== "ready") throw new Error();
+    expect(result.warnings).toHaveLength(2);
   });
 });
 

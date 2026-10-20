@@ -18,6 +18,7 @@ export type ChartTheme = {
   totalLabel?: TextStyle;
   categoryLabel?: TextStyle;
   seriesLabel?: TextStyle;
+  columnHeader?: TextStyle;
   tickLabel?: TextStyle;
   caption?: TextStyle;
   calloutValue?: TextStyle;
@@ -62,6 +63,7 @@ export type TextVariant =
   | "totalLabel"
   | "categoryLabel"
   | "seriesLabel"
+  | "columnHeader"
   | "tickLabel"
   | "caption"
   | "calloutValue"

@@ -27,6 +27,8 @@ export function getPillarTheme(pillarId: number) {
     totalLabel: { ...text, fontSize: Tokens.fontSize.md, fontWeight: Tokens.fontWeight.bold },
     categoryLabel: text,
     seriesLabel: text,
+    // The measure (or source) over a column of a bar table.
+    columnHeader: { ...text, fill: palette.neutral[200], fontSize: Tokens.fontSize.sm, fontWeight: Tokens.fontWeight.semibold },
     tickLabel: { ...text, fill: palette.neutral[200] },
     caption: { ...text, fill: palette.neutral[200], fontSize: Tokens.fontSize.sm },
     calloutValue: { ...text, fill: palette.primary, fontSize: 19, fontWeight: Tokens.fontWeight.bold },

@@ -1,3 +1,4 @@
+import { barTableChart } from "./barTable";
 import { bubbleColumnsChart } from "./bubbleColumns";
 import { hexChoroplethChart } from "./hexChoropleth";
 import { hexTwinBarsChart } from "./hexTwinBars";
@@ -11,6 +12,7 @@ import { rankedRibbonsChart } from "./rankedRibbons";
 /** Every chart the builder offers. `ChartLayouts` is derived from this list. */
 export const CHARTS = [
   horizontalBarsChart,
+  barTableChart,
   lineSeriesChart,
   lineBubbleRowChart,
   lineDifferenceChart,

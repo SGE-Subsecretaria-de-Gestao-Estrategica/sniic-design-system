@@ -5,7 +5,7 @@
   import { tabelaBarrasSteps } from '$lib/components/eixo6/steps';
   import Etapas from './_Etapas.svelte';
   import Scrolly from './_Scrolly.svelte';
-  import { FONTE, tabelaColunas, tabelaLinhas, tabelaRazaoLinhas, tabelaTotal } from './_exemplos';
+  import { FONTE, tabelaColunas, tabelaFontes, tabelaFontesLinhas, tabelaLinhas, tabelaRazaoLinhas, tabelaTotal } from './_exemplos';
 
   /**
    * Uma linha por categoria, uma coluna por medida: cada célula é uma
@@ -17,7 +17,9 @@
    * a quatro medidas por linha, em unidades que não se misturam (ações,
    * pessoas, municípios, uma razão). Cada coluna se lê de cima para baixo como
    * um ranking; cada linha, da esquerda para a direita. As barras só se
-   * comparam dentro da coluna.
+   * comparam dentro da coluna. Também para a mesma medida vinda de várias
+   * fontes, uma coluna por fonte, com `scale="shared"`: aí as barras se
+   * comparam ao longo da linha também.
    *
    * **Quando não usar:** para uma medida só, *Barras em ranking*; para medidas
    * que somam um todo, *Colunas empilhadas*; para um cruzamento de duas
@@ -28,7 +30,12 @@
    * paridade) — e `rows: TabelaBarrasLinha[]` — `label`, `note` opcional e
    * `values` na ordem de `columns`. `null` é *não informado*: vira texto, nunca
    * zero. `total` fecha a tabela, escrito e não desenhado. `sortBy` ordena pelo
-   * índice de uma coluna; sem ele, vale a ordem de `rows`.
+   * índice de uma coluna; sem ele, vale a ordem de `rows`. `scale`:
+   * `'independent'` (o padrão, uma escala por coluna) ou `'shared'` (uma para
+   * todas, quando as colunas medem a mesma coisa).
+   *
+   * O mesmo desenho está no builder, como *Tabela com barras*: categoria,
+   * valor e coluna (a medida ou a fonte) num CSV.
    *
    * **Etapas (`tabelaBarrasSteps(columns, { total })`):** uma por coluna — cada
    * uma traz a sua medida e esmaece as já lidas — e, por fim, a tabela inteira,
@@ -105,6 +112,23 @@
         rowLabel="Unidade"
         title="Participação por unidade, e a razão entre os dois lados"
         subtitle="Abaixo da linha tracejada, um lado supera o outro"
+        source={FONTE}
+      />
+    </div>
+  {/snippet}
+</Story>
+
+<!-- `scale="shared"`: as colunas são a mesma medida em quatro fontes, numa escala só — valores iguais, barras iguais, em qualquer coluna. A Fonte D não informa a Categoria 6. -->
+<Story name="Mesma escala">
+  {#snippet template()}
+    <div style="max-width: 680px;">
+      <TabelaBarrasChart
+        columns={tabelaFontes.map((label) => ({ label }))}
+        rows={tabelaFontesLinhas}
+        scale="shared"
+        sortBy={0}
+        title="A mesma medida, fonte a fonte"
+        subtitle="Valor por categoria em cada fonte · uma escala para todas"
         source={FONTE}
       />
     </div>
