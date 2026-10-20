@@ -1,6 +1,6 @@
 {
   "name": "sniic-design-system",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "A Svelte component library with chart components and design tokens based on the Brazilian Government Design System (Padrão Digital de Governo).",
   "author": "SNIIC",
   "license": "MIT",
@@ -48,18 +48,18 @@
   "devDependencies": {
     "@chromatic-com/storybook": "^5.4.0",
     "@storybook/addon-a11y": "^10.6.1",
-    "@storybook/addon-docs": "^10.6.1",
+    "@storybook/addon-docs": "^10.6.3",
     "@storybook/addon-svelte-csf": "^5.1.5",
-    "@storybook/addon-vitest": "^10.6.1",
-    "@storybook/svelte-vite": "^10.6.1",
+    "@storybook/addon-vitest": "^10.6.3",
+    "@storybook/svelte-vite": "^10.6.3",
     "@sveltejs/vite-plugin-svelte": "^5.0.3",
     "@tsconfig/svelte": "^5.0.8",
     "@types/chroma-js": "^3.1.2",
     "@types/d3": "^7.4.3",
-    "@vitest/browser-playwright": "^4.1.2",
-    "@vitest/coverage-v8": "^4.1.2",
+    "@vitest/browser-playwright": "^4.1.12",
+    "@vitest/coverage-v8": "^4.1.12",
     "playwright": "^1.59.1",
-    "storybook": "^10.6.1",
+    "storybook": "^10.6.3",
     "svelte": "^5.0.0",
     "svelte-check": "^4.4.6",
     "topojson-client": "^3.1.0",
@@ -67,7 +67,7 @@
     "typescript": "^6.0.2",
     "vite": "^6.2.0",
     "vite-plugin-dts": "^4.5.4",
-    "vitest": "^4.1.2"
+    "vitest": "^4.1.12"
   },
   "peerDependencies": {
     "d3": "^7.0.0",
