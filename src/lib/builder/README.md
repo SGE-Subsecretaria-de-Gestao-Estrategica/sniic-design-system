@@ -136,12 +136,13 @@ the layout's type.
 | `bubbleColumns` | category, value, group (optional) | G6.12 |
 | `hexChoropleth` | uf, value, slice (optional) | G6.10: one value per state, coloured by steps |
 | `hexTwinBars` | uf, value, type (at most two values) | G6.09: up to two bars per state and a reference line |
+| `hexCategorical` | uf, category | One category per state (stages, kinds), with the legend under the map |
 
 The two combined charts stack several `core` layouts on one
 `stackPanelsLayout` and return them together; the lower panel reuses
 `line.xAxis`, so it shares the line's breaks.
 
-The two hex maps (`hex.ts` holds what they share) are sized by the `radius`
+The hex maps (`hex.ts` holds what they share) are sized by the `radius`
 param. Their width is `fitted`: once the user sets a figure width, the radius
 is solved from it instead, and the height always follows (`derived`). The
 choropleth's ramp runs from the page colour through a colour pair, lighter
@@ -149,8 +150,14 @@ first by default or in a chosen direction (`rampOrder`). The part of a twin
 bar above the reference line takes the accent colour only when asked
 (`accentOver`). The choropleth's `slice` channel is for
 files with several rows per state (state and capital, say): one slice is
-shown at a time, picked in the mapping step. Both warn about states with no
-row and about hexagons too small for the labels.
+shown at a time, picked in the mapping step. All warn about states with no
+row and about hexagons too small for the labels. The categorical map takes
+one category per state (a state with two is an error) in the file's order or
+a manual one; ordered categories climb one colour's steps (`colorScale:
+steps`, skipping the page colour), unordered ones take the pillar's colours,
+pickable per category (`palette`). Its legend lists every category, with how
+many states it has, under the map: `build` adds its rows to the layout's
+`height` (`legendTop`, `HEX_CATEGORICAL_LEGEND`).
 
 ### Options (`options.ts`, `OptionDef`)
 
