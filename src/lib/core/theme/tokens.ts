@@ -45,9 +45,9 @@ export const sharedPalette = {
 export const eixo1Palette = {
   primary: '#D5362A',
   primaryVariant: '#EC6596',
-  secondary: '#4B2F92',
-  secondaryVariant: '#4F68DA',
-  accent: '#68CF27',
+  secondary: '#2B4AD2',
+  secondaryVariant: '#6279E2',
+  accent: '#31C6D3',
 } as const
 
 export const eixo6Palette = {

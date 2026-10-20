@@ -6,6 +6,7 @@ import { lineBubbleRowChart } from "./lineBubbleRow";
 import { lineDifferenceChart } from "./lineDifference";
 import { lineSeriesChart } from "./lineSeries";
 import { rangeRowsChart } from "./rangeRows";
+import { rankedRibbonsChart } from "./rankedRibbons";
 
 /** Every chart the builder offers. `ChartLayouts` is derived from this list. */
 export const CHARTS = [
@@ -13,6 +14,7 @@ export const CHARTS = [
   lineSeriesChart,
   lineBubbleRowChart,
   lineDifferenceChart,
+  rankedRibbonsChart,
   rangeRowsChart,
   bubbleColumnsChart,
   hexChoroplethChart,

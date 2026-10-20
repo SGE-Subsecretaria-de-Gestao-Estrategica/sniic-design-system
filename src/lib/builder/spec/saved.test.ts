@@ -81,7 +81,32 @@ describe("saveChart / readSavedChart", () => {
   });
 });
 
+function ribbons(): ChartSpec {
+  const columns: ColumnSchema[] = [
+    { name: "ano", type: "number" },
+    { name: "fonte", type: "text" },
+    { name: "valor", type: "number" },
+  ];
+  let spec = setData(createSpec(), dataOf(columns), defaultRegistry).spec;
+  spec = setChart(spec, "rankedRibbons", defaultRegistry).spec;
+  spec = setEncoding(spec, "x", "ano", defaultRegistry).spec;
+  spec = setEncoding(spec, "series", "fonte", defaultRegistry).spec;
+  spec = setEncoding(spec, "value", "valor", defaultRegistry).spec;
+  spec = setOption(spec, "totals", true, defaultRegistry).spec;
+  spec = setOption(spec, "seriesColors", { "Fonte A": "accent", "Fonte B": "gradient-1" }, defaultRegistry).spec;
+  return setParam(spec, "ribbonGap", 4, defaultRegistry).spec;
+}
+
 describe("restoreSpec", () => {
+  it("brings back the colour picked for each ribbon", () => {
+    const original = ribbons();
+    const { spec } = reread(original);
+    expect(restoreSpec(spec, original.data, defaultRegistry)).toEqual({
+      spec: original,
+      reset: [],
+    });
+  });
+
   it("gives the same spec back over the same data", () => {
     const { spec } = reread(bars());
     expect(restoreSpec(spec, dataOf(COLUMNS), defaultRegistry)).toEqual({

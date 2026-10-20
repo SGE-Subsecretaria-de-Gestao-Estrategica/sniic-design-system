@@ -15,6 +15,7 @@ export type ChartTheme = {
   text?: TextStyle;
   dataLabel?: TextStyle;
   valueLabel?: TextStyle;
+  totalLabel?: TextStyle;
   categoryLabel?: TextStyle;
   seriesLabel?: TextStyle;
   tickLabel?: TextStyle;
@@ -37,6 +38,7 @@ export type ChartTheme = {
   missing?: MissingStyle;
   capsule?: CapsuleStyle;
   dumbbell?: DumbbellStyle;
+  ribbon?: RibbonStyle;
   labelMask?: LabelMaskStyle;
   timelineBreak?: TimelineBreakStyle;
 }
@@ -57,6 +59,7 @@ export type TextVariant =
   | "text"
   | "dataLabel"
   | "valueLabel"
+  | "totalLabel"
   | "categoryLabel"
   | "seriesLabel"
   | "tickLabel"
@@ -102,6 +105,16 @@ export type CapsuleStyle = {
 export type BarGroupStyle = {
   /** Gap between bars within a group, as a fraction of the inner bandwidth. */
   groupPadding?: number;
+}
+
+/** The ribbons of `RankedRibbons`. */
+export type RibbonStyle = {
+  /** Colour of the outline around each ribbon — the surface behind the chart. */
+  outlineStroke?: string;
+  outlineWidth?: number;
+  /** The short line from a ribbon's end to its end label. */
+  leaderStroke?: string;
+  leaderWidth?: number;
 }
 
 export type DumbbellStyle = {

@@ -31,6 +31,9 @@ export { default as BarGroup } from './components/barGroup/BarGroup.svelte';
 // Bubble columns
 export { default as BubbleColumns } from './components/bubbleColumns/BubbleColumns.svelte';
 
+// Ranked ribbons
+export { default as RankedRibbons } from './components/rankedRibbons/RankedRibbons.svelte';
+
 // Horizontal bars
 export { default as HorizontalBars } from './components/horizontalBars/HorizontalBars.svelte';
 
@@ -104,7 +107,7 @@ export { default as getTicks } from './utils/getTicks.js';
 export { default as getLabelTransform } from './utils/getLabelTransform.js';
 export { line, area, arc, roundedRect, capsuleBar, capsuleStack } from './utils/shapeFactory.js';
 export { default as applyExplicitOrder } from './utils/applyExplicitOrder.js';
-export { default as getGradientRamp } from './utils/getGradientRamp.js';
+export { default as getGradientRamp, getGradientStops } from './utils/getGradientRamp.js';
 export type { GradientStops } from './utils/getGradientRamp.js';
 export { default as resolveValue } from './utils/resolveValue.js';
 export { default as splitAtBreaks } from './utils/splitAtBreaks.js';
@@ -179,6 +182,8 @@ export {
   sideAnchor,
   placeBelowLine,
 } from './layouts/labels.js';
+export { rankedRibbonsLayout, RANKED_RIBBONS_DEFAULTS } from './layouts/rankedRibbons/index.js';
+export type * from './layouts/rankedRibbons/types.js';
 export { lineSeriesLayout, LINE_SERIES_DEFAULTS } from './layouts/lineSeries/index.js';
 export type {
   LineSeriesSpacing,

@@ -77,6 +77,7 @@ export function resolveChart(
     const layout = definition.build(aggregated.rows, {
       read: createChannelReader(spec.encoding, spec.data.columns),
       box,
+      margin,
       fit,
       options: layoutOptions(definition.options, spec.style.options),
       params: resolveParams(definition.params, spec.style.params),

@@ -230,6 +230,16 @@ export const fontesPorAno: ColunasDatum[] = [
   { label: '2024', values: { a: 3.7, b: 0, c: 0.4, d: 0.6 } },
 ];
 
+/** Quatro fontes que trocam de posição: a liderança muda duas vezes. */
+export const fontesRevezando: ColunasDatum[] = [
+  { label: '2019', values: { a: 2.4, b: 1.1, c: 0.6, d: 0.3 } },
+  { label: '2020', values: { a: 2.1, b: 1.8, c: 0.7, d: 0.4 } },
+  { label: '2021', values: { a: 1.6, b: 2.3, c: 0.9, d: 0.5 } },
+  { label: '2022', values: { a: 1.4, b: 2.0, c: 1.7, d: 0.6 } },
+  { label: '2023', values: { a: 1.5, b: 1.2, c: 2.6, d: 0.9 } },
+  { label: '2024', values: { a: 1.9, b: 0.8, c: 2.4, d: 1.3 } },
+];
+
 /** Três séries pares em três medições (%): cada uma com cor própria. */
 export const seriesPorAno: LinhasComparadasDatum[] = (
   [
