@@ -6,8 +6,15 @@ import { pillarPalettes } from "$lib/core/theme/tokens";
 import {
   groupColor,
   labelColorOn,
+  baseStepColors,
+  chosenSeriesPairs,
+  partnerChoiceId,
+  fillSwatch,
+  pickedItemFills,
   pickedSeriesColors,
   rampColors,
+  rampStepColors,
+  SERIES_COLOR_STEPS,
   seriesColorChoices,
 } from "./colors";
 
@@ -85,21 +92,20 @@ describe("seriesColorChoices", () => {
   const theme = getPillarTheme(6);
   const { palette } = theme;
   const hex = (c: string) => chroma(c).hex();
+  const steps = (prefix: string) =>
+    Array.from({ length: SERIES_COLOR_STEPS }, (_, i) => `${prefix}-${i}`);
 
-  it("offers the pillar colours, two ramps of one stop per series, then the neutrals", () => {
-    const choices = seriesColorChoices(3, theme);
+  it("offers the pillar colours, two ramps of eight stops, then the neutrals", () => {
+    const choices = seriesColorChoices(theme);
+    expect(SERIES_COLOR_STEPS).toBe(8);
     expect(choices.map((c) => c.id)).toEqual([
       "primary",
       "primaryVariant",
       "secondary",
       "secondaryVariant",
       "accent",
-      "gradient-0",
-      "gradient-1",
-      "gradient-2",
-      "secondaryGradient-0",
-      "secondaryGradient-1",
-      "secondaryGradient-2",
+      ...steps("gradient"),
+      ...steps("secondaryGradient"),
       "neutral-100",
       "neutral-200",
       "neutral-300",
@@ -111,19 +117,16 @@ describe("seriesColorChoices", () => {
   });
 
   it("runs each ramp from the colour to its variant", () => {
-    const choices = seriesColorChoices(4, theme);
+    const choices = seriesColorChoices(theme);
     const color = (id: string) => hex(choices.find((c) => c.id === id)!.color);
+    const last = SERIES_COLOR_STEPS - 1;
     expect(color("gradient-0")).toBe(hex(palette.primary));
-    expect(color("gradient-3")).toBe(hex(palette.primaryVariant));
+    expect(color(`gradient-${last}`)).toBe(hex(palette.primaryVariant));
     expect(color("secondaryGradient-0")).toBe(hex(palette.secondary));
-    expect(color("secondaryGradient-3")).toBe(hex(palette.secondaryVariant));
+    expect(color(`secondaryGradient-${last}`)).toBe(
+      hex(palette.secondaryVariant),
+    );
     expect(color("neutral-300")).toBe(hex(palette.neutral[300]));
-  });
-
-  it("keeps both ends of each ramp for a single series", () => {
-    const choices = seriesColorChoices(1, theme);
-    expect(choices.filter((c) => c.group === "primarySteps")).toHaveLength(2);
-    expect(choices.filter((c) => c.group === "secondarySteps")).toHaveLength(2);
   });
 });
 
@@ -139,5 +142,128 @@ describe("pickedSeriesColors", () => {
     expect(colors.get("A")).toBe(theme.palette.accent);
     expect(colors.get("B")).toBe(groupColor(1, theme));
     expect(colors.get("C")).toBe(groupColor(2, theme));
+  });
+
+  it("falls back to the line colours, the highlight in secondary", () => {
+    const colors = pickedSeriesColors(
+      ["A", "B", "C"],
+      { A: "gradient-7" },
+      theme,
+      "lines",
+      "C",
+    );
+    expect(colors.get("B")).toBe(theme.palette.primary);
+    expect(colors.get("C")).toBe(theme.palette.secondary);
+    expect(chroma(colors.get("A")!).hex()).toBe(
+      chroma(theme.palette.primaryVariant).hex(),
+    );
+  });
+});
+
+describe("pickedItemFills", () => {
+  const theme = getPillarTheme(6);
+  const { palette } = theme;
+
+  it("runs the first item along primary → variant and fills the others in secondary", () => {
+    const fills = pickedItemFills(["A", "B", "C"], undefined, theme, "mainRamp");
+    expect(fills.get("A")).toEqual({
+      kind: "ramp",
+      colors: [palette.primary, palette.primaryVariant],
+    });
+    expect(fills.get("B")).toEqual({ kind: "solid", color: palette.secondary });
+    expect(fills.get("C")).toEqual({ kind: "solid", color: palette.secondary });
+  });
+
+  it("uses a stored ramp or colour, a step colour included", () => {
+    const fills = pickedItemFills(
+      ["A", "B", "C"],
+      { A: "accent", B: "ramp-secondary", C: "gradient-7" },
+      theme,
+      "mainRamp",
+    );
+    expect(fills.get("A")).toEqual({ kind: "solid", color: palette.accent });
+    expect(fills.get("B")).toEqual({
+      kind: "ramp",
+      colors: [palette.secondary, palette.secondaryVariant],
+    });
+    const c = fills.get("C");
+    if (c?.kind !== "solid") throw new Error();
+    expect(chroma(c.color).hex()).toBe(chroma(palette.primaryVariant).hex());
+  });
+
+  it("ignores a choice no longer offered", () => {
+    const fills = pickedItemFills(["A"], { A: "ramp-gone" }, theme, "mainRamp");
+    expect(fills.get("A")?.kind).toBe("ramp");
+  });
+
+  it("draws a ramp's swatch as a gradient", () => {
+    expect(fillSwatch({ kind: "solid", color: "#fff" })).toBe("#fff");
+    expect(fillSwatch({ kind: "ramp", colors: ["#fff", "#000"] })).toBe(
+      "linear-gradient(90deg, #fff, #000)",
+    );
+  });
+});
+
+describe("partnerChoiceId", () => {
+  it("pairs a step with the far end of its ramp", () => {
+    expect(partnerChoiceId("gradient-6")).toBe("gradient-0");
+    expect(partnerChoiceId("gradient-4")).toBe("gradient-0");
+    expect(partnerChoiceId("gradient-3")).toBe("gradient-7");
+    expect(partnerChoiceId("gradient-0")).toBe("gradient-7");
+    expect(partnerChoiceId("secondaryGradient-7")).toBe("secondaryGradient-0");
+  });
+
+  it("pairs a pillar colour with its variant, and keeps the rest", () => {
+    expect(partnerChoiceId("primary")).toBe("primaryVariant");
+    expect(partnerChoiceId("secondaryVariant")).toBe("secondary");
+    expect(partnerChoiceId("accent")).toBe("accent");
+    expect(partnerChoiceId("neutral-300")).toBe("neutral-300");
+  });
+});
+
+describe("chosenSeriesPairs", () => {
+  const theme = getPillarTheme(6);
+  const hex = (c: string) => chroma(c).hex();
+
+  it("gives each chosen series its colour and its partner", () => {
+    const pairs = chosenSeriesPairs(
+      { A: "gradient-6", B: "primary", C: "gone" },
+      theme,
+    );
+    expect(hex(pairs.get("A")!.variant)).toBe(hex(theme.palette.primary));
+    expect(pairs.get("B")).toEqual({
+      main: theme.palette.primary,
+      variant: theme.palette.primaryVariant,
+    });
+    expect(pairs.has("C")).toBe(false);
+  });
+});
+
+describe("baseStepColors / rampStepColors", () => {
+  const theme = getPillarTheme(6);
+  const { palette } = theme;
+  const hex = (c: string) => chroma(c).hex();
+
+  it("runs from a base colour to a pillar colour, or back", () => {
+    const up = baseStepColors("200", "secondaryVariant", "fromBase", 5, theme);
+    expect(up).toHaveLength(5);
+    expect(hex(up[0])).toBe(hex(palette.base[200]));
+    expect(hex(up[4])).toBe(hex(palette.secondaryVariant));
+    const down = baseStepColors("300", "primary", "toBase", 4, theme);
+    expect(hex(down[0])).toBe(hex(palette.primary));
+    expect(hex(down[3])).toBe(hex(palette.base[300]));
+  });
+
+  it("uses the chart's pair ramp unless the base kind is picked", () => {
+    const pair = () => ["#000000"];
+    expect(rampStepColors({}, 3, theme, pair)).toEqual(["#000000"]);
+    const base = rampStepColors(
+      { rampKind: "base", rampBase: "100", rampTarget: "secondary" },
+      3,
+      theme,
+      pair,
+    );
+    expect(hex(base[0])).toBe(hex(palette.base[100]));
+    expect(hex(base[2])).toBe(hex(palette.secondary));
   });
 });

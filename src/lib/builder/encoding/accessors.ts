@@ -42,6 +42,8 @@ export function columnAccessor<T extends ColumnType>(
 
 export type ChannelReader = {
   has(channel: string): boolean;
+  /** The type of the channel's column. */
+  type(channel: string): ColumnType;
   /** Any text column, a UF column included (as written in the file). */
   text(channel: string): Accessor<Row, string>;
   /** A UF column, as the state's sigla. */
@@ -76,6 +78,7 @@ export function createChannelReader(
 
   return {
     has: (channel) => !!encoding[channel],
+    type: (channel) => single(channel).type,
     text: (channel) =>
       typed(channel, single(channel).type === "uf" ? "uf" : "text"),
     uf: (channel) => {

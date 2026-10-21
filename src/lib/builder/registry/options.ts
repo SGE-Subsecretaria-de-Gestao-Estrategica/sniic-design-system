@@ -1,5 +1,5 @@
 import type { SortOrder } from "$lib/core/layouts/types";
-import type { JsonValue } from "../spec/types";
+import type { Encoding, JsonValue } from "../spec/types";
 import type { OptionDef } from "./types";
 
 type Options = Record<string, JsonValue>;
@@ -35,13 +35,18 @@ export function optionValue(
   return choiceValue(defs, options, id);
 }
 
-/** Whether the panel shows `def`: its `when` holds, and so does its condition option's own. */
+/**
+ * Whether the panel shows `def`: its `when` holds, and so does its condition
+ * option's own; with `encoding`, its `whenMapped` channel has a column.
+ */
 export function optionShown(
   defs: Defs = [],
   options: Options,
   def: OptionDef<never>,
+  encoding?: Encoding,
   depth = 0,
 ): boolean {
+  if (encoding && def.whenMapped && !encoding[def.whenMapped]) return false;
   if (!def.when) return true;
   // A cycle of conditions shows nothing.
   if (depth > defs.length) return false;
@@ -49,7 +54,7 @@ export function optionShown(
     return false;
   }
   const parent = defs.find((d) => d.id === def.when!.option);
-  return !parent || optionShown(defs, options, parent, depth + 1);
+  return !parent || optionShown(defs, options, parent, encoding, depth + 1);
 }
 
 /** The "order" options that picking `value` in choice `id` opens. */

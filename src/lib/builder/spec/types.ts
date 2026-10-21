@@ -14,7 +14,8 @@ import type { MarginPresetId } from "../registry/margins";
  *
  * Step 1: DataSpec - how the file was read.
  * Step 2: string | null - a registry id.
- * Step 3: Encoding - channel id → column name; Aggregation - how repeated keys are combined.
+ * Step 3: Encoding - channel id → column name; Aggregation - how repeated keys are combined;
+ *   Filter[] - which rows are left out.
  * Step 4: StyleSpec - `null` sizes fall back to the chart's `defaultSize`.
  * */
 
@@ -29,7 +30,19 @@ export type ChartSpec = {
   chart: ChartId | null;
   encoding: Encoding;
   aggregate: Aggregation;
+  /** Rows left out before the chart is built; all of them apply (AND). */
+  filters: Filter[];
   style: StyleSpec;
+};
+
+/**
+ * Leaves out the rows whose `column` holds one of `exclude`. Only text and
+ * UF columns are filtered. Values are the cells as written; an empty cell
+ * is `""`. Storing what is left out keeps a value that a newer file adds.
+ */
+export type Filter = {
+  column: string;
+  exclude: string[];
 };
 
 export type DataSpec = {

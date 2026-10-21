@@ -11,7 +11,13 @@
   import getStringWidth from "$lib/core/utils/getStringWidth";
   import type { ChartLayouts } from "../../registry/layouts";
   import { readChoice, readToggle } from "../../registry/options";
-  import { labelColorOn, RAMP_ORDERS, rampColors, RAMPS } from "./colors";
+  import {
+    labelColorOn,
+    RAMP_ORDERS,
+    rampColors,
+    rampStepColors,
+    RAMPS,
+  } from "./colors";
   import type { ViewProps } from "./types";
 
   let {
@@ -31,14 +37,16 @@
   };
 
   const stepColors = $derived(
-    choroplethStepColors({
-      colors: rampColors(
-        readChoice(options, "ramp", RAMPS, "secondary"),
-        readChoice(options, "rampOrder", RAMP_ORDERS, "lightToDark"),
-        theme,
-      ),
-      steps: layout.steps,
-    }),
+    rampStepColors(options, layout.steps, theme, () =>
+      choroplethStepColors({
+        colors: rampColors(
+          readChoice(options, "ramp", RAMPS, "secondary"),
+          readChoice(options, "rampOrder", RAMP_ORDERS, "lightToDark"),
+          theme,
+        ),
+        steps: layout.steps,
+      }),
+    ),
   );
   const labelFills = $derived(stepColors.map((c) => labelColorOn(c, theme)));
 

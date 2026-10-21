@@ -6,6 +6,7 @@
   import ChartGallery from "./chart/ChartGallery.svelte";
   import DataStep from "./data/DataStep.svelte";
   import ChartOptions from "./options/ChartOptions.svelte";
+  import FilterPanel from "./filter/FilterPanel.svelte";
   import MappingStep from "./mapping/MappingStep.svelte";
   import ChartPreview from "./preview/ChartPreview.svelte";
   import SaveChart from "./save/SaveChart.svelte";
@@ -41,7 +42,7 @@
       {step}
       {definition}
       resolution={builder.resolution}
-      rows={builder.rows}
+      rows={builder.filteredRows}
       encoding={builder.spec.encoding}
       aggregate={builder.spec.aggregate}
       options={builder.spec.style.options}
@@ -97,6 +98,12 @@
           columns={builder.spec.data.columns}
           encoding={builder.spec.encoding}
           onchange={(channel, column) => builder.setEncoding(channel, column)}
+        />
+        <FilterPanel
+          columns={builder.spec.data.columns}
+          rows={builder.rows}
+          filters={builder.spec.filters}
+          onchange={(filters) => builder.setFilters(filters)}
         />
         {@render optionsPanel("mapping")}
       {:else if builder.step === "style" && definition}

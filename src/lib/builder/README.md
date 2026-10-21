@@ -20,7 +20,7 @@ ChartSpec (spec/) ─────┘         │
 1. `data/` reads the file into a `Table` (raw strings) and coerces it into
    typed `rows` using the column schema in the spec.
 2. `spec/` holds every choice the user made as plain JSON (`ChartSpec`).
-3. `resolve/resolveChart(spec, rows, registry)` drops incomplete rows,
+3. `resolve/resolveChart(spec, rows, registry)` applies the filters, drops incomplete rows,
    combines repeated keys, and calls the chart's `build`, which calls a `core`
    layout function. It never throws: the result is empty, incomplete, an
    error, or ready.
@@ -56,6 +56,9 @@ detection, so that column becomes a UF only when its type is set by hand.
 - `chart`: a registry id or `null`
 - `encoding`: channel id → one column name
 - `aggregate`: `sum` | `mean` | `count` | `first`
+- `filters`: `{ column, exclude }[]`, the rows left out, all applying (AND).
+  Only text and UF columns (`FILTER_TYPES`); `exclude` holds the cells as
+  written (`""` for an empty one), so a value a newer file adds shows up
 - `style`: `pillar`, `width` / `height` (the figure, margins included; `null`
   = the chart's default), `margin` (a preset id or `null`), `format` and
   `formats` (number formats), `options` and `params` (the chart's own
@@ -69,10 +72,11 @@ It changes only through the pure setters in `spec.ts`, which return a
 | `setData`, `setChart` | The only two that prune mappings; `reset` lists what was undone. `setChart` also clears `margin`, `options`, `params` and `formats`, which belong to the chart. |
 | `setEncoding` | One column per channel; `null` clears it. |
 | `setAggregate` | |
+| `setFilters` | Replaces the filters. Throws for a column that isn't text or UF, or one filtered twice. `setData` drops the filters whose column is gone or changed type (`pruneFilters`). |
 | `setOption` | Throws for an option the chart doesn't declare; `undefined` removes the value. |
 | `setParam` | Clamps to the param's range; `null` restores the default. |
 | `setFormat` | The main format, or one of the chart's extra formats by id. |
-| `setStyle` | Pillar, sizes, margin and the main format only. Sizes are clamped to `SIZE_LIMITS` (160–1600 px) and kept to one decimal (`roundSize`). |
+| `setStyle` | Pillar, sizes, margin and the main format only. Sizes are clamped to `SIZE_LIMITS` (160–1600 px), or, given the registry, to the chart's `sizeLimits` (its `minSize`), and kept to one decimal (`roundSize`). `setChart` clamps the stored sizes again to the new chart's limits. |
 | `autoEncode` | Fills empty required channels with unused compatible columns; year-like columns go to date channels first and to value channels last. |
 
 `format.ts`: `NumberFormat` (`decimals`, `compact`, `percent`, `prefix`,
@@ -112,7 +116,7 @@ A definition has:
   spec's `aggregate` to the `measures`
 - `sizing` per axis: `free` (the user sets it), `fitted` (computed, unless the
   user sets a target the layout fits to), `derived`, `fixed`
-- `defaultSize`, `margin` (its default margin preset), `extraMargin` (room for
+- `defaultSize`, `minSize` (a smaller floor than `SIZE_LIMITS.min` on an axis: 80 px of height for Linhas and Fitas ranqueadas), `margin` (its default margin preset), `extraMargin` (room for
   parts the builder draws, such as the range-rows legend)
 - `options`, `params`, `formats` (below)
 - `build(rows, context)`: calls the `core` layout function. `context` has
@@ -128,14 +132,15 @@ the layout's type.
 | Id | Channels | From |
 |---|---|---|
 | `horizontalBars` | category, value | G6.26 |
-| `lineSeries` | x (date or number), y, series (optional) | G6.07 |
+| `lineSeries` | x (date or number), y, series (optional), panel (optional) | G6.07; with `panel`, one stacked panel per value on the shared x axis |
 | `lineBubbleRow` | x, y, size | G6.05: a line panel over a bubble row |
 | `lineDifference` | x, y, series (exactly two values) | G6.08: two lines over their difference |
 | `rankedRibbons` | x (date or number), value, series | Fitas ranqueadas: ribbons stacked by value at each year (largest on top or at the bottom), crossing where the ranking changes; or, unranked, in the file's order or a manual one |
 | `rangeRows` | category, group, value | G6.20 |
-| `bubbleColumns` | category, value, group (optional) | G6.12 |
+| `bubbleColumns` | category, value, group (optional) | G6.12; *Cor de cada grupo* (`groupColors`): by default the main group in steps from primary to its variant along the categories and the others in secondary; each group can take one colour (a step colour included) or a ramp along the categories |
 | `hexChoropleth` | uf, value, slice (optional) | G6.10: one value per state, coloured by steps |
 | `hexTwinBars` | uf, value, type (at most two values) | G6.09: up to two bars per state and a reference line |
+| `heatmap` | row, column (text, UF, number or date), value | Mapa de calor: the tidy rows pivoted into a grid, one cell per row × column (repeated pairs combined by `aggregate`); colour steps from the primary or secondary pair, in a chosen direction (`pairStepColors`); legend under the grid (`extraMargin.bottom`) |
 
 The two combined charts stack several `core` layouts on one
 `stackPanelsLayout` and return them together; the lower panel reuses
@@ -145,7 +150,9 @@ The two hex maps (`hex.ts` holds what they share) are sized by the `radius`
 param. Their width is `fitted`: once the user sets a figure width, the radius
 is solved from it instead, and the height always follows (`derived`). The
 choropleth's ramp runs from the page colour through a colour pair, lighter
-first by default or in a chosen direction (`rampOrder`). The part of a twin
+first by default or in a chosen direction (`rampOrder`). Both the choropleth and the heatmap can instead run from a base colour
+(100, 200, 300) to one pillar colour (`rampKind: "base"`, options in
+`ramps.ts`, colours from `rampStepColors`). The part of a twin
 bar above the reference line takes the accent colour only when asked
 (`accentOver`). The choropleth's `slice` channel is for
 files with several rows per state (state and capital, say): one slice is
@@ -163,6 +170,8 @@ A chart's own settings, stored in `style.options`. Each declares:
   value, or a toggle's `true` / `false`), and only while that option is shown
   itself (`optionShown`). `build` still gets a hidden option's stored value,
   so it reads the condition too.
+- `whenMapped` (any kind): shown only while that channel has a column (the
+  line chart's panel options). `build` still gets the stored value.
 - a `kind`:
 
 | Kind | Control | Stored |
@@ -173,7 +182,7 @@ A chart's own settings, stored in `style.options`. Each declares:
 | `values` | checkboxes | a list of a channel's values; one `whole` checkbox (`true`) while the channel has no column |
 | `number` | number field | a number in the data's own unit (a reference value) |
 | `toggle` | checkbox | `true` / `false` when it differs from its `default` (off unless set), or nothing |
-| `colors` | one select per item the layout lists (`current`, whose order sets the automatic colours), with a swatch; `listed` changes only the order the panel shows them in | `{ value: choiceId }`; choices from `seriesColorChoices` (`views/colors.ts`), listed in the `SERIES_COLOR_GROUPS`: the pillar's five colours; the primary → primary variant stops (`gradient-i`) and the secondary → secondary variant stops (`secondaryGradient-i`), as many as values; neutral 100 to 400 |
+| `colors` | one select per item the layout lists (`current`, whose order sets the automatic colours), with a swatch; `listed` changes only the order the panel shows them in; `automatic` sets the colour of an item left on Automática (`byPosition`; `lines`, the line colours; `mainRamp`, the first item a primary → variant ramp and the others secondary); `ramps` also offers ramps along the item's categories (`rampColorChoices`: `ramp-primary`, `ramp-secondary`; read with `pickedItemFills`); `itemLabel` names an item in the panel | `{ value: choiceId }`; choices from `seriesColorChoices` (`views/colors.ts`), listed in the `SERIES_COLOR_GROUPS`: the pillar's five colours; the primary → primary variant stops (`gradient-i`) and the secondary → secondary variant stops (`secondaryGradient-i`), always `SERIES_COLOR_STEPS` (8), evenly spaced; neutral 100 to 400 |
 | `text` | text field | the text |
 
 Readers: `readColorMap`, `pickColor`, `readChoice`, `readText`, `readNumber`, `readToggle` (takes the default), `readStringList`,
@@ -207,7 +216,9 @@ breaks the x axis after 2021, for dates or years as numbers).
 ## `encoding/`
 
 `createChannelReader(encoding, columns)` gives strict accessors by channel
-(`has`, `text`, `number`, `x`, `uf`). They throw `MissingValueError` on
+(`has`, `type`, `text`, `number`, `x`, `uf`). `keys.ts`: `tickLabeller` (dates
+written in numbers) and `categoryKeys` (any column as category keys: numbers
+and dates labelled and in ascending order). They throw `MissingValueError` on
 `null`, so incomplete rows are dropped first (`dropIncomplete`). `uf` gives
 the state's sigla whatever the file wrote; `text` on a UF column gives the
 cell as written.
@@ -225,6 +236,11 @@ cell as written.
   `dropped` and `combined` row counts, `warnings`, `solved` params
 
 `aggregate.ts`: `aggregateRows(rows, keys, measures, how)`.
+
+`filter.ts`: `filterRows(rows, filters)` (the rows kept and the count left
+out, `ReadyChart.filtered`), `filterValues` (a column's values, in file
+order), `filterValue` (a cell as a filter sees it). Filters that leave no row
+are an `ErrorChart` on the mapping step.
 
 ## `export/`
 
@@ -246,7 +262,8 @@ page's fonts. The SVG file doesn't: whoever opens it needs the font installed.
 
 `BuilderState` (a rune class): `$state` for `spec`, `source` (file text and
 encoding), `error`, `reset` and `step`; `$derived` for `table`, `rows`,
-`issues`, `resolution` and `steps`. Each derived reads the narrowest slice it
+`filteredRows` (what the option panels list), `issues`, `resolution` and
+`steps`. Each derived reads the narrowest slice it
 needs, so a pillar, number-format or drawing-only option change doesn't
 rebuild the layout. Its actions wrap the pure setters; `apply(change)` takes
 any `SpecChange`.
@@ -273,6 +290,7 @@ furthest step it can enter.
 | `save/SaveChart.svelte` | In the wizard's footer: downloads the chart as a file, with the data inside when ticked |
 | `chart/ChartGallery.svelte` | Step 2: the named groups as a list, each with its charts side by side; a chart the data can't feed is disabled and says what is missing |
 | `mapping/MappingStep.svelte` | Step 3: one select per channel |
+| `filter/FilterPanel.svelte` | Step 3, under the channels: one block per filter (column, a checkbox per value, Todos / Nenhum), "Adicionar filtro", and the rows left in the chart |
 | `options/` | `ChartOptions` shows the options of one step (`step="mapping"` under the mapping, `step="style"` as the first group of the style step). One component per option kind, plus `AggregationField`. |
 | `style/` | Step 4: `StyleStep` composes `PillarPicker`, the chart options, `SizeFields` (page-grid width, sizes, margins), `ParamFields`, and one `NumberFormatFields` per format |
 | `export/ExportChart.svelte` | Under the preview: "Baixar" SVG, PNG 1× and PNG 2× |

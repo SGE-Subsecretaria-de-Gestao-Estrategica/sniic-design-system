@@ -23,6 +23,7 @@ import type { MarginPresetId } from "../registry/margins";
 import { layoutOptions } from "../registry/options";
 import type { ChartRegistry } from "../registry/types";
 import type { ChartId } from "../registry/layouts";
+import { filterRows } from "../resolve/filter";
 import { resolveChart } from "../resolve/resolveChart";
 import {
   readSavedChart,
@@ -40,6 +41,7 @@ import {
   setChart,
   setData,
   setEncoding,
+  setFilters,
   setFormat,
   setOption,
   setParam,
@@ -49,6 +51,7 @@ import type {
   Aggregation,
   ChartSpec,
   DataSpec,
+  Filter,
   JsonValue,
   NumberFormat,
   ResetNotice,
@@ -102,6 +105,9 @@ export class BuilderState {
   readonly #chart = $derived(this.spec.chart);
   readonly #encoding = $derived(this.spec.encoding);
   readonly #aggregate = $derived(this.spec.aggregate);
+  readonly #filters = $derived(this.spec.filters);
+  /** The rows the filters keep: what the chart and its options see. */
+  readonly filteredRows = $derived(filterRows(this.rows, this.#filters).rows);
   readonly #width = $derived(this.spec.style.width);
   readonly #height = $derived(this.spec.style.height);
   readonly #margin = $derived(this.spec.style.margin);
@@ -124,6 +130,7 @@ export class BuilderState {
         chart: this.#chart,
         encoding: this.#encoding,
         aggregate: this.#aggregate,
+        filters: this.#filters,
         style: {
           width: this.#width,
           height: this.#height,
@@ -322,6 +329,10 @@ export class BuilderState {
     this.apply(setAggregate(this.spec, aggregate));
   }
 
+  setFilters(filters: readonly Filter[]) {
+    this.apply(setFilters(this.spec, filters));
+  }
+
   /** `undefined` restores the option's default. */
   setOption(optionId: string, value: JsonValue | undefined) {
     this.apply(setOption(this.spec, optionId, value, this.registry));
@@ -350,7 +361,7 @@ export class BuilderState {
   setSize(axis: "width" | "height", size: number | null) {
     const value =
       size !== null && Number.isFinite(size) && size > 0 ? size : null;
-    this.apply(setStyle(this.spec, { [axis]: value }));
+    this.apply(setStyle(this.spec, { [axis]: value }, this.registry));
   }
 
   #reinfer(table: Table, decimal: DecimalSeparator): ColumnSchema[] {

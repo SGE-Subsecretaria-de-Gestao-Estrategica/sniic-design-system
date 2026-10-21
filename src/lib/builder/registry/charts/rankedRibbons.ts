@@ -72,6 +72,8 @@ export const rankedRibbonsChart = defineChart({
   ],
   sizing: { width: "free", height: "free" },
   defaultSize: { width: FULL_PAGE_WIDTH, height: 320 },
+  // Short strips (a sparkline-like line, a thin band of ribbons) fit the page.
+  minSize: { height: 80 },
   margin: "right",
   build: (rows, { read, box, margin, options, params, warn }) => {
     const getX = read.x("x");

@@ -9,6 +9,7 @@ import {
 } from "../hex";
 import { readText, readToggle } from "../options";
 import { defineChart } from "../registry";
+import { BASE_RAMP_OPTIONS, PAIR_RAMP, rampKindOption } from "../ramps";
 
 export const hexChoroplethChart = defineChart({
   id: "hexChoropleth",
@@ -75,11 +76,13 @@ export const hexChoroplethChart = defineChart({
       channel: "slice",
       none: "O primeiro do arquivo",
     },
+    rampKindOption("Do fundo, passando por uma cor do pilar e sua variante"),
     {
       id: "ramp",
       label: "Cor das faixas",
       step: "style",
       drawingOnly: true,
+      when: PAIR_RAMP,
       kind: "choice",
       choices: [
         { value: "secondary", label: "Secundária" },
@@ -92,6 +95,7 @@ export const hexChoroplethChart = defineChart({
       label: "Sentido das cores",
       step: "style",
       drawingOnly: true,
+      when: PAIR_RAMP,
       kind: "choice",
       choices: [
         { value: "lightToDark", label: "Da mais clara para a mais escura" },
@@ -100,6 +104,7 @@ export const hexChoroplethChart = defineChart({
       ],
       default: "lightToDark",
     },
+    ...BASE_RAMP_OPTIONS,
     {
       id: "fromMin",
       label: "Começar a escala no menor valor, não no zero",

@@ -2,6 +2,7 @@ import * as d3 from "d3";
 import {
   BUBBLE_COLUMNS_DEFAULTS,
   bubbleColumnsLayout,
+  SINGLE_GROUP,
 } from "$lib/core/layouts/bubbleColumns";
 import {
   CATEGORY_ORDER_OPTION,
@@ -91,6 +92,20 @@ export const bubbleColumnsChart = defineChart({
     {
       ...CATEGORY_ORDER_OPTION,
       current: (layout) => layout.rows.map((r) => r.category),
+    },
+    {
+      id: "groupColors",
+      step: "style",
+      drawingOnly: true,
+      label: "Cor de cada grupo",
+      kind: "colors",
+      // Automática: the main group in steps from primary to its variant
+      // along the categories, the others in secondary (G6.12).
+      automatic: "mainRamp",
+      ramps: true,
+      // The main group comes first, so position 0 is the main column.
+      current: (layout) => layout.columns.map((c) => c.group),
+      itemLabel: (group) => (group === SINGLE_GROUP ? "Bolhas" : group),
     },
   ],
 });

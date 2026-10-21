@@ -8,6 +8,7 @@
   import { createFormatter } from "../spec/format";
   import type { StyleSpec } from "../spec/types";
   import BubbleColumnsView from "./views/BubbleColumnsView.svelte";
+  import HeatmapView from "./views/HeatmapView.svelte";
   import HexChoroplethView from "./views/HexChoroplethView.svelte";
   import HexTwinBarsView from "./views/HexTwinBarsView.svelte";
   import HorizontalBarsView from "./views/HorizontalBarsView.svelte";
@@ -72,6 +73,8 @@
         <RangeRowsView layout={view.layout} {...shared} />
       {:else if view.chart === "bubbleColumns"}
         <BubbleColumnsView layout={view.layout} {...shared} />
+      {:else if view.chart === "heatmap"}
+        <HeatmapView layout={view.layout} {...shared} />
       {:else if view.chart === "hexChoropleth"}
         <HexChoroplethView layout={view.layout} {...shared} />
       {:else if view.chart === "hexTwinBars"}

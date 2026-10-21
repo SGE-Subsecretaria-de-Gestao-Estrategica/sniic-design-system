@@ -6,6 +6,7 @@ import type {
   LayoutBox,
   LayoutItem,
   LineSegment,
+  Accessor,
   SeriesAccessor,
   XAccessor,
   XScaleFn,
@@ -37,7 +38,12 @@ export type LineSeriesSpacing = {
   endValueGap: number;
   /** Room kept for the end value when the series name stacks under it. */
   endValueHeight: number;
+  /** With `getPanel`: vertical gap between consecutive panels. */
+  panelGap: number;
+  /** With `getPanel`: room above each panel's plot for its title. */
+  panelTitleHeight: number;
 };
+
 
 export type LineSeriesLayoutConfig<D> = Partial<LineSeriesSpacing> &
   Partial<SegmentedAxisSpacing> &
@@ -69,11 +75,24 @@ export type LineSeriesLayoutConfig<D> = Partial<LineSeriesSpacing> &
    * the point.
    */
   endLabels?: boolean;
+  /**
+   * Panel key: one stacked panel (small multiple) per value, all on the same
+   * x axis, each with its own series and title. Omit for a single panel.
+   */
+  getPanel?: Accessor<D, string>;
+  /** Panels listed here come first (top to bottom); the rest keep data order. */
+  panelOrder?: readonly string[];
+  /**
+   * With `getPanel`: every panel on the same y domain, so they compare
+   * (default true). Off, each panel gets its own, from its data.
+   */
+  shareY?: boolean;
 };
 
 export type LineSeriesEntry<D> = {
   data: D;
   series: string;
+  panel: string;
   xValue: XValue;
   yValue: number;
 };
@@ -92,9 +111,17 @@ export type LineSeriesPoint<D> = LineSeriesEntry<D> & LayoutItem<D> & {
   label: LabelPlacement;
 };
 
+/**
+ * `key` is unique in the layout: the series name, prefixed by its panel
+ * (`panel::name`) when there are panels. Read the name from `name`.
+ */
 export type LineSeriesItem<D> = {
   key: string;
   index: number;
+  /** The series name (the `getSeries` value). */
+  name: string;
+  /** Key of the panel the series is drawn in. */
+  panel: string;
   side: LabelSide;
   points: LineSeriesPoint<D>[];
   /** One continuous path per x segment. */
@@ -106,13 +133,38 @@ export type LineSeriesItem<D> = {
   nameLabel: LabelPlacement;
 };
 
+/**
+ * One stacked panel. Coordinates are the layout's: the panel's points
+ * already include its `top`.
+ */
+export type LineSeriesPanel = {
+  key: string;
+  index: number;
+  /** Top of the panel's slot (its title band, then its plot). */
+  slotTop: number;
+  /** Top and height of the plot, under the title band. */
+  top: number;
+  height: number;
+  bottom: number;
+  /** Maps a value to the layout's y, inside this panel's plot. */
+  yScale: ScaleLinear<number, number>;
+  /** Where the panel's title goes. Absent without `getPanel`. */
+  title?: LabelPlacement;
+};
+
 export type LineSeriesLayout<D> = LayoutBox & {
+  /** Every series, of every panel. */
   series: LineSeriesItem<D>[];
+  /** One panel without `getPanel`, covering the whole plot. */
+  panels: LineSeriesPanel[];
+  /** Whether `getPanel` split the chart into panels. */
+  isPaneled: boolean;
   /** The x axis used: pass it to stacked panels (it is a `SharedXAxis`). */
   xAxis: SegmentedAxis;
   /** Shortcuts to `xAxis.segments` / `.breaks` / `.xScale`. */
   segments: AxisSegment[];
   breaks: AxisBreak[];
   xScale: XScaleFn;
+  /** The first panel's y scale (each panel has its own in `panels`). */
   yScale: ScaleLinear<number, number>;
 };

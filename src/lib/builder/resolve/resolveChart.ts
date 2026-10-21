@@ -7,6 +7,7 @@ import { resolveParams } from "../registry/params";
 import type { ChartRegistry } from "../registry/types";
 import { missingChannels, roundSize } from "../spec/spec";
 import { aggregateRows } from "./aggregate";
+import { filterRows } from "./filter";
 import type { ChartResolution, ResolveInput } from "./types";
 
 export function resolveChart(
@@ -28,6 +29,16 @@ export function resolveChart(
 
   const missing = missingChannels(definition.channels, spec.encoding);
   if (missing.length) return { status: "incomplete", definition, missing };
+
+  const filtered = filterRows(rows, spec.filters);
+  if (!filtered.rows.length) {
+    return {
+      status: "error",
+      definition,
+      step: "mapping",
+      message: "Os filtros deixaram o gráfico sem nenhuma linha.",
+    };
+  }
 
   const { sizing, defaultSize } = definition;
   const margin = addMargins(
@@ -65,7 +76,7 @@ export function resolveChart(
     const columnsOf = (channelIds: readonly string[]) =>
       channelIds.flatMap((id) => spec.encoding[id] ?? []);
     const mapped = columnsOf(definition.channels.map((c) => c.id));
-    const complete = dropIncomplete(rows, mapped);
+    const complete = dropIncomplete(filtered.rows, mapped);
     const aggregated = aggregateRows(
       complete.rows,
       columnsOf(definition.keys),
@@ -96,6 +107,7 @@ export function resolveChart(
       },
       margin,
       dropped: complete.dropped,
+      filtered: filtered.filtered,
       combined: aggregated.combined,
       warnings,
       solved,

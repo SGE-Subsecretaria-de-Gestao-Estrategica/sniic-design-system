@@ -39,6 +39,8 @@ type BaseOptionDef = {
   step: OptionStep;
   drawingOnly?: true;
   when?: OptionCondition;
+  /** Shown only while this channel has a column (e.g. the panel options). */
+  whenMapped?: string;
 }
 
 type ChoiceOptionDef = BaseOptionDef & {
@@ -71,7 +73,24 @@ type ColorsOptionDef<L> = BaseOptionDef & {
   current: (layout: L) => string[];
   /** The order the panel lists them in, when it isn't `current`'s (e.g. as stacked on screen). */
   listed?: (layout: L) => string[];
+  /**
+   * The colour of an item left on "Automática": `byPosition` (default) the
+   * pillar's colours in order; `lines` the line charts' (primary, the
+   * series in highlight secondary); `mainRamp` the first item a ramp from
+   * primary to primary variant, the others secondary (bubble columns).
+   */
+  automatic?: AutomaticColors;
+  /**
+   * Also offers ramps (`rampColorChoices`): the item runs from one colour to
+   * another along its categories instead of taking one colour. Only for
+   * views that draw them.
+   */
+  ramps?: true;
+  /** The name the panel shows for an item, when it isn't the item itself. */
+  itemLabel?: (item: string) => string;
 }
+
+export type AutomaticColors = "byPosition" | "lines" | "mainRamp";
 
 type TextOptionDef = BaseOptionDef & { 
   kind: "text"; 
@@ -148,6 +167,8 @@ export type ChartDefinition<L extends LayoutBox = LayoutBox> = {
   formats?: readonly FormatDef[];
   sizing: ChartSizing;
   defaultSize: LayoutBox;
+  /** The smallest figure size the user may set, per axis, when it isn't `SIZE_LIMITS.min`. */
+  minSize?: Partial<LayoutBox>;
   margin: MarginPresetId;
   extraMargin?: Partial<Margin>;
   build: (rows: Row[], context: BuildContext) => L;

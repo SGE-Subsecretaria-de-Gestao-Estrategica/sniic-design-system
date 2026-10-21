@@ -20,6 +20,7 @@
     showGroupLabels,
     showCategoryLabels = true,
     formatValue = (item) => String(item.value),
+    valueFill,
     formatGroup = (group) => group,
     formatCategory = (category) => category,
     labelFill,
@@ -85,6 +86,7 @@
               placement={item.label}
               text={formatValue(item, column)}
               {...labelStyle}
+              fill={resolveValue(valueFill, item, column) ?? labelFill}
             />
           {/each}
         {/if}

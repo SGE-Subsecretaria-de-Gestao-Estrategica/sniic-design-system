@@ -7,7 +7,7 @@
     widthPresetOf,
     type WidthPreset,
   } from "../../registry/widths";
-  import { SIZE_LIMITS } from "../../spec/spec";
+  import { sizeLimits } from "../../spec/spec";
   import type { StyleSpec } from "../../spec/types";
   import Field from "../ui/Field.svelte";
   import Fieldset from "../ui/Fieldset.svelte";
@@ -78,8 +78,8 @@
         <Input
           type="number"
           width="narrow"
-          min={SIZE_LIMITS.min}
-          max={SIZE_LIMITS.max}
+          min={sizeLimits(definition, axis).min}
+          max={sizeLimits(definition, axis).max}
           step="0.1"
           placeholder={fitted
             ? "automática"

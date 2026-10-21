@@ -8,6 +8,8 @@ export const LINE_SERIES_DEFAULTS: Readonly<LineSeriesSpacing> = {
   endLabelGap: spacing.md,
   endValueGap: spacing.xs,
   endValueHeight: fontSize.lg,
+  panelGap: spacing.xl,
+  panelTitleHeight: fontSize.md + spacing.md,
 };
 
 
