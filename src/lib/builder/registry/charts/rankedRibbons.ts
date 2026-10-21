@@ -5,8 +5,10 @@ import {
 } from "$lib/core/layouts/rankedRibbons";
 import wrappedLineCount from "$lib/core/utils/wrappedLineCount";
 import {
+  END_VALUE_OPTION,
   MANUAL,
   readChoice,
+  readEndValue,
   readStringList,
   readToggle,
   valueLabelsOption,
@@ -70,6 +72,8 @@ export const rankedRibbonsChart = defineChart({
   ],
   sizing: { width: "free", height: "free" },
   defaultSize: { width: FULL_PAGE_WIDTH, height: 320 },
+  // Short strips (a sparkline-like line, a thin band of ribbons) fit the page.
+  minSize: { height: 80 },
   margin: "right",
   build: (rows, { read, box, margin, options, params, warn }) => {
     const getX = read.x("x");
@@ -93,6 +97,7 @@ export const rankedRibbonsChart = defineChart({
       breaksAfter: raisBreaksAfter(options, rows, getX),
       ...readStacking(options),
       totals: readToggle(options, "totals"),
+      endValues: readEndValue(options),
       ribbonGap: params.ribbonGap,
       plateau: params.plateau,
       endNameLines: (series) => wrappedLineCount(series, nameWidth),
@@ -139,6 +144,7 @@ export const rankedRibbonsChart = defineChart({
       current: (layout) => layout.stackOrder,
     },
     valueLabelsOption("all"),
+    END_VALUE_OPTION,
     {
       id: "totals",
       step: "style",

@@ -56,6 +56,13 @@
     {#each resolution.warnings as warning (warning)}
       <figcaption class="warning">{warning}</figcaption>
     {/each}
+    {#if resolution.filtered}
+      <figcaption>
+        {formatCount(resolution.filtered)}
+        {resolution.filtered === 1 ? "linha deixada" : "linhas deixadas"} de fora
+        pelos filtros.
+      </figcaption>
+    {/if}
     {#if resolution.dropped}
       <figcaption>
         {formatCount(resolution.dropped)}

@@ -90,6 +90,127 @@ describe("lineSeries", () => {
     ]);
     expect(result.combined).toBe(0);
   });
+
+  it("splits into one panel per value of the panel column", () => {
+    const columns: ColumnSchema[] = [...SERIES, { name: "regiao", type: "text" }];
+    const raw = ["Norte", "Sul"].flatMap((regiao) =>
+      seriesRows.map((row) => ({ ...row, regiao })),
+    );
+    const { result } = resolve("lineSeries", columns, raw, {
+      series: "setor",
+      panel: "regiao",
+    });
+    if (result.view.chart !== "lineSeries") throw new Error();
+    const { layout } = result.view;
+    expect(layout.isPaneled).toBe(true);
+    expect(layout.panels.map((p) => p.key)).toEqual(["Norte", "Sul"]);
+    expect(layout.series).toHaveLength(4);
+    expect(result.combined).toBe(0);
+  });
+
+  it("orders the panels as in the file, or by hand", () => {
+    const columns: ColumnSchema[] = [...SERIES, { name: "regiao", type: "text" }];
+    const raw = ["Norte", "Sul", "Sudeste"].flatMap((regiao) =>
+      seriesRows.map((row) => ({ ...row, regiao })),
+    );
+    const { spec } = resolve("lineSeries", columns, raw, {
+      series: "setor",
+      panel: "regiao",
+    });
+    const rows = coerceRows(raw, columns, ",");
+    const panelsOf = (next: typeof spec) => {
+      const resolved = resolveChart(next, rows, defaultRegistry);
+      if (resolved.status !== "ready" || resolved.view.chart !== "lineSeries")
+        throw new Error();
+      return resolved.view.layout.panels.map((p) => p.key);
+    };
+    expect(panelsOf(spec)).toEqual(["Norte", "Sul", "Sudeste"]);
+    let manual = setOption(spec, "panelSort", MANUAL, defaultRegistry).spec;
+    manual = setOption(
+      manual,
+      "panelOrder",
+      ["Sudeste", "Norte", "Sul"],
+      defaultRegistry,
+    ).spec;
+    expect(panelsOf(manual)).toEqual(["Sudeste", "Norte", "Sul"]);
+    // Back to the file's order, the manual list is kept but not used.
+    const file = setOption(manual, "panelSort", "file", defaultRegistry).spec;
+    expect(panelsOf(file)).toEqual(["Norte", "Sul", "Sudeste"]);
+  });
+
+  it("lets each panel keep its own y domain", () => {
+    const columns: ColumnSchema[] = [...SERIES, { name: "regiao", type: "text" }];
+    const raw = ["Norte", "Sul"].flatMap((regiao, r) =>
+      seriesRows.map((row) => ({
+        ...row,
+        valor: String(Number(row.valor) * (r + 1)),
+        regiao,
+      })),
+    );
+    const { spec } = resolve("lineSeries", columns, raw, {
+      series: "setor",
+      panel: "regiao",
+    });
+    const rows = coerceRows(raw, columns, ",");
+    const domains = (sharedY: boolean) => {
+      const next = setOption(spec, "panelSharedY", sharedY, defaultRegistry).spec;
+      const resolved = resolveChart(next, rows, defaultRegistry);
+      if (resolved.status !== "ready" || resolved.view.chart !== "lineSeries")
+        throw new Error();
+      return resolved.view.layout.panels.map((p) => p.yScale.domain());
+    };
+    const [a, b] = domains(true);
+    expect(a).toEqual(b);
+    const [c, d] = domains(false);
+    expect(c).not.toEqual(d);
+  });
+});
+
+describe("heatmap", () => {
+  const TIDY: ColumnSchema[] = [
+    { name: "regiao", type: "text" },
+    { name: "ano", type: "number" },
+    { name: "valor", type: "number" },
+  ];
+  const tidy = ["Sul", "Norte"].flatMap((regiao, r) =>
+    [2021, 2019, 2020].map((ano, i) => ({
+      regiao,
+      ano: String(ano),
+      valor: String(10 * r + i),
+    })),
+  );
+
+  it("pivots the tidy rows into a grid, years ascending", () => {
+    const { result } = resolve("heatmap", TIDY, tidy, {
+      row: "regiao",
+      column: "ano",
+      value: "valor",
+    });
+    if (result.view.chart !== "heatmap") throw new Error();
+    const { layout } = result.view;
+    expect(layout.rows.map((r) => r.key)).toEqual(["Sul", "Norte"]);
+    expect(layout.columns.map((c) => c.key)).toEqual(["2019", "2020", "2021"]);
+    expect(layout.cells).toHaveLength(6);
+    expect(layout.cells.every((c) => c.value !== null)).toBe(true);
+  });
+
+  it("orders the rows by hand", () => {
+    const { spec } = resolve("heatmap", TIDY, tidy, {
+      row: "regiao",
+      column: "ano",
+      value: "valor",
+    });
+    let manual = setOption(spec, "rowSort", MANUAL, defaultRegistry).spec;
+    manual = setOption(manual, "rowOrder", ["Norte", "Sul"], defaultRegistry).spec;
+    const resolved = resolveChart(
+      manual,
+      coerceRows(tidy, TIDY, ","),
+      defaultRegistry,
+    );
+    if (resolved.status !== "ready" || resolved.view.chart !== "heatmap")
+      throw new Error();
+    expect(resolved.view.layout.rows.map((r) => r.key)).toEqual(["Norte", "Sul"]);
+  });
 });
 
 describe("rangeRows", () => {
@@ -100,6 +221,42 @@ describe("rangeRows", () => {
     expect(rows.map((r) => r.category)).toEqual(["Design", "Teatro", "Música"]);
     expect(groups).toEqual(["Feminino", "Masculino"]);
     expect(rows[0].markers).toHaveLength(2);
+  });
+
+  it("pins either end of the x domain, keeping the other automatic", () => {
+    const { spec, result } = resolve("rangeRows", GROUPED, groupedRows);
+    if (result.view.chart !== "rangeRows") throw new Error();
+    // Automatic: 1000–3200 padded by 10% of the range on each side.
+    expect(result.view.layout.valueScale.domain()).toEqual([780, 3420]);
+
+    const rows = coerceRows(groupedRows, GROUPED, ",");
+    const withOptions = (options: Record<string, number>) => {
+      let next = spec;
+      for (const [id, value] of Object.entries(options)) {
+        next = setOption(next, id, value, defaultRegistry).spec;
+      }
+      const resolved = resolveChart(next, rows, defaultRegistry);
+      if (resolved.status !== "ready" || resolved.view.chart !== "rangeRows")
+        throw new Error();
+      return {
+        domain: resolved.view.layout.valueScale.domain(),
+        warnings: resolved.warnings,
+      };
+    };
+
+    const fromZero = withOptions({ domainMin: 0 });
+    expect(fromZero.domain).toEqual([0, 3420]);
+    expect(fromZero.warnings).toEqual([]);
+
+    const both = withOptions({ domainMin: 0, domainMax: 5000 });
+    expect(both.domain).toEqual([0, 5000]);
+
+    const clipped = withOptions({ domainMax: 2000 });
+    expect(clipped.warnings.join(" ")).toMatch(/fora do intervalo/);
+
+    const inverted = withOptions({ domainMin: 4000, domainMax: 1000 });
+    expect(inverted.domain).toEqual([780, 3420]);
+    expect(inverted.warnings.join(" ")).toMatch(/precisa ser menor/);
   });
 });
 
@@ -137,6 +294,35 @@ describe("bubbleColumns", () => {
     };
     expect(mainOf("Masculino")).toBe("Masculino");
     expect(mainOf("Sumiu")).toBe("Feminino");
+  });
+
+  it("lists one colour per group, the main one first", () => {
+    const { spec } = resolve("bubbleColumns", GROUPED, groupedRows, {
+      group: "sexo",
+    });
+    const rows = coerceRows(groupedRows, GROUPED, ",");
+    const result = resolveChart(
+      setOption(spec, "mainGroup", "Masculino", defaultRegistry).spec,
+      rows,
+      defaultRegistry,
+    );
+    if (result.status !== "ready" || result.view.chart !== "bubbleColumns")
+      throw new Error();
+    const option = defaultRegistry
+      .require("bubbleColumns")
+      .options!.find((o) => o.id === "groupColors")!;
+    if (option.kind !== "colors") throw new Error();
+    expect(option.current(result.view.layout)).toEqual(["Masculino", "Feminino"]);
+    expect(option.automatic).toBe("mainRamp");
+    expect(option.ramps).toBe(true);
+    expect(option.drawingOnly).toBe(true);
+    const stored = setOption(
+      spec,
+      "groupColors",
+      { Feminino: "ramp-secondary" },
+      defaultRegistry,
+    ).spec.style.options.groupColors;
+    expect(stored).toEqual({ Feminino: "ramp-secondary" });
   });
 });
 
@@ -667,6 +853,7 @@ describe("drawing-only options", () => {
     let styled = setOption(spec, "valueLabels", "all", defaultRegistry).spec;
     styled = setOption(styled, "highlight", "Cultura", defaultRegistry).spec;
     styled = setOption(styled, "accentEnd", ["Cultura"], defaultRegistry).spec;
+    styled = setOption(styled, "seriesColors", { Cultura: "gradient-3" }, defaultRegistry).spec;
     const plain = resolveChart(spec, rows, defaultRegistry);
     const drawn = resolveChart(styled, rows, defaultRegistry);
     if (plain.status !== "ready" || drawn.status !== "ready") throw new Error();
@@ -697,6 +884,7 @@ describe("drawing-only options", () => {
       "valueLabels",
       "highlight",
       "accentEnd",
+      "seriesColors",
     ]);
     expect(drawingOnly("lineBubbleRow")).toEqual([
       "valueLabels",
@@ -711,8 +899,12 @@ describe("drawing-only options", () => {
       "seriesColors",
     ]);
     expect(drawingOnly("hexChoropleth")).toEqual([
+      "rampKind",
       "ramp",
       "rampOrder",
+      "rampBase",
+      "rampTarget",
+      "rampBaseOrder",
       "legendValues",
     ]);
     expect(drawingOnly("hexTwinBars")).toEqual([

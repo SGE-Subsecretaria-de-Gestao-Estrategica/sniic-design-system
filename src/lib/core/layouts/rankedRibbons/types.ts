@@ -68,6 +68,12 @@ export type RankedRibbonsLayoutConfig<D> = Partial<RankedRibbonsSpacing> &
     /** Close each ribbon with its last value and name, right of the plot. Default true. */
     endLabels?: boolean;
     /**
+     * While `endLabels`: put the last value in the end label. Default true.
+     * Off, the last column's values stay in their bands like the others and
+     * only the name goes right of the plot.
+     */
+    endValues?: boolean;
+    /**
      * Lines the series name takes in the end label, once wrapped to the
      * width it is drawn at. Default 1. The blocks are pushed apart by their
      * real height, so a long name doesn't run into the next value.
@@ -138,7 +144,8 @@ export type RankedRibbonsColumn<D> = {
 
 /** The value and name closing a ribbon, right of the plot, with a leader from the ribbon. */
 export type RankedRibbonsEnd = {
-  value: LabelPlacement;
+  /** Absent when `endValues` is off. */
+  value?: LabelPlacement;
   name: LabelPlacement;
   leader: LineSegment;
 };

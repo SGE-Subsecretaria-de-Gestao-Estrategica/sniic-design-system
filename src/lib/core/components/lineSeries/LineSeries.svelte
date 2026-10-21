@@ -38,7 +38,7 @@
     valueFontWeight,
     endValueWidth,
     showNames = true,
-    formatName = (series) => series.key,
+    formatName = (series) => series.name,
     nameWidth,
     nameFill,
     nameFontSize,

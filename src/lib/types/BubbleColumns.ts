@@ -35,6 +35,8 @@ export type BubbleColumnsProps<D> = LayoutComponentProps<BubbleColumnsLayout<D>>
     showGroupLabels?: boolean;
     showCategoryLabels?: boolean;
     formatValue?: BubbleItemAccessor<D, string>;
+    /** The value label's colour, e.g. a light one inside a dark bubble. Falls back to `labelFill`. */
+    valueFill?: BubbleItemStyle<D, string | undefined>;
     formatGroup?: (group: string) => string;
     formatCategory?: (category: string) => string;
   };

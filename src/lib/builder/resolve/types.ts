@@ -6,7 +6,7 @@ import type { ChartSpec, StyleSpec } from "../spec/types";
 /** What `resolveChart` reads from a spec. The pillar isn't part of it: colours don't change the layout. */
 export type ResolveInput = Pick<
   ChartSpec,
-  "chart" | "encoding" | "aggregate" | "data"
+  "chart" | "encoding" | "aggregate" | "data" | "filters"
 > & {
   style: Pick<StyleSpec, "width" | "height" | "margin" | "options" | "params">;
 };
@@ -38,6 +38,8 @@ export type ReadyChart = {
   figure: LayoutBox;
   margin: Margin;
   dropped: number;
+  /** Rows the filters left out. */
+  filtered: number;
   /** Rows merged away because they shared the same key channels. */
   combined: number;
   /** pt-BR notices from the chart (e.g. rows too thin to read). */

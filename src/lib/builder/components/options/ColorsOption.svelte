@@ -4,7 +4,11 @@
   import type { OptionOf } from "../../registry/types";
   import type { JsonValue } from "../../spec/types";
   import {
+    fillSwatch,
+    pickedItemFills,
     pickedSeriesColors,
+    RAMP_COLOR_GROUP,
+    rampColorChoices,
     SERIES_COLOR_GROUPS,
     seriesColorChoices,
   } from "../views/colors";
@@ -19,36 +23,53 @@
     listed: readonly string[];
     stored: JsonValue | undefined;
     pillar: number;
+    /** The series in highlight, for `automatic: "lines"`. */
+    highlight?: string;
     /** `undefined` = every value on its automatic colour. */
     onchange: (value: JsonValue | undefined) => void;
   };
 
-  let { option, values, listed, stored, pillar, onchange }: Props = $props();
+  let { option, values, listed, stored, pillar, highlight, onchange }: Props =
+    $props();
 
   const theme = $derived(getPillarTheme(pillar));
-  const choices = $derived(seriesColorChoices(values.length, theme));
+  const choices = $derived(seriesColorChoices(theme));
+  const ramps = $derived(option.ramps ? rampColorChoices(theme) : []);
+  // The ramps, when offered, come first: they are the chart's own kind of colour.
   const groups = $derived(
-    SERIES_COLOR_GROUPS.map((group) => ({
-      ...group,
-      choices: choices.filter((c) => c.group === group.id),
-    })).filter((group) => group.choices.length),
+    [
+      { ...RAMP_COLOR_GROUP, choices: ramps },
+      ...SERIES_COLOR_GROUPS.map((group) => ({
+        ...group,
+        choices: choices.filter((c) => c.group === group.id),
+      })),
+    ].filter((group) => group.choices.length),
+  );
+  const offered = $derived(
+    new Set([...ramps, ...choices].map((c) => c.id)),
   );
   const picked = $derived(readColorMap(stored));
-  const colors = $derived(pickedSeriesColors(values, stored, theme));
+  const swatches = $derived(
+    option.ramps
+      ? new Map(
+          [...pickedItemFills(values, stored, theme, option.automatic, highlight)].map(
+            ([key, fill]) => [key, fillSwatch(fill)],
+          ),
+        )
+      : pickedSeriesColors(values, stored, theme, option.automatic, highlight),
+  );
 </script>
 
 <fieldset>
   <legend>{option.label}</legend>
   <div class="rows">
     {#each listed as value (value)}
-      <Field label={value} inline>
+      <Field label={option.itemLabel?.(value) ?? value} inline>
         <span class="control">
-          <span class="swatch" style:background={colors.get(value)}></span>
+          <span class="swatch" style:background={swatches.get(value)}></span>
           <Select
             size="sm"
-            value={choices.some((c) => c.id === picked[value])
-              ? picked[value]
-              : ""}
+            value={offered.has(picked[value]) ? picked[value] : ""}
             onchange={(e) =>
               onchange(pickColor(stored, value, e.currentTarget.value || undefined))}
           >

@@ -167,12 +167,15 @@
               stroke={ribbonStyle.leaderStroke}
               strokeWidth={ribbonStyle.leaderWidth}
             />
-            <PlacedLabel
-              variant="dataLabel"
-              placement={ribbon.end.value}
-              text={formatValue(ribbon.last)}
-              fill={resolveValue(endValueFill, ribbon) ?? fillOf.get(ribbon.key)}
-            />
+            {#if ribbon.end.value}
+              <PlacedLabel
+                variant="dataLabel"
+                placement={ribbon.end.value}
+                text={formatValue(ribbon.last)}
+                fill={resolveValue(endValueFill, ribbon) ??
+                  fillOf.get(ribbon.key)}
+              />
+            {/if}
             <PlacedLabel
               variant="seriesLabel"
               placement={ribbon.end.name}

@@ -1,4 +1,5 @@
 import { bubbleColumnsChart } from "./bubbleColumns";
+import { heatmapChart } from "./heatmap";
 import { hexCategoricalChart } from "./hexCategorical";
 import { hexChoroplethChart } from "./hexChoropleth";
 import { hexTwinBarsChart } from "./hexTwinBars";
@@ -18,6 +19,7 @@ export const CHARTS = [
   rankedRibbonsChart,
   rangeRowsChart,
   bubbleColumnsChart,
+  heatmapChart,
   hexChoroplethChart,
   hexTwinBarsChart,
   hexCategoricalChart,

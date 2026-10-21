@@ -1,6 +1,10 @@
 <script lang="ts">
   import type { Row } from "../../data/types";
-  import { optionShown, ordersOpenedBy } from "../../registry/options";
+  import {
+    optionShown,
+    ordersOpenedBy,
+    readText,
+  } from "../../registry/options";
   import type { AnyChartDefinition, OptionStep } from "../../registry/types";
   import type { ChartResolution } from "../../resolve/types";
   import type { Aggregation, Encoding, JsonValue } from "../../spec/types";
@@ -49,7 +53,7 @@
     (definition.options ?? []).filter(
       (option) =>
         option.step === step &&
-        optionShown(definition.options, options, option),
+        optionShown(definition.options, options, option, encoding),
     ),
   );
   // How repeated rows are combined is a data choice.
@@ -115,6 +119,7 @@
           listed={option.listed?.(ready.view.layout) ?? values}
           {stored}
           {pillar}
+          highlight={readText(options, "highlight")}
           onchange={(value) => onoption(option.id, value)}
         />
       {/if}

@@ -39,6 +39,7 @@ export { default as HorizontalBars } from './components/horizontalBars/Horizonta
 
 // Line series, bubble row, difference stems
 export { default as LineSeries } from './components/lineSeries/LineSeries.svelte';
+export { default as Heatmap } from './components/heatmap/Heatmap.svelte';
 export { default as BubbleRow } from './components/bubbleRow/BubbleRow.svelte';
 export { default as DifferenceStems } from './components/differenceStems/DifferenceStems.svelte';
 
@@ -185,6 +186,15 @@ export {
 } from './layouts/labels.js';
 export { rankedRibbonsLayout, RANKED_RIBBONS_DEFAULTS } from './layouts/rankedRibbons/index.js';
 export type * from './layouts/rankedRibbons/types.js';
+export { heatmapLayout, HEATMAP_DEFAULTS } from './layouts/heatmap/index.js';
+export type {
+  HeatmapSpacing,
+  HeatmapLayoutConfig,
+  HeatmapEntry,
+  HeatmapBand,
+  HeatmapCell,
+  HeatmapLayout,
+} from './layouts/heatmap/types.js';
 export { lineSeriesLayout, LINE_SERIES_DEFAULTS } from './layouts/lineSeries/index.js';
 export type {
   LineSeriesSpacing,
@@ -194,6 +204,7 @@ export type {
   LineSeriesSegment,
   LineSeriesPoint,
   LineSeriesItem,
+  LineSeriesPanel,
   LineSeriesLayout,
 } from './layouts/lineSeries/types.js';
 export { bubbleRowLayout, BUBBLE_ROW_DEFAULTS } from './layouts/bubbleRow/index.js';

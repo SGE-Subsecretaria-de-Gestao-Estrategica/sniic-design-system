@@ -7,7 +7,13 @@ import {
   STACK_PANELS_DEFAULTS,
   stackPanelsLayout,
 } from "$lib/core/layouts/stackPanels";
-import { ACCENT_END_OPTION, readText, valueLabelsOption } from "../options";
+import {
+  ACCENT_END_OPTION,
+  END_VALUE_OPTION,
+  readEndValue,
+  readText,
+  valueLabelsOption,
+} from "../options";
 import { RAIS_BREAK_OPTION, raisBreaksAfter } from "../rais";
 import { defineChart } from "../registry";
 import { FULL_PAGE_WIDTH } from "../widths";
@@ -83,6 +89,7 @@ export const lineDifferenceChart = defineChart({
       width: box.width,
       height: panels.byKey.line.height,
       breaksAfter: raisBreaksAfter(options, rows, getX),
+      endLabels: readEndValue(options),
     });
     const diff = differenceStemsLayout(rows, {
       getX,
@@ -106,6 +113,7 @@ export const lineDifferenceChart = defineChart({
       none: "A primeira do arquivo",
     },
     valueLabelsOption("all"),
+    END_VALUE_OPTION,
     ACCENT_END_OPTION,
     RAIS_BREAK_OPTION,
     {

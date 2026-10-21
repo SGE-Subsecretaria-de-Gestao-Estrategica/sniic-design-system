@@ -16,6 +16,7 @@ import {
   setChart,
   setData,
   setEncoding,
+  setFilters,
   setFormat,
   setOption,
   setParam,
@@ -226,10 +227,22 @@ export function restoreSpec(
   const aggregate = AGGREGATIONS.find((a) => a === saved.aggregate);
   if (aggregate) spec = setAggregate(spec, aggregate).spec;
 
+  // One filter at a time: one whose column is gone doesn't drop the others.
+  for (const filter of Array.isArray(saved.filters) ? saved.filters : []) {
+    if (!isRecord(filter) || typeof filter.column !== "string") continue;
+    const exclude = Array.isArray(filter.exclude)
+      ? filter.exclude.filter((v): v is string => typeof v === "string")
+      : [];
+    const column = filter.column;
+    attempt((s) => setFilters(s, [...s.filters, { column, exclude }]));
+  }
+
   // One key at a time, so a bad one doesn't take the others with it.
   for (const key of ["pillar", "width", "height", "margin"] as const) {
     if (key in style)
-      attempt((s) => setStyle(s, { [key]: style[key] } as StylePatch));
+      attempt((s) =>
+        setStyle(s, { [key]: style[key] } as StylePatch, registry),
+      );
   }
   attempt((s) => setFormat(s, formatPatch(style.format), undefined, registry));
 

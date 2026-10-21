@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { ColumnSchema } from "../data/types";
+import { defaultRegistry } from "../registry";
 import { createRegistry } from "../registry/registry";
 import type { ChartId } from "../registry/layouts";
 import type { AnyChartDefinition } from "../registry/types";
@@ -180,6 +181,24 @@ describe("setStyle", () => {
     expect(setStyle(createSpec(), { width: 581.14 }).spec.style.width).toBe(
       581.1,
     );
+  });
+
+  it("lets a chart with minSize go below SIZE_LIMITS.min, and clamps again on a chart change", () => {
+    const chart = (id: "lineSeries" | "rankedRibbons" | "horizontalBars") =>
+      setChart(createSpec(), id, defaultRegistry).spec;
+    for (const id of ["lineSeries", "rankedRibbons"] as const) {
+      const short = setStyle(chart(id), { height: 10 }, defaultRegistry).spec;
+      expect(short.style.height).toBe(80);
+      expect(setChart(short, "horizontalBars", defaultRegistry).spec.style.height).toBe(
+        SIZE_LIMITS.min,
+      );
+    }
+    const bars = setStyle(chart("horizontalBars"), { height: 80 }, defaultRegistry);
+    expect(bars.spec.style.height).toBe(SIZE_LIMITS.min);
+    // The width keeps the usual floor.
+    expect(
+      setStyle(chart("lineSeries"), { width: 80 }, defaultRegistry).spec.style.width,
+    ).toBe(SIZE_LIMITS.min);
   });
 
   it("leaves options, params and extra formats to their own setters", () => {

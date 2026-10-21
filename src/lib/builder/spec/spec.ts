@@ -1,10 +1,14 @@
-import type { ColumnSchema } from "../data/types";
+import type { ColumnSchema, ColumnType } from "../data/types";
 import { pillarPalettes } from "$lib/core/theme/tokens";
 import type { ChartId } from "../registry/layouts";
 import { channelAccepts } from "../registry/compatibility";
 import { isMarginPresetId } from "../registry/margins";
 import { clampParam, resolveFormat } from "../registry/params";
-import type { ChannelDef, ChartRegistry } from "../registry/types";
+import type {
+  ChannelDef,
+  ChartDefinition,
+  ChartRegistry,
+} from "../registry/types";
 import { DEFAULT_FORMAT } from "./format";
 import {
   CHART_SPEC_VERSION,
@@ -12,6 +16,7 @@ import {
   type ChartSpec,
   type DataSpec,
   type Encoding,
+  type Filter,
   type JsonValue,
   type NumberFormat,
   type ResetNotice,
@@ -26,6 +31,7 @@ export function createSpec(): ChartSpec {
     chart: null,
     encoding: {},
     aggregate: "sum",
+    filters: [],
     style: {
       pillar: 1,
       width: null,
@@ -79,6 +85,24 @@ export function pruneEncoding(
   return { encoding: next, reset };
 }
 
+/** The column types a filter takes: categorical ones. */
+export const FILTER_TYPES: readonly ColumnType[] = ["text", "uf"];
+
+export function filterableColumns(
+  columns: readonly ColumnSchema[],
+): ColumnSchema[] {
+  return columns.filter((c) => FILTER_TYPES.includes(c.type));
+}
+
+/** The filters whose column still exists and can still be filtered. */
+export function pruneFilters(
+  filters: readonly Filter[],
+  columns: readonly ColumnSchema[],
+): Filter[] {
+  const allowed = new Set(filterableColumns(columns).map((c) => c.name));
+  return filters.filter((f) => allowed.has(f.column));
+}
+
 function channelsOf(spec: ChartSpec, registry: ChartRegistry) {
   return spec.chart ? registry.require(spec.chart).channels : null;
 }
@@ -93,7 +117,8 @@ export function setData(
     channelsOf(spec, registry),
     data.columns,
   );
-  return { spec: { ...spec, data, encoding }, reset };
+  const filters = pruneFilters(spec.filters, data.columns);
+  return { spec: { ...spec, data, encoding, filters }, reset };
 }
 
 export function setChart(
@@ -102,7 +127,8 @@ export function setChart(
   registry: ChartRegistry,
 ): SpecChange {
   if (chartId === spec.chart) return { spec, reset: [] };
-  const channels = chartId ? registry.require(chartId).channels : null;
+  const definition = chartId ? registry.require(chartId) : undefined;
+  const channels = definition?.channels ?? null;
   const { encoding, reset } = pruneEncoding(
     spec.encoding,
     channels,
@@ -116,6 +142,8 @@ export function setChart(
       encoding,
       style: {
         ...spec.style,
+        // A size the last chart allowed may be too small for this one.
+        ...clampSizes(spec.style, definition),
         formats: {},
         margin: null,
         options: {},
@@ -160,6 +188,36 @@ export function setAggregate(
   aggregate: Aggregation,
 ): SpecChange {
   return { spec: { ...spec, aggregate }, reset: [] };
+}
+
+/**
+ * Step 3: replaces the filters. Each column must be a text or UF column of
+ * the data, at most once; `exclude` keeps its strings, once each.
+ */
+export function setFilters(
+  spec: ChartSpec,
+  filters: readonly Filter[],
+): SpecChange {
+  const allowed = new Set(
+    filterableColumns(spec.data.columns).map((c) => c.name),
+  );
+  const seen = new Set<string>();
+  const next = filters.map((filter): Filter => {
+    if (!allowed.has(filter.column)) {
+      throw new Error(`Column "${filter.column}" can't be filtered.`);
+    }
+    if (seen.has(filter.column)) {
+      throw new Error(`Column "${filter.column}" is filtered twice.`);
+    }
+    seen.add(filter.column);
+    return {
+      column: filter.column,
+      exclude: [
+        ...new Set(filter.exclude.filter((v) => typeof v === "string")),
+      ],
+    };
+  });
+  return { spec: { ...spec, filters: next }, reset: [] };
 }
 
 /** Sets a chart option declared in the registry; `undefined` restores its default. */
@@ -217,8 +275,36 @@ export function roundSize(size: number): number {
   return Math.round(size * 10) / 10;
 }
 
-export function clampSize(size: number): number {
-  return roundSize(Math.min(SIZE_LIMITS.max, Math.max(SIZE_LIMITS.min, size)));
+type SizeAxis = "width" | "height";
+
+/** The sizes the user may set on `axis`: the chart's `minSize`, else `SIZE_LIMITS`. */
+export function sizeLimits(
+  definition: Pick<ChartDefinition, "minSize"> | undefined,
+  axis: SizeAxis,
+): { min: number; max: number } {
+  return {
+    min: definition?.minSize?.[axis] ?? SIZE_LIMITS.min,
+    max: SIZE_LIMITS.max,
+  };
+}
+
+export function clampSize(
+  size: number,
+  limits: { min: number; max: number } = SIZE_LIMITS,
+): number {
+  return roundSize(Math.min(limits.max, Math.max(limits.min, size)));
+}
+
+/** The stored sizes, clamped to the limits of `definition` (`null` stays). */
+function clampSizes(
+  style: Pick<StyleSpec, SizeAxis>,
+  definition: Pick<ChartDefinition, "minSize"> | undefined,
+): Pick<StyleSpec, SizeAxis> {
+  const clamp = (axis: SizeAxis) => {
+    const size = style[axis];
+    return size === null ? null : clampSize(size, sizeLimits(definition, axis));
+  };
+  return { width: clamp("width"), height: clamp("height") };
 }
 
 function assertDecimals(format: Partial<NumberFormat>) {
@@ -238,7 +324,16 @@ export type StylePatch = Partial<
   Pick<StyleSpec, "pillar" | "width" | "height" | "margin" | "format">
 >;
 
-export function setStyle(spec: ChartSpec, patch: StylePatch): SpecChange {
+/**
+ * With `registry`, sizes are clamped to the chart's own limits (`minSize`);
+ * without, to `SIZE_LIMITS`.
+ */
+export function setStyle(
+  spec: ChartSpec,
+  patch: StylePatch,
+  registry?: ChartRegistry,
+): SpecChange {
+  const definition = spec.chart ? registry?.get(spec.chart) : undefined;
   if (
     patch.pillar !== undefined &&
     !pillarPalettes.some((p) => p.id === patch.pillar)
@@ -254,7 +349,8 @@ export function setStyle(spec: ChartSpec, patch: StylePatch): SpecChange {
         `Style ${key} must be a positive number or null (got ${size}).`,
       );
     }
-    sizes[key] = size === null ? null : clampSize(size);
+    sizes[key] =
+      size === null ? null : clampSize(size, sizeLimits(definition, key));
   }
   if (patch.margin != null && !isMarginPresetId(patch.margin)) {
     throw new Error(`Unknown margin preset "${patch.margin}".`);

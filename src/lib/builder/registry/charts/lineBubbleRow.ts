@@ -8,7 +8,13 @@ import {
   stackPanelsLayout,
 } from "$lib/core/layouts/stackPanels";
 import { spacing } from "$lib/core/theme/tokens";
-import { ACCENT_END_OPTION, readText, valueLabelsOption } from "../options";
+import {
+  ACCENT_END_OPTION,
+  END_VALUE_OPTION,
+  readEndValue,
+  readText,
+  valueLabelsOption,
+} from "../options";
 import { RAIS_BREAK_OPTION, raisBreaksAfter } from "../rais";
 import { defineChart } from "../registry";
 import { FULL_PAGE_WIDTH } from "../widths";
@@ -88,6 +94,7 @@ export const lineBubbleRowChart = defineChart({
       // Room for the larger end marker.
       endLabelGap: spacing.lg,
       endValueGap: spacing.sm,
+      endLabels: readEndValue(options),
     });
     const row = bubbleRowLayout(rows, {
       getX,
@@ -100,6 +107,7 @@ export const lineBubbleRowChart = defineChart({
   },
   options: [
     valueLabelsOption("all"),
+    END_VALUE_OPTION,
     ACCENT_END_OPTION,
     RAIS_BREAK_OPTION,
     {

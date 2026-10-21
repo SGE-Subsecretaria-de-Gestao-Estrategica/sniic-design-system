@@ -1,6 +1,5 @@
 import type { LineSeriesPoint } from "$lib/core/layouts/lineSeries";
 import type { SegmentedAxis } from "$lib/core/layouts/segmentedAxis";
-import * as d3 from "d3";
 import type { XValue } from "$lib/core/layouts/types";
 import {
   readChoice,
@@ -56,24 +55,4 @@ export function segmentEndKeys(
   );
 }
 
-const YEAR = d3.timeFormat("%Y");
-const MONTH = d3.timeFormat("%m/%Y");
-const DAY = d3.timeFormat("%d/%m/%Y");
-
-/**
- * Labels for the ticks of an x axis. Dates are written in numbers, as fine
- * as the ticks need (years, months or days), so no month or weekday name
- * shows up in English; numbers are written as they are (years).
- */
-export function tickLabeller(
-  ticks: readonly XValue[],
-): (value: XValue) => string {
-  const dates = ticks.filter((t): t is Date => t instanceof Date);
-  if (!dates.length) return (value) => String(value);
-  const format = dates.some((d) => d.getDate() !== 1)
-    ? DAY
-    : dates.some((d) => d.getMonth() !== 0)
-      ? MONTH
-      : YEAR;
-  return (value) => (value instanceof Date ? format(value) : String(value));
-}
+export { tickLabeller } from "../../encoding/keys";
