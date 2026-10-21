@@ -35,6 +35,14 @@ All notable changes to this project will be documented in this file.
 - Every Cultura em Números chart has a docs page (autodocs): what it shows, when to use it and when not to, data shape, steps and `highlight`, the import line, and the props table. The `Padrão` story is args-driven, so its controls work; every story has a description.
 - `FrameProps` (`height`, `title`, `subtitle`, `source`) documented, for the props tables.
 
+## [3.1.1] - 2026-10-20
+
+### Security
+- Dev dependencies updated to clear the Dependabot alerts: `vitest`, `@vitest/browser`, `@vitest/mocker`, `@vitest/browser-playwright` and `@vitest/coverage-v8` to 4.1.12; Storybook to 10.6.3; transitive `devalue` 5.9.4, `fast-uri` 3.1.9, `source-map-js` 1.2.2 and `brace-expansion` 2.1.7 / 5.0.12. `sprintf-js` (via `vite-plugin-dts` → `argparse`) has no patched release yet. None of these ship in `dist`.
+
+### Fixed
+- **`choroplethMap`**: `event.currentTarget` typed as `SVGPathElement`, for the newer `@types/d3-selection`.
+
 ## [3.1.0] - 2026-10-19
 
 ### Added

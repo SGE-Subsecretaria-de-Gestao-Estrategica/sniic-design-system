@@ -81,7 +81,7 @@ export function drawChoroplethMap(
       const name = d.properties.name;
       const state = states[name] ?? null;
       onStateChange(state);
-      d3.select(event.currentTarget).raise().attr('stroke', white).attr('stroke-width', 1.5);
+      d3.select(event.currentTarget as SVGPathElement).raise().attr('stroke', white).attr('stroke-width', 1.5);
       if (tooltipEl && state) {
         const val = valueByName.get(name) ?? 0;
         showTooltip(tooltipEl, `<strong>${name}</strong><br/>${label}: ${format(val)}`);
@@ -94,7 +94,7 @@ export function drawChoroplethMap(
     })
     .on('mouseleave', (event) => {
       onStateChange(null);
-      d3.select(event.currentTarget).attr('stroke', black).attr('stroke-width', 0.6);
+      d3.select(event.currentTarget as SVGPathElement).attr('stroke', black).attr('stroke-width', 0.6);
       if (tooltipEl) hideTooltip(tooltipEl);
     });
 
