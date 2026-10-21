@@ -9,6 +9,7 @@
   import type { StyleSpec } from "../spec/types";
   import BubbleColumnsView from "./views/BubbleColumnsView.svelte";
   import HeatmapView from "./views/HeatmapView.svelte";
+  import HexCategoricalView from "./views/HexCategoricalView.svelte";
   import HexChoroplethView from "./views/HexChoroplethView.svelte";
   import HexTwinBarsView from "./views/HexTwinBarsView.svelte";
   import HorizontalBarsView from "./views/HorizontalBarsView.svelte";
@@ -79,6 +80,8 @@
         <HexChoroplethView layout={view.layout} {...shared} />
       {:else if view.chart === "hexTwinBars"}
         <HexTwinBarsView layout={view.layout} {...shared} />
+      {:else if view.chart === "hexCategorical"}
+        <HexCategoricalView layout={view.layout} {...shared} />
       {:else}
         {unhandled(view)}
       {/if}

@@ -45,6 +45,21 @@ export function valoresPorUf(semente: number, min: number, max: number) {
   return UFS.map((uf) => ({ uf, valor: Math.round(min + r() * (max - min)) }));
 }
 
+/**
+ * Uma categoria por UF, sorteada entre `categorias` com os pesos dados (um por
+ * categoria; sem eles, todas pesam igual). Estável para a mesma semente.
+ */
+export function categoriasPorUf(semente: number, categorias: string[], pesos?: number[]) {
+  const r = sorteio(semente);
+  const w = pesos ?? categorias.map(() => 1);
+  const total = w.reduce((s, v) => s + v, 0);
+  return UFS.map((uf) => {
+    let x = r() * total;
+    const i = w.findIndex((v) => (x -= v) < 0);
+    return { uf, category: categorias[i === -1 ? categorias.length - 1 : i] };
+  });
+}
+
 const decimal1 = new Intl.NumberFormat('pt-BR', {
   minimumFractionDigits: 1,
   maximumFractionDigits: 1,

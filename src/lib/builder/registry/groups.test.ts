@@ -14,7 +14,7 @@ describe("groupCharts", () => {
     ).toEqual([
       ["categories", ["horizontalBars", "rangeRows", "bubbleColumns", "heatmap"]],
       ["lines", ["lineSeries", "lineBubbleRow", "lineDifference", "rankedRibbons"]],
-      ["hexMaps", ["hexChoropleth", "hexTwinBars"]],
+      ["hexMaps", ["hexChoropleth", "hexTwinBars", "hexCategorical"]],
     ]);
   });
 

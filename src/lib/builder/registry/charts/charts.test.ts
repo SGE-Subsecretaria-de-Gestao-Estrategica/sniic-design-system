@@ -776,6 +776,74 @@ describe("hexTwinBars", () => {
   });
 });
 
+describe("hexCategorical", () => {
+  const columns: ColumnSchema[] = [
+    { name: "UF", type: "uf" },
+    { name: "estagio", type: "text" },
+  ];
+  const rows = [
+    { UF: "AC", estagio: "Em adesão" },
+    { UF: "SP", estagio: "Aderiu" },
+    { UF: "RJ", estagio: "Aderiu" },
+    { UF: "DF", estagio: "Não aderiu" },
+  ];
+
+  it("gives each state its category, with the legend under the map", () => {
+    const { result } = resolve("hexCategorical", columns, rows);
+    if (result.view.chart !== "hexCategorical") throw new Error();
+    const { layout } = result.view;
+    expect(layout.categories).toEqual(["Em adesão", "Aderiu", "Não aderiu"]);
+    expect(layout.counts).toEqual([1, 2, 1]);
+    expect(layout.data.map((d) => [d.key, d.categoryIndex])).toEqual([
+      ["AC", 0],
+      ["SP", 1],
+      ["RJ", 1],
+      ["DF", 2],
+    ]);
+    expect(layout.width).toBeCloseTo(12.5 * 22);
+    expect(layout.legendTop).toBe(layout.mapHeight + 16);
+    expect(layout.height).toBe(layout.legendTop + 3 * 20);
+    expect(result.warnings.join(" ")).toMatch(/^Sem dados para: AL, AM, AP/);
+  });
+
+  it("takes a manual order of the categories", () => {
+    const { spec } = resolve("hexCategorical", columns, rows);
+    let next = setOption(spec, "sort", MANUAL, defaultRegistry).spec;
+    next = setOption(
+      next,
+      "categoryOrder",
+      ["Não aderiu", "Em adesão", "Aderiu"],
+      defaultRegistry,
+    ).spec;
+    const result = resolveChart(
+      next,
+      coerceRows(rows, columns, ","),
+      defaultRegistry,
+    );
+    if (result.status !== "ready" || result.view.chart !== "hexCategorical")
+      throw new Error();
+    expect(result.view.layout.categories).toEqual([
+      "Não aderiu",
+      "Em adesão",
+      "Aderiu",
+    ]);
+  });
+
+  it("combines repeated rows, and explains a state with two categories", () => {
+    const { result } = resolve("hexCategorical", columns, [
+      ...rows,
+      { UF: "SP", estagio: "Aderiu" },
+    ]);
+    expect(result.combined).toBe(1);
+    expect(() =>
+      resolve("hexCategorical", columns, [
+        ...rows,
+        { UF: "SP", estagio: "Em adesão" },
+      ]),
+    ).toThrow(/A UF SP aparece com mais de uma categoria \(Aderiu e Em adesão\)/);
+  });
+});
+
 describe("drawing-only options", () => {
   it("don't reach the layout: it is the same with or without them", () => {
     const { spec } = resolve("lineSeries", SERIES, seriesRows, {
@@ -843,6 +911,12 @@ describe("drawing-only options", () => {
       "accentOver",
       "thresholdName",
       "legend",
+    ]);
+    expect(drawingOnly("hexCategorical")).toEqual([
+      "colorScale",
+      "ramp",
+      "categoryColors",
+      "legendCounts",
     ]);
   });
 });

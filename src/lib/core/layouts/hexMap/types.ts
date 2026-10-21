@@ -188,3 +188,33 @@ export type ChoroplethLayout<T> = LayoutBox & {
   emptyLabel: LabelPlacement;
   data: ChoroplethDatum<T>[];
 };
+
+// -----------------------------------------------------------------------------
+// Categorical Layout
+// -----------------------------------------------------------------------------
+
+export type CategoricalLayoutConfig<D> = BaseLayoutConfig<D> & {
+  getCategory: (d: D) => string;
+  /** Categories listed here come first, in this order; the rest follow as in the data. */
+  categoryOrder?: readonly string[];
+};
+
+export type CategoricalDatum<T> = BaseLayoutDatum<T> & {
+  category: string;
+  /** Position of its category in `layout.categories`. Colours belong to the component. */
+  categoryIndex: number;
+  /** UF name at the centre, tile-local. */
+  labels: { name: LabelPlacement };
+};
+
+export type CategoricalLayout<T> = LayoutBox & {
+  tiles: Map<string, MapTile>;
+  pathData: string;
+  /** Every category, in drawing order — `categoryOrder` first, even when no UF has it. */
+  categories: string[];
+  /** How many UFs fall in each category, in the order of `categories`. */
+  counts: number[];
+  /** UF name on a tile without data, tile-local. */
+  emptyLabel: LabelPlacement;
+  data: CategoricalDatum<T>[];
+};

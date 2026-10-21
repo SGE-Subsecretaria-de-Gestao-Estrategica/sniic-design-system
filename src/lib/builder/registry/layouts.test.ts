@@ -22,6 +22,7 @@ describe("ChartLayouts", () => {
       | "heatmap"
       | "hexChoropleth"
       | "hexTwinBars"
+      | "hexCategorical"
     >();
     expectTypeOf<ChartLayouts["horizontalBars"]>().toEqualTypeOf<
       HorizontalBarsLayout<Row>
@@ -50,6 +51,9 @@ describe("ChartLayouts", () => {
     expectTypeOf<
       ChartLayouts["hexChoropleth"]["steps"]
     >().toEqualTypeOf<number>();
+    expectTypeOf<
+      ChartLayouts["hexCategorical"]["categories"]
+    >().toEqualTypeOf<string[]>();
     expectTypeOf(CHARTS[0].id).toEqualTypeOf<"horizontalBars">();
   });
 });

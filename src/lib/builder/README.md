@@ -32,16 +32,16 @@ ChartSpec (spec/) ─────┘         │
 
 ## `data/`
 
-| File | What it does |
-|---|---|
-| `types.ts` | `ColumnSchema`, `Row`, `Table` (unique headers + raw string rows), `ColumnIssues`. Column types: `number`, `date`, `text`, `uf` |
-| `file.ts` | `readCsvFile`: .csv / .txt, 5 MB limit, UTF-8 then Windows-1252 |
-| `table.ts` | `detectDelimiter`, `parseTable`, `FIELD_SEPARATORS` |
-| `coerce.ts` | `parseNumber(raw, decimal)` (thousands only in groups of three), `parseDate`, `coerceRows`, `coerceData`; `DECIMAL_SEPARATORS`, `DATE_PATTERNS` |
-| `infer.ts` | `detectDecimal`, `inferColumn` / `inferSchema` (≥ 90% parse rate; years are numbers; leading-zero codes are text; siglas or state names are UFs), `columnAs`, `yearLikeColumns` |
-| `uf.ts` | `UFS` (sigla, name, IBGE code), `parseUf` (any of the three), `parseUfName` (sigla or name) |
-| `issues.ts` | `cellFails`, `columnIssues`, `describeIssues` |
-| `labels.ts` | `COLUMN_TYPE_LABELS` |
+| File        | What it does                                                                                                                                                                    |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `types.ts`  | `ColumnSchema`, `Row`, `Table` (unique headers + raw string rows), `ColumnIssues`. Column types: `number`, `date`, `text`, `uf`                                                 |
+| `file.ts`   | `readCsvFile`: .csv / .txt, 5 MB limit, UTF-8 then Windows-1252                                                                                                                 |
+| `table.ts`  | `detectDelimiter`, `parseTable`, `FIELD_SEPARATORS`                                                                                                                             |
+| `coerce.ts` | `parseNumber(raw, decimal)` (thousands only in groups of three), `parseDate`, `coerceRows`, `coerceData`; `DECIMAL_SEPARATORS`, `DATE_PATTERNS`                                 |
+| `infer.ts`  | `detectDecimal`, `inferColumn` / `inferSchema` (≥ 90% parse rate; years are numbers; leading-zero codes are text; siglas or state names are UFs), `columnAs`, `yearLikeColumns` |
+| `uf.ts`     | `UFS` (sigla, name, IBGE code), `parseUf` (any of the three), `parseUfName` (sigla or name)                                                                                     |
+| `issues.ts` | `cellFails`, `columnIssues`, `describeIssues`                                                                                                                                   |
+| `labels.ts` | `COLUMN_TYPE_LABELS`                                                                                                                                                            |
 
 A `uf` column is text that names a state. Its cells stay as written (so a
 bar chart shows the file's own names) and a cell that isn't a state is a
@@ -67,17 +67,17 @@ detection, so that column becomes a UF only when its type is set by hand.
 It changes only through the pure setters in `spec.ts`, which return a
 `SpecChange` (`{ spec, reset }`):
 
-| Setter | Notes |
-|---|---|
-| `setData`, `setChart` | The only two that prune mappings; `reset` lists what was undone. `setChart` also clears `margin`, `options`, `params` and `formats`, which belong to the chart. |
-| `setEncoding` | One column per channel; `null` clears it. |
-| `setAggregate` | |
-| `setFilters` | Replaces the filters. Throws for a column that isn't text or UF, or one filtered twice. `setData` drops the filters whose column is gone or changed type (`pruneFilters`). |
-| `setOption` | Throws for an option the chart doesn't declare; `undefined` removes the value. |
-| `setParam` | Clamps to the param's range; `null` restores the default. |
-| `setFormat` | The main format, or one of the chart's extra formats by id. |
-| `setStyle` | Pillar, sizes, margin and the main format only. Sizes are clamped to `SIZE_LIMITS` (160–1600 px), or, given the registry, to the chart's `sizeLimits` (its `minSize`), and kept to one decimal (`roundSize`). `setChart` clamps the stored sizes again to the new chart's limits. |
-| `autoEncode` | Fills empty required channels with unused compatible columns; year-like columns go to date channels first and to value channels last. |
+| Setter                | Notes                                                                                                                                                                                                                                                                             |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `setData`, `setChart` | The only two that prune mappings; `reset` lists what was undone. `setChart` also clears `margin`, `options`, `params` and `formats`, which belong to the chart.                                                                                                                   |
+| `setEncoding`         | One column per channel; `null` clears it.                                                                                                                                                                                                                                         |
+| `setAggregate`        |                                                                                                                                                                                                                                                                                   |
+| `setFilters`          | Replaces the filters. Throws for a column that isn't text or UF, or one filtered twice. `setData` drops the filters whose column is gone or changed type (`pruneFilters`).                                                                                                        |
+| `setOption`           | Throws for an option the chart doesn't declare; `undefined` removes the value.                                                                                                                                                                                                    |
+| `setParam`            | Clamps to the param's range; `null` restores the default.                                                                                                                                                                                                                         |
+| `setFormat`           | The main format, or one of the chart's extra formats by id.                                                                                                                                                                                                                       |
+| `setStyle`            | Pillar, sizes, margin and the main format only. Sizes are clamped to `SIZE_LIMITS` (160–1600 px), or, given the registry, to the chart's `sizeLimits` (its `minSize`), and kept to one decimal (`roundSize`). `setChart` clamps the stored sizes again to the new chart's limits. |
+| `autoEncode`          | Fills empty required channels with unused compatible columns; year-like columns go to date channels first and to value channels last.                                                                                                                                             |
 
 `format.ts`: `NumberFormat` (`decimals`, `compact`, `percent`, `prefix`,
 `suffix`), `createFormatter` (pt-BR). `percent` multiplies by 100; the "%" is
@@ -129,24 +129,25 @@ the layout's type.
 
 ### Charts
 
-| Id | Channels | From |
-|---|---|---|
-| `horizontalBars` | category, value | G6.26 |
-| `lineSeries` | x (date or number), y, series (optional), panel (optional) | G6.07; with `panel`, one stacked panel per value on the shared x axis |
-| `lineBubbleRow` | x, y, size | G6.05: a line panel over a bubble row |
-| `lineDifference` | x, y, series (exactly two values) | G6.08: two lines over their difference |
-| `rankedRibbons` | x (date or number), value, series | Fitas ranqueadas: ribbons stacked by value at each year (largest on top or at the bottom), crossing where the ranking changes; or, unranked, in the file's order or a manual one |
-| `rangeRows` | category, group, value | G6.20 |
-| `bubbleColumns` | category, value, group (optional) | G6.12; *Cor de cada grupo* (`groupColors`): by default the main group in steps from primary to its variant along the categories and the others in secondary; each group can take one colour (a step colour included) or a ramp along the categories |
-| `hexChoropleth` | uf, value, slice (optional) | G6.10: one value per state, coloured by steps |
-| `hexTwinBars` | uf, value, type (at most two values) | G6.09: up to two bars per state and a reference line |
-| `heatmap` | row, column (text, UF, number or date), value | Mapa de calor: the tidy rows pivoted into a grid, one cell per row × column (repeated pairs combined by `aggregate`); colour steps from the primary or secondary pair, in a chosen direction (`pairStepColors`); legend under the grid (`extraMargin.bottom`) |
+| Id               | Channels                                                   | From                                                                                                                                                                                                                                                          |
+| ---------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `horizontalBars` | category, value                                            | G6.26                                                                                                                                                                                                                                                         |
+| `lineSeries`     | x (date or number), y, series (optional), panel (optional) | G6.07; with `panel`, one stacked panel per value on the shared x axis                                                                                                                                                                                         |
+| `lineBubbleRow`  | x, y, size                                                 | G6.05: a line panel over a bubble row                                                                                                                                                                                                                         |
+| `lineDifference` | x, y, series (exactly two values)                          | G6.08: two lines over their difference                                                                                                                                                                                                                        |
+| `rankedRibbons`  | x (date or number), value, series                          | Fitas ranqueadas: ribbons stacked by value at each year (largest on top or at the bottom), crossing where the ranking changes; or, unranked, in the file's order or a manual one                                                                              |
+| `rangeRows`      | category, group, value                                     | G6.20                                                                                                                                                                                                                                                         |
+| `bubbleColumns`  | category, value, group (optional)                          | G6.12; _Cor de cada grupo_ (`groupColors`): by default the main group in steps from primary to its variant along the categories and the others in secondary; each group can take one colour (a step colour included) or a ramp along the categories           |
+| `hexChoropleth`  | uf, value, slice (optional)                                | G6.10: one value per state, coloured by steps                                                                                                                                                                                                                 |
+| `hexTwinBars`    | uf, value, type (at most two values)                       | G6.09: up to two bars per state and a reference line                                                                                                                                                                                                          |
+| `hexCategorical` | uf, category                                               | One category per state (stages, kinds), with the legend under the map                                                                                                                                                                                         |
+| `heatmap`        | row, column (text, UF, number or date), value              | Mapa de calor: the tidy rows pivoted into a grid, one cell per row × column (repeated pairs combined by `aggregate`); colour steps from the primary or secondary pair, in a chosen direction (`pairStepColors`); legend under the grid (`extraMargin.bottom`) |
 
 The two combined charts stack several `core` layouts on one
 `stackPanelsLayout` and return them together; the lower panel reuses
 `line.xAxis`, so it shares the line's breaks.
 
-The two hex maps (`hex.ts` holds what they share) are sized by the `radius`
+The hex maps (`hex.ts` holds what they share) are sized by the `radius`
 param. Their width is `fitted`: once the user sets a figure width, the radius
 is solved from it instead, and the height always follows (`derived`). The
 choropleth's ramp runs from the page colour through a colour pair, lighter
@@ -156,8 +157,14 @@ first by default or in a chosen direction (`rampOrder`). Both the choropleth and
 bar above the reference line takes the accent colour only when asked
 (`accentOver`). The choropleth's `slice` channel is for
 files with several rows per state (state and capital, say): one slice is
-shown at a time, picked in the mapping step. Both warn about states with no
-row and about hexagons too small for the labels.
+shown at a time, picked in the mapping step. All warn about states with no
+row and about hexagons too small for the labels. The categorical map takes
+one category per state (a state with two is an error) in the file's order or
+a manual one; ordered categories climb one colour's steps (`colorScale:
+steps`, skipping the page colour), unordered ones take the pillar's colours,
+pickable per category (`palette`). Its legend lists every category, with how
+many states it has, under the map: `build` adds its rows to the layout's
+`height` (`legendTop`, `HEX_CATEGORICAL_LEGEND`).
 
 ### Options (`options.ts`, `OptionDef`)
 
@@ -174,16 +181,16 @@ A chart's own settings, stored in `style.options`. Each declares:
   line chart's panel options). `build` still gets the stored value.
 - a `kind`:
 
-| Kind | Control | Stored |
-|---|---|---|
-| `choice` | select | one of its values (has a default) |
-| `order` | list with ↑ / ↓ | category names; usually behind a `when` on a choice's manual value |
-| `value` | select | one value of a channel's column |
-| `values` | checkboxes | a list of a channel's values; one `whole` checkbox (`true`) while the channel has no column |
-| `number` | number field | a number in the data's own unit (a reference value) |
-| `toggle` | checkbox | `true` / `false` when it differs from its `default` (off unless set), or nothing |
+| Kind     | Control                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Stored                                                                                                                                                                                                                                                                                                                                   |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `choice` | select                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | one of its values (has a default)                                                                                                                                                                                                                                                                                                        |
+| `order`  | list with ↑ / ↓                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | category names; usually behind a `when` on a choice's manual value                                                                                                                                                                                                                                                                       |
+| `value`  | select                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | one value of a channel's column                                                                                                                                                                                                                                                                                                          |
+| `values` | checkboxes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | a list of a channel's values; one `whole` checkbox (`true`) while the channel has no column                                                                                                                                                                                                                                              |
+| `number` | number field                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | a number in the data's own unit (a reference value)                                                                                                                                                                                                                                                                                      |
+| `toggle` | checkbox                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | `true` / `false` when it differs from its `default` (off unless set), or nothing                                                                                                                                                                                                                                                         |
 | `colors` | one select per item the layout lists (`current`, whose order sets the automatic colours), with a swatch; `listed` changes only the order the panel shows them in; `automatic` sets the colour of an item left on Automática (`byPosition`; `lines`, the line colours; `mainRamp`, the first item a primary → variant ramp and the others secondary); `ramps` also offers ramps along the item's categories (`rampColorChoices`: `ramp-primary`, `ramp-secondary`; read with `pickedItemFills`); `itemLabel` names an item in the panel | `{ value: choiceId }`; choices from `seriesColorChoices` (`views/colors.ts`), listed in the `SERIES_COLOR_GROUPS`: the pillar's five colours; the primary → primary variant stops (`gradient-i`) and the secondary → secondary variant stops (`secondaryGradient-i`), always `SERIES_COLOR_STEPS` (8), evenly spaced; neutral 100 to 400 |
-| `text` | text field | the text |
+| `text`   | text field                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | the text                                                                                                                                                                                                                                                                                                                                 |
 
 Readers: `readColorMap`, `pickColor`, `readChoice`, `readText`, `readNumber`, `readToggle` (takes the default), `readStringList`,
 `isPicked`, `readOrdering`. A stored value that no longer fits the data is
@@ -247,13 +254,13 @@ are an `ErrorChart` on the mapping step.
 Downloading the finished chart. These run in the browser, on the `<svg>` the
 preview drew.
 
-| File | What it does |
-|---|---|
-| `names.ts` | `exportName(fileName, format, scale)`: the file is named after the CSV (`vinculos.svg`, `vinculos.png`, `vinculos@2x.png`) |
-| `svg.ts` | `svgMarkup(svg, css?)`: a standalone copy. The drawing carries its look in attributes, so it needs no stylesheet; fonts stay referenced by name |
-| `fonts.ts` | `embeddedFontCss(svg)`: the `@font-face` rules of the fonts the chart uses, with each font file inside the rule |
-| `png.ts` | `pngBlob(svg, scale)`: draws the SVG, fonts embedded, on a transparent canvas of the figure's size × `scale` |
-| `download.ts` | `download(content, name, type?)` |
+| File          | What it does                                                                                                                                    |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `names.ts`    | `exportName(fileName, format, scale)`: the file is named after the CSV (`vinculos.svg`, `vinculos.png`, `vinculos@2x.png`)                      |
+| `svg.ts`      | `svgMarkup(svg, css?)`: a standalone copy. The drawing carries its look in attributes, so it needs no stylesheet; fonts stay referenced by name |
+| `fonts.ts`    | `embeddedFontCss(svg)`: the `@font-face` rules of the fonts the chart uses, with each font file inside the rule                                 |
+| `png.ts`      | `pngBlob(svg, scale)`: draws the SVG, fonts embedded, on a transparent canvas of the figure's size × `scale`                                    |
+| `download.ts` | `download(content, name, type?)`                                                                                                                |
 
 A PNG embeds the fonts because an SVG drawn as an image can't reach the
 page's fonts. The SVG file doesn't: whoever opens it needs the font installed.
@@ -283,21 +290,21 @@ furthest step it can enter.
 
 ## `components/`
 
-| Path | What it is |
-|---|---|
-| `Builder.svelte` | The wizard: stepper, back / next, reset notice, preview beside steps 3 and 4 |
-| `data/` | Step 1: `DataStep`, `FileInput` (the CSV, and a saved chart to reopen), `DataOptions`, `DataPreview` (raw values, never reformatted) |
-| `save/SaveChart.svelte` | In the wizard's footer: downloads the chart as a file, with the data inside when ticked |
-| `chart/ChartGallery.svelte` | Step 2: the named groups as a list, each with its charts side by side; a chart the data can't feed is disabled and says what is missing |
-| `mapping/MappingStep.svelte` | Step 3: one select per channel |
-| `filter/FilterPanel.svelte` | Step 3, under the channels: one block per filter (column, a checkbox per value, Todos / Nenhum), "Adicionar filtro", and the rows left in the chart |
-| `options/` | `ChartOptions` shows the options of one step (`step="mapping"` under the mapping, `step="style"` as the first group of the style step). One component per option kind, plus `AggregationField`. |
-| `style/` | Step 4: `StyleStep` composes `PillarPicker`, the chart options, `SizeFields` (page-grid width, sizes, margins), `ParamFields`, and one `NumberFormatFields` per format |
-| `export/ExportChart.svelte` | Under the preview: "Baixar" SVG, PNG 1× and PNG 2× |
-| `preview/` | `ChartPreview` draws any resolution. The dashed frame is the figure's exact size; `overflow.ts` measures what is drawn outside it and says so. |
-| `ChartView.svelte` | `<ChartView chart id style>`: theme from the pillar, the `<Svg>`, and one branch per chart (a chart without a branch fails the type check) |
-| `views/` | One `<Name>View` per chart, props `ViewProps<L>`. It owns the chart's look, taken from its Eixo 6 story. Shared: `colors.ts` (series and group colours, the choropleth ramp, the label colour on a filled tile), `lines.ts`, `XAxisFrame.svelte`. |
-| `ui/` | The wizard's own controls: `Field`, `Select`, `Input`, `Checkbox`, `Button`, `Fieldset`, and `tokens.css` (`--builder-*`) |
+| Path                         | What it is                                                                                                                                                                                                                                        |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Builder.svelte`             | The wizard: stepper, back / next, reset notice, preview beside steps 3 and 4                                                                                                                                                                      |
+| `data/`                      | Step 1: `DataStep`, `FileInput` (the CSV, and a saved chart to reopen), `DataOptions`, `DataPreview` (raw values, never reformatted)                                                                                                              |
+| `save/SaveChart.svelte`      | In the wizard's footer: downloads the chart as a file, with the data inside when ticked                                                                                                                                                           |
+| `chart/ChartGallery.svelte`  | Step 2: the named groups as a list, each with its charts side by side; a chart the data can't feed is disabled and says what is missing                                                                                                           |
+| `mapping/MappingStep.svelte` | Step 3: one select per channel                                                                                                                                                                                                                    |
+| `filter/FilterPanel.svelte`  | Step 3, under the channels: one block per filter (column, a checkbox per value, Todos / Nenhum), "Adicionar filtro", and the rows left in the chart                                                                                               |
+| `options/`                   | `ChartOptions` shows the options of one step (`step="mapping"` under the mapping, `step="style"` as the first group of the style step). One component per option kind, plus `AggregationField`.                                                   |
+| `style/`                     | Step 4: `StyleStep` composes `PillarPicker`, the chart options, `SizeFields` (page-grid width, sizes, margins), `ParamFields`, and one `NumberFormatFields` per format                                                                            |
+| `export/ExportChart.svelte`  | Under the preview: "Baixar" SVG, PNG 1× and PNG 2×                                                                                                                                                                                                |
+| `preview/`                   | `ChartPreview` draws any resolution. The dashed frame is the figure's exact size; `overflow.ts` measures what is drawn outside it and says so.                                                                                                    |
+| `ChartView.svelte`           | `<ChartView chart id style>`: theme from the pillar, the `<Svg>`, and one branch per chart (a chart without a branch fails the type check)                                                                                                        |
+| `views/`                     | One `<Name>View` per chart, props `ViewProps<L>`. It owns the chart's look, taken from its Eixo 6 story. Shared: `colors.ts` (series and group colours, the choropleth ramp, the label colour on a filled tile), `lines.ts`, `XAxisFrame.svelte`. |
+| `ui/`                        | The wizard's own controls: `Field`, `Select`, `Input`, `Checkbox`, `Button`, `Fieldset`, and `tokens.css` (`--builder-*`)                                                                                                                         |
 
 ## Adding a chart
 

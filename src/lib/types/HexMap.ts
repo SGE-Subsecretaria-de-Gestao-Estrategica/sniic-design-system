@@ -1,4 +1,6 @@
 import type {
+  CategoricalDatum,
+  CategoricalLayout,
   ChoroplethDatum,
   ChoroplethLayout,
   MapTile,
@@ -20,6 +22,8 @@ export type HexTilesProps = {
   fill?: HexTileStyle<string | undefined>;
   stroke?: HexTileStyle<string | undefined>;
   strokeWidth?: number;
+  /** Dims tiles, e.g. those outside a highlight. */
+  opacity?: HexTileStyle<number | undefined>;
 };
 
 /** `datum` is undefined on a tile without data. */
@@ -86,6 +90,34 @@ export type HexTwinBarsProps<D> = LayoutComponentProps<TwinBarsLayout<D>> & {
   valueFontSize?: number;
   valueFontWeight?: number;
   nameFill?: string;
+  nameFontSize?: number;
+  nameFontWeight?: number;
+};
+
+/** `datum` is undefined on a tile without data. */
+export type CategoricalTileStyle<D, T> = ValueOrAccessor<
+  [datum: CategoricalDatum<D> | undefined, tile: MapTile],
+  T
+>;
+
+export type HexCategoricalProps<D> = LayoutComponentProps<
+  CategoricalLayout<D>
+> & {
+  // Tiles
+  /** One colour per category of the layout, in the order of `layout.categories`. */
+  categoryColors: readonly string[];
+  /** Tiles without data. */
+  emptyFill?: string;
+  tileStroke?: string;
+  tileStrokeWidth?: number;
+  /** Tile and label together, e.g. to dim what is out of a highlight. */
+  tileOpacity?: CategoricalTileStyle<D, number | undefined>;
+
+  // Labels (theme role: `categoryLabel` for the UF)
+  showNames?: boolean;
+  formatName?: (ufCode: string) => string;
+  /** The UF name, e.g. a light colour on the dark categories. */
+  labelFill?: CategoricalTileStyle<D, string | undefined>;
   nameFontSize?: number;
   nameFontWeight?: number;
 };
