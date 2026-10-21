@@ -1,4 +1,5 @@
 import { bubbleColumnsChart } from "./bubbleColumns";
+import { hexCategoricalChart } from "./hexCategorical";
 import { hexChoroplethChart } from "./hexChoropleth";
 import { hexTwinBarsChart } from "./hexTwinBars";
 import { horizontalBarsChart } from "./horizontalBars";
@@ -19,4 +20,5 @@ export const CHARTS = [
   bubbleColumnsChart,
   hexChoroplethChart,
   hexTwinBarsChart,
+  hexCategoricalChart,
 ] as const;

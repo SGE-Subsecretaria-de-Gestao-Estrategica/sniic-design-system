@@ -11,6 +11,7 @@
     fill,
     stroke,
     strokeWidth,
+    opacity,
   }: HexTilesProps = $props();
 
   const regions = $derived(d3.groups([...tiles], (tile) => tile.region));
@@ -26,6 +27,7 @@
           fill={resolveValue(fill, tile)}
           stroke={resolveValue(stroke, tile)}
           stroke-width={strokeWidth}
+          opacity={resolveValue(opacity, tile)}
         />
       {/each}
     </Group>
