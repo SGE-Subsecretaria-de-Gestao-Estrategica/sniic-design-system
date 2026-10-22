@@ -15,9 +15,8 @@
 	 * In scrollytelling, after the reference each region gets a stage of its own
 	 * (outlined, the rest dimmed).
 	 *
-	 * The legend is `MapaHexagonalLegenda`: drawn in the map's empty lower-left
-	 * corner when there is room for it at a readable size, below the map when
-	 * there is not, or left to the host with `legend="none"`.
+	 * The map draws no legend: `MapaHexagonalLegenda` is a component of its own,
+	 * placed by the host wherever the page has room for it.
 	 */
 	import * as d3 from 'd3';
 	import Text from '$lib/core/components/Text.svelte';
@@ -27,9 +26,7 @@
 	import { CONTORNOS, MEIA_LINHA, REGIOES, S, caminhoHex, centro } from '../eixo1/mapaUf';
 	import BarraReferencia from './BarraReferencia.svelte';
 	import ChartShell from './ChartShell.svelte';
-	import MapaHexagonalLegenda from './MapaHexagonalLegenda.svelte';
-	import { LEGENDA_TEXTO_PADRAO, LEGENDA_WIDTH, layoutLegenda } from './mapaHexagonalLegenda.js';
-	import type { MapaHexagonalLegendaTexto, MapaHexagonalValor } from './data.js';
+	import type { MapaHexagonalValor } from './data.js';
 	import type { FrameProps, ScrollytellingProps } from './types.js';
 
 	type Props = FrameProps &
@@ -37,7 +34,7 @@
 			values: MapaHexagonalValor[];
 			/** The value of the reference line — a national mean, say. */
 			reference: number;
-			/** Names of the two values and of the reference — tooltip, table, legend. */
+			/** Names of the two values and of the reference — tooltip and table. */
 			aLabel?: string;
 			bLabel?: string;
 			referenceLabel?: string;
@@ -46,14 +43,6 @@
 			max?: number;
 			/** Regions drawn with a darker outline once the reference is in. None by default. */
 			emphasizedRegions?: string[];
-			/**
-			 * Where the legend goes: in the map's empty corner, below it, or nowhere
-			 * (the host places `MapaHexagonalLegenda` itself). `auto` puts it in the
-			 * corner when it stays readable there.
-			 */
-			legend?: 'auto' | 'inline' | 'below' | 'none';
-			/** The legend's copy; `aText`, `bText`, `referenceText` default to the labels above. */
-			legendText?: Partial<MapaHexagonalLegendaTexto>;
 			/** Overrides the Eixo 6 palette — used for style previews in other eixos. */
 			pillarId?: number;
 		};
@@ -67,8 +56,6 @@
 		formatValue = (value: number) => `${Math.round(value)}%`,
 		max,
 		emphasizedRegions,
-		legend = 'auto',
-		legendText = {},
 		width,
 		height,
 		title,
@@ -95,53 +82,21 @@
 			return { uf, regiao, cx, cy };
 		})
 	);
-	const mapBounds = {
+	const bounds = {
 		x0: d3.min(cells, (c) => c.cx - S)! - 8,
 		x1: d3.max(cells, (c) => c.cx + S)! + 8,
 		y0: Math.min(d3.min(cells, (c) => c.cy - MEIA_LINHA)!, ...Object.values(REGIOES).map((r) => r.rotulo[1] - 30)) - 8,
 		y1: d3.max(cells, (c) => c.cy + MEIA_LINHA)! + 8
 	};
 
-	/** The empty lower-left corner of the grid, where the legend fits. */
-	const LEGEND_BOX = { x: 36, y: 592, width: 490 };
-	const LEGEND_MIN_SCALE = 0.75;
-	const LEGEND_GAP = 24;
 	const MAX_WIDTH = 980;
-
-	let legendCopy = $derived({
-		...LEGENDA_TEXTO_PADRAO,
-		aText: aLabel,
-		bText: bLabel,
-		referenceText: referenceLabel,
-		...legendText
-	});
-	let legendHeight = $derived(
-		layoutLegenda(legendCopy, { reference, a: reference * 1.8, b: reference * 0.83 }).height
-	);
 
 	const margin = { top: 4, right: 4, bottom: 4, left: 4 };
 	let plotWidth = $derived(Math.max(0, Math.min(shellWidth - 8, MAX_WIDTH)));
 
-	/** The grid bounds with the legend's corner included. */
-	let inlineBounds = $derived({
-		...mapBounds,
-		x0: Math.min(mapBounds.x0, LEGEND_BOX.x - 8),
-		y1: Math.max(mapBounds.y1, LEGEND_BOX.y + (legendHeight * LEGEND_BOX.width) / LEGENDA_WIDTH + 8)
-	});
-	let inlineScale = $derived(
-		((plotWidth / (inlineBounds.x1 - inlineBounds.x0)) * LEGEND_BOX.width) / LEGENDA_WIDTH
-	);
-	let legendMode = $derived(
-		legend === 'auto' ? (inlineScale >= LEGEND_MIN_SCALE ? 'inline' : 'below') : legend
-	);
-
-	let bounds = $derived(legendMode === 'inline' ? inlineBounds : mapBounds);
 	let k = $derived(plotWidth / (bounds.x1 - bounds.x0));
 	let plotHeight = $derived((bounds.y1 - bounds.y0) * k);
-
-	let belowScale = $derived(Math.min(1, plotWidth / (LEGENDA_WIDTH + 4)));
-	let belowHeight = $derived(legendMode === 'below' ? LEGEND_GAP + legendHeight * belowScale : 0);
-	let figureHeight = $derived(height ?? plotHeight + belowHeight + margin.top + margin.bottom);
+	let figureHeight = $derived(height ?? plotHeight + margin.top + margin.bottom);
 
 	/** Grid domain → px. */
 	let px = $derived((x: number, y: number) => [(x - bounds.x0) * k, (y - bounds.y0) * k] as const);
@@ -250,7 +205,6 @@
 	});
 
 	let gridTransform = $derived(`scale(${k}) translate(${-bounds.x0},${-bounds.y0})`);
-	let legendOrigin = $derived(px(LEGEND_BOX.x, LEGEND_BOX.y));
 </script>
 
 <ChartShell
@@ -365,28 +319,6 @@
 					{/if}
 				</g>
 			{/each}
-
-			{#if legendMode === 'inline'}
-				<MapaHexagonalLegenda
-					{reference}
-					{formatValue}
-					texto={legendCopy}
-					{pillarId}
-					x={legendOrigin[0]}
-					y={legendOrigin[1]}
-					scale={inlineScale}
-				/>
-			{:else if legendMode === 'below'}
-				<MapaHexagonalLegenda
-					{reference}
-					{formatValue}
-					texto={legendCopy}
-					{pillarId}
-					x={2}
-					y={plotHeight + LEGEND_GAP}
-					scale={belowScale}
-				/>
-			{/if}
 
 			{#if interactive}
 				{#each layout as cell (cell.uf)}

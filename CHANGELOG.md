@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [4.0.0] - 2026-10-22
 
 ### Added
 - **Builder**: *Linhas* and *Fitas ranqueadas* accept a figure height down to 80 px (the other charts keep 160). Chart definitions take `minSize`; `setStyle` takes the registry to clamp to the chart's `sizeLimits`, and `setChart` clamps the stored sizes to the new chart's.
@@ -29,6 +29,7 @@ All notable changes to this project will be documented in this file.
 - **Eixo 6 family**: `PontosPaineisChart` (*Matriz de pontos*), with `PontosPainel`, `PontosFatia` and `PONTOS_PAINEIS_STEPS`, its story and its catalog card. The chart won't be used.
 
 ### Changed (breaking)
+- **`MapaHexagonalChart`** no longer draws its legend: `legend` and `legendText` are gone, and the map takes only the grid's height. **`MapaHexagonalLegenda`** is its own component, always in its own `<svg>` (`standalone`, `x`, `y` and `scale` are gone); place it beside or below the map and pass the copy as `texto` (its `aText`, `bText` and `referenceText` no longer follow the map's `aLabel`, `bLabel` and `referenceLabel`).
 - **Builder colours**: the primary → variant and secondary → variant steps are always `SERIES_COLOR_STEPS` (8), evenly spaced, instead of one per series; `seriesColorChoices(theme)` drops its `steps` argument. A saved `gradient-i` / `secondaryGradient-i` keeps its id but may land on a different shade.
 - **`<LineSeries>`**: `formatName` defaults to `series.name` (was `series.key`, which now carries the panel prefix when there are panels).
 - **Theme**: the `tickLabel` role (axis ticks, legend entries) is `neutral[300]`, like body text (was `neutral[200]`).
