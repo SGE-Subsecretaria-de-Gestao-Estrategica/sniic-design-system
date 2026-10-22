@@ -24,6 +24,7 @@ partir do projeto que consome o pacote.
 | `MapaUfChart` | Coroplético por UF na malha do IBGE, classes na rampa sequencial do pilar. | `MapaUfValor` — `{ uf, value }` + `breaks` |
 | `MapaMunicipiosChart` | O território em cinza e só os `top` (10) maiores municípios destacados, numerados, com o ranking ao lado; `zoomTo` voa até um ou mais municípios, para scrollytelling. Com `breaks`, vira mosaico: todos os municípios na cor da classe, com legenda e a divisão por UF no tooltip (etapas de `MAPA_CLASSES_STEPS`). A malha municipal entra por prop (não vem no pacote). | `values: Record<código IBGE, number>` + `names` + `mesh` (+ `breaks`, `classLabels` no mosaico) |
 | `MapaHexagonalChart` | O Brasil esquemático em hexágonos, duas `CapsuleBar` por UF e uma linha de referência; quem a supera ganha o ponto de destaque. | `MapaHexagonalValor` — `{ uf, a, b }` + `reference` |
+| `MapaHexagonalLegenda` | A legenda do mapa hexagonal, num componente à parte: uma célula de amostra com setas até o texto que explica cada elemento. O host a põe onde quiser. | `reference` + `texto: Partial<MapaHexagonalLegendaTexto>` |
 | `BolhasComparadasChart` | A mesma repartição em dois escopos — o grupo e a referência (hachurada) —, lado a lado. | `BolhasComparadasDatum` — `{ scope: 'grupo' \| 'referencia', category, share }` |
 
 Cada um é:

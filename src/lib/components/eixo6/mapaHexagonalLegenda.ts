@@ -1,9 +1,7 @@
 /**
- * Layout of `MapaHexagonalLegenda`, apart from the component so the map can
- * know the legend's height before drawing it (to fit it in the map's empty
- * corner, or to stack it below).
- *
- * Everything is in the legend's own px, at scale 1; whoever draws it scales.
+ * Layout of `MapaHexagonalLegenda`: the wrapped copy, the sample cell and the
+ * arrows, all in the legend's own px; its `<svg>` scales them to the width it
+ * is given.
  */
 import { Tokens } from '$lib/core/theme';
 import { measureTextWidth } from '$lib/utils/labelHelpers';

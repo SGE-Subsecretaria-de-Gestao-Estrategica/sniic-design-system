@@ -5,9 +5,9 @@
 	 * que o explica — a altura da barra, a parte que passa da referência, o
 	 * valor da referência e qual barra é qual.
 	 *
-	 * `MapaHexagonalChart` desenha esta legenda no canto vazio do mapa (ou abaixo
-	 * dele, em colunas estreitas). Com `standalone` ela tem o próprio `<svg>`,
-	 * para o host que passa `legend="none"` ao mapa e a põe em outro lugar.
+	 * É um componente à parte de `MapaHexagonalChart`, com o próprio `<svg>`: o
+	 * host a põe onde a página tiver lugar — ao lado do mapa, abaixo dele, numa
+	 * etapa do scrollytelling. Ocupa a largura disponível até `LEGENDA_WIDTH`.
 	 */
 	import { Tokens, getPillarTheme } from '$lib/core/theme';
 	import BarraReferencia from './BarraReferencia.svelte';
@@ -23,12 +23,6 @@
 		formatValue?: (value: number) => string;
 		/** Copy; anything left out keeps the default. */
 		texto?: Partial<MapaHexagonalLegendaTexto>;
-		/** Wraps the legend in its own `<svg>`, to place it outside the map. */
-		standalone?: boolean;
-		/** Position and scale inside a parent `<svg>`. Ignored when standalone. */
-		x?: number;
-		y?: number;
-		scale?: number;
 		pillarId?: number;
 	};
 
@@ -38,10 +32,6 @@
 		b,
 		formatValue = (value: number) => `${Math.round(value)}%`,
 		texto = {},
-		standalone = false,
-		x = 0,
-		y = 0,
-		scale = 1,
 		pillarId = 6
 	}: Props = $props();
 
@@ -93,7 +83,14 @@
 	{/each}
 {/snippet}
 
-{#snippet legenda()}
+<svg
+	viewBox="-2 0 {l.width + 4} {l.height}"
+	width="100%"
+	style:max-width="{l.width + 4}px"
+	style:display="block"
+	role="img"
+	aria-label={ariaText}
+>
 	<g font-family={Tokens.fontFamily}>
 		<text y={LEGENDA_FONT.title} font-size={LEGENDA_FONT.title} font-weight={Tokens.fontWeight.semibold} fill={colors.text}
 			>{copy.title}</text
@@ -175,21 +172,4 @@
 			<path d={arrow.head} fill="none" stroke={colors.arrow} stroke-width="1.2" stroke-linecap="round" />
 		{/each}
 	</g>
-{/snippet}
-
-{#if standalone}
-	<svg
-		viewBox="-2 0 {l.width + 4} {l.height}"
-		width="100%"
-		style:max-width="{l.width + 4}px"
-		style:display="block"
-		role="img"
-		aria-label={ariaText}
-	>
-		{@render legenda()}
-	</svg>
-{:else}
-	<g transform="translate({x},{y}) scale({scale})" aria-hidden="true">
-		{@render legenda()}
-	</g>
-{/if}
+</svg>

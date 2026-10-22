@@ -12,9 +12,9 @@
   /**
    * O Brasil esquemático, uma célula por UF, duas barras em cada uma e a
    * referência atravessando todas. O que passa da referência é pintado de
-   * vermelho. A legenda (`MapaHexagonalLegenda`) explica cada elemento com setas
-   * e ocupa o canto vazio do mapa — ou desce para baixo dele em colunas
-   * estreitas. Um dos gráficos de referência da identidade visual.
+   * vermelho. A legenda é outro componente, `MapaHexagonalLegenda`, que explica
+   * cada elemento com setas; o host a põe ao lado ou abaixo do mapa. Um dos
+   * gráficos de referência da identidade visual.
    *
    * **Função:** território — dois valores por UF e uma referência.
    *
@@ -30,10 +30,10 @@
    * coincidem). `reference` é o valor da linha (uma média nacional); `aLabel`,
    * `bLabel` e `referenceLabel` nomeiam as três coisas.
    *
-   * **Legenda:** `legend` = `'auto'` (no canto do mapa quando cabe legível,
-   * senão abaixo), `'inline'`, `'below'` ou `'none'` — neste caso o host põe
-   * `<MapaHexagonalLegenda standalone>` onde quiser. `legendText` troca o texto;
-   * `**negrito**` funciona dentro dele. Nenhuma região tem contorno por padrão;
+   * **Legenda:** o mapa não desenha legenda. `<MapaHexagonalLegenda>` recebe a
+   * mesma `reference` (e `formatValue`, se houver) e o texto em `texto`;
+   * `**negrito**` funciona dentro dele. Tem o próprio `<svg>` e ocupa a largura
+   * que tiver, até 444 px. Nenhuma região tem contorno por padrão;
    * `emphasizedRegions` escolhe as que ganham contorno escuro.
    *
    * **Etapas (`MAPA_HEXAGONAL_STEPS`):** primeiro valor → segundo valor →
@@ -62,7 +62,7 @@
     return uf === 'DF' ? { uf, a } : { uf, a, b };
   });
   const media = Math.round(valores.reduce((s, v) => s + v.a, 0) / valores.length);
-  const legendText = {
+  const textoLegenda = {
     totalText: 'Percentual de unidades com a ação (%)',
     excessText: 'Marca quanto o percentual supera a média brasileira',
     referenceText: 'média do conjunto do país',
@@ -86,7 +86,6 @@
     aLabel: 'Estado',
     bLabel: 'Capital',
     referenceLabel: 'Média',
-    legendText,
     title: 'Estado e capital, diante da média',
     subtitle: 'Percentual de unidades com a ação, no estado e na capital',
     source: FONTE,
@@ -109,20 +108,25 @@
   {/snippet}
 </Story>
 
-<!-- Em colunas de largura média a legenda não caberia legível no canto do mapa, então desce para baixo dele (`legend="auto"`). -->
-<Story name="Legenda abaixo">
+<!-- Mapa e legenda compostos pelo host: lado a lado quando há largura, a legenda desce para baixo do mapa quando não há. -->
+<Story name="Com legenda">
   {#snippet template()}
-    <div style="max-width: 620px;">
-      <MapaHexagonalChart values={valores} reference={media} aLabel="Estado" bLabel="Capital" referenceLabel="Média" {legendText} title="Mapa hexagonal" />
+    <div style="max-width: 1240px; display: flex; flex-wrap: wrap; align-items: flex-end; gap: 1.5rem;">
+      <div style="flex: 1 1 560px; min-width: 0;">
+        <MapaHexagonalChart values={valores} reference={media} aLabel="Estado" bLabel="Capital" referenceLabel="Média" title="Estado e capital, diante da média" />
+      </div>
+      <div style="flex: 0 1 444px; min-width: 0;">
+        <MapaHexagonalLegenda reference={media} texto={textoLegenda} />
+      </div>
     </div>
   {/snippet}
 </Story>
 
-<!-- A legenda sozinha, com `standalone`: para o host que passa `legend="none"` ao mapa e a põe em outro lugar da página. -->
-<Story name="Legenda separada">
+<!-- A legenda sozinha: um componente à parte, com o próprio `<svg>`. -->
+<Story name="Legenda">
   {#snippet template()}
     <div style="max-width: 460px;">
-      <MapaHexagonalLegenda reference={media} texto={legendText} standalone />
+      <MapaHexagonalLegenda reference={media} texto={textoLegenda} />
     </div>
   {/snippet}
 </Story>
@@ -136,7 +140,6 @@
         values={valores}
         reference={media}
         referenceLabel="Média"
-        {legendText}
         {step}
         {highlight}
         title="Duas medições por estado, e a média"
