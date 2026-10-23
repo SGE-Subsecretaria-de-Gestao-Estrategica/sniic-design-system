@@ -10,6 +10,7 @@
 import { UFS } from '$lib/components/eixo1/mapaUf';
 import type {
   BarrasCascataDatum,
+  BarraParticaoLinha,
   BolhasMatrizLinha,
   CristaDensidade,
   CurvaConcentracaoPonto,
@@ -22,6 +23,7 @@ import type {
   LinhaParticipacaoDatum,
   LinhasComparadasDatum,
   LinhasDiferencaDatum,
+  PontosCoberturaDatum,
   TabelaBarrasLinha,
 } from '$lib/components/eixo6/data';
 
@@ -363,4 +365,47 @@ export const tabelaRazaoLinhas: TabelaBarrasLinha[] = [
   { label: 'Unidade F', values: [936, 15, 0.8] },
   { label: 'Unidade G, de nome mais longo', values: [580, null, 1.2] },
   { label: 'Unidade H', values: [240, null, 2.1] },
+];
+
+/**
+ * Um indicador perto do teto para todos, em quatro recortes: de zero, as
+ * barras seriam idênticas. A referência faz as vezes de uma média nacional.
+ */
+export const cobertura: PontosCoberturaDatum[] = [
+  { group: 'Recorte A', label: 'Categoria A1', value: 99.4 },
+  { group: 'Recorte A', label: 'Categoria A2', value: 99.3 },
+  { group: 'Recorte A', label: 'Categoria A3', value: 97.8 },
+  { group: 'Recorte A', label: 'Categoria A4, com um nome que quebra', value: 96.6 },
+  { group: 'Recorte B', label: 'Categoria B1', value: 99.0 },
+  { group: 'Recorte B', label: 'Categoria B2', value: 98.7 },
+  { group: 'Recorte C', label: 'Categoria C1', value: 99.9 },
+  { group: 'Recorte C', label: 'Categoria C2', value: 99.6 },
+  { group: 'Recorte C', label: 'Categoria C3', value: 99.2 },
+  { group: 'Recorte C', label: 'Categoria C4', value: 98.8 },
+  { group: 'Recorte C', label: 'Categoria C5', value: 98.2 },
+  { group: 'Recorte D', label: 'Categoria D1', value: 98.8 },
+  { group: 'Recorte D', label: 'Categoria D2', value: 98.1 },
+];
+export const COBERTURA_REFERENCIA = 98.8;
+
+/** Um todo em duas partes, uma delas detalhada: a frase "das que têm, quantas…". */
+export const particao: BarraParticaoLinha[] = [
+  {
+    parts: [
+      { label: 'Parte A', value: 114_018 },
+      {
+        label: 'Parte B',
+        parts: [
+          { label: 'Pedaço B1', value: 28_937 },
+          { label: 'Pedaço B2', value: 37_585 },
+        ],
+      },
+    ],
+  },
+];
+
+/** O mesmo corte em dois escopos, para comparar a repartição. */
+export const particaoEscopos: BarraParticaoLinha[] = [
+  { label: 'Grupo', parts: [{ label: 'Parte A', value: 9_567 }, { label: 'Parte B', value: 7_144 }] },
+  { label: 'Referência', parts: [{ label: 'Parte A', value: 126_069 }, { label: 'Parte B', value: 130_447 }] },
 ];

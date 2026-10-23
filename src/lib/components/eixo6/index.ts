@@ -38,6 +38,8 @@ export { default as MapaUfChart } from './MapaUfChart.svelte';
 export { default as MapaMunicipiosChart } from './MapaMunicipiosChart.svelte';
 export { default as MapaHexagonalChart } from './MapaHexagonalChart.svelte';
 export { default as MapaHexagonalLegenda } from './MapaHexagonalLegenda.svelte';
+export { default as PontosCoberturaChart } from './PontosCoberturaChart.svelte';
+export { default as BarraParticaoChart } from './BarraParticaoChart.svelte';
 
 export * from './steps.js';
 

@@ -1,5 +1,7 @@
 import { describe, expectTypeOf, it } from "vitest";
 import type { BubbleColumnsLayout } from "$lib/core/layouts/bubbleColumns";
+import type { CoverageDotsLayout } from "$lib/core/layouts/coverageDots";
+import type { PartitionBarsLayout } from "$lib/core/layouts/partitionBars";
 import type { HeatmapLayout } from "$lib/core/layouts/heatmap";
 import type { TwinBarsLayout } from "$lib/core/layouts/hexMap";
 import type { HorizontalBarsLayout } from "$lib/core/layouts/horizontalBars";
@@ -18,6 +20,8 @@ describe("ChartLayouts", () => {
       | "lineDifference"
       | "rankedRibbons"
       | "rangeRows"
+      | "coverageDots"
+      | "partitionBars"
       | "bubbleColumns"
       | "heatmap"
       | "hexChoropleth"
@@ -35,6 +39,12 @@ describe("ChartLayouts", () => {
     >();
     expectTypeOf<ChartLayouts["rangeRows"]>().toEqualTypeOf<
       RangeRowsLayout<Row>
+    >();
+    expectTypeOf<ChartLayouts["coverageDots"]>().toEqualTypeOf<
+      CoverageDotsLayout<Row>
+    >();
+    expectTypeOf<ChartLayouts["partitionBars"]>().toEqualTypeOf<
+      PartitionBarsLayout<Row>
     >();
     expectTypeOf<ChartLayouts["bubbleColumns"]>().toEqualTypeOf<
       BubbleColumnsLayout<Row>

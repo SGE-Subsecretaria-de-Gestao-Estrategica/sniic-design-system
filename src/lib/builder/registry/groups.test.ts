@@ -12,7 +12,7 @@ describe("groupCharts", () => {
         items.map((item) => item.chart.id),
       ]),
     ).toEqual([
-      ["categories", ["horizontalBars", "rangeRows", "bubbleColumns", "heatmap"]],
+      ["categories", ["horizontalBars", "rangeRows", "coverageDots", "partitionBars", "bubbleColumns", "heatmap"]],
       ["lines", ["lineSeries", "lineBubbleRow", "lineDifference", "rankedRibbons"]],
       ["hexMaps", ["hexChoropleth", "hexTwinBars", "hexCategorical"]],
     ]);

@@ -14,6 +14,7 @@ import {
   setEncoding,
   setOption,
   setParam,
+  setStyle,
 } from "../../spec/spec";
 
 function resolve(
@@ -210,6 +211,114 @@ describe("heatmap", () => {
     if (resolved.status !== "ready" || resolved.view.chart !== "heatmap")
       throw new Error();
     expect(resolved.view.layout.rows.map((r) => r.key)).toEqual(["Norte", "Sul"]);
+  });
+});
+
+const COVERAGE: ColumnSchema[] = [
+  { name: "categoria", type: "text" },
+  { name: "cobertura", type: "number" },
+  { name: "recorte", type: "text" },
+];
+const coverageRows = [
+  { categoria: "Estadual", cobertura: "99,4", recorte: "Rede" },
+  { categoria: "Privada", cobertura: "96,6", recorte: "Rede" },
+  { categoria: "Fundamental", cobertura: "99,0", recorte: "Etapa" },
+  { categoria: "Médio", cobertura: "98,7", recorte: "Etapa" },
+];
+
+describe("coverageDots", () => {
+  it("splits the rows into a block per recorte, on an axis that starts near the data", () => {
+    const { result } = resolve("coverageDots", COVERAGE, coverageRows, { group: "recorte" });
+    if (result.view.chart !== "coverageDots") throw new Error();
+    const { blocks, truncated, valueScale } = result.view.layout;
+    expect(blocks.map((b) => b.label)).toEqual(["Rede", "Etapa"]);
+    expect(blocks[0].rows.map((r) => r.category)).toEqual(["Estadual", "Privada"]);
+    expect(truncated).toBe(true);
+    expect(valueScale.domain()[0]).toBeGreaterThan(90);
+  });
+
+  it("draws a single unnamed block when no recorte is mapped", () => {
+    const { result } = resolve("coverageDots", COVERAGE, coverageRows);
+    if (result.view.chart !== "coverageDots") throw new Error();
+    expect(result.view.layout.blocks).toHaveLength(1);
+    expect(result.view.layout.blocks[0].header).toBeNull();
+  });
+
+  it("takes the reference and a pinned axis end from the options", () => {
+    const { spec } = resolve("coverageDots", COVERAGE, coverageRows, { group: "recorte" });
+    let next = setOption(spec, "reference", 98.8, defaultRegistry).spec;
+    next = setOption(next, "domainMax", 100, defaultRegistry).spec;
+    const resolved = resolveChart(next, coerceRows(coverageRows, COVERAGE, ","), defaultRegistry);
+    if (resolved.status !== "ready" || resolved.view.chart !== "coverageDots") throw new Error();
+    expect(resolved.view.layout.reference?.value).toBe(98.8);
+    expect(resolved.view.layout.valueScale.domain()[1]).toBe(100);
+  });
+
+  it("solves the row thickness from a set height", () => {
+    const { spec } = resolve("coverageDots", COVERAGE, coverageRows, { group: "recorte" });
+    const next = setStyle(spec, { height: 500 }, defaultRegistry).spec;
+    const resolved = resolveChart(next, coerceRows(coverageRows, COVERAGE, ","), defaultRegistry);
+    if (resolved.status !== "ready" || resolved.view.chart !== "coverageDots") throw new Error();
+    expect(resolved.view.layout.height).toBeCloseTo(
+      500 - resolved.margin.top - resolved.margin.bottom,
+    );
+    expect(resolved.solved.rowThickness).toBeGreaterThan(0);
+  });
+});
+
+const PARTITION: ColumnSchema[] = [
+  { name: "parte", type: "text" },
+  { name: "pedaco", type: "text" },
+  { name: "escolas", type: "number" },
+  { name: "escopo", type: "text" },
+];
+const partitionRows = [
+  { parte: "Sem biblioteca", pedaco: "Sem biblioteca", escolas: "114.018", escopo: "Brasil" },
+  { parte: "Com biblioteca", pedaco: "Com profissional", escolas: "28.937", escopo: "Brasil" },
+  { parte: "Com biblioteca", pedaco: "Sem profissional", escolas: "37.585", escopo: "Brasil" },
+];
+
+describe("partitionBars", () => {
+  it("draws a row per part when only part and value are mapped", () => {
+    const { result } = resolve("partitionBars", PARTITION, partitionRows);
+    if (result.view.chart !== "partitionBars") throw new Error();
+    const { rows, blocks } = result.view.layout;
+    expect(blocks).toHaveLength(1);
+    expect(rows.map((r) => [r.kind, r.label])).toEqual([
+      ["part", "Sem biblioteca"],
+      ["part", "Com biblioteca"],
+    ]);
+    expect(rows[0].share).toBeCloseTo(0.632, 3);
+  });
+
+  it("adds a row per mapped piece under its part; a piece named like its part is the part itself", () => {
+    const { result } = resolve("partitionBars", PARTITION, partitionRows, { subpart: "pedaco" });
+    if (result.view.chart !== "partitionBars") throw new Error();
+    const { rows } = result.view.layout;
+    expect(rows.map((r) => r.label)).toEqual([
+      "Sem biblioteca",
+      "Com biblioteca",
+      "Com profissional",
+      "Sem profissional",
+    ]);
+    expect(rows[3].share).toBeCloseTo(0.565, 3);
+    expect(rows[3].trackLength).toBeCloseTo(rows[1].barLength);
+  });
+
+  it("names a block per whole when the whole is mapped", () => {
+    const { result } = resolve("partitionBars", PARTITION, partitionRows, { category: "escopo" });
+    if (result.view.chart !== "partitionBars") throw new Error();
+    expect(result.view.layout.blocks.map((b) => b.label)).toEqual(["Brasil"]);
+    expect(result.view.layout.blocks[0].header).not.toBeNull();
+  });
+
+  it("takes the figure's height from the layout", () => {
+    const { result } = resolve("partitionBars", PARTITION, partitionRows, { subpart: "pedaco" });
+    if (result.view.chart !== "partitionBars") throw new Error();
+    expect(result.figure.height).toBeCloseTo(
+      result.view.layout.height + result.margin.top + result.margin.bottom,
+      0,
+    );
   });
 });
 
@@ -907,6 +1016,8 @@ describe("drawing-only options", () => {
       "rampBaseOrder",
       "legendValues",
     ]);
+    expect(drawingOnly("coverageDots")).toEqual(["referenceName"]);
+    expect(drawingOnly("partitionBars")).toEqual(["pieceSuffix"]);
     expect(drawingOnly("hexTwinBars")).toEqual([
       "accentOver",
       "thresholdName",

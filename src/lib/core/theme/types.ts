@@ -41,6 +41,8 @@ export type ChartTheme = {
   ribbon?: RibbonStyle;
   labelMask?: LabelMaskStyle;
   timelineBreak?: TimelineBreakStyle;
+  coverageDots?: CoverageDotsStyle;
+  partition?: PartitionStyle;
 }
 
 export type Palette = {
@@ -140,6 +142,29 @@ export type TimelineBreakStyle = {
   /** Scales the chevron glyph and its gaps from the axis and the label. */
   size?: number;
   label?: string;
+}
+
+/** The rows of `CoverageDots`: a track per row, a dot at the value, a reference line. */
+export type CoverageDotsStyle = {
+  trackStroke?: string;
+  trackWidth?: number;
+  markerFill?: string;
+  /** Ring around each dot, in the page colour, so it reads over the track and the reference. */
+  markerStroke?: string;
+  markerStrokeWidth?: number;
+  referenceStroke?: string;
+  referenceWidth?: number;
+  referenceDasharray?: string;
+  /** Weight of each block's name. */
+  headerWeight?: number;
+}
+
+/** The rows of `PartitionBars`; the bars themselves are the `capsule` role's. */
+export type PartitionStyle = {
+  /** The track behind each bar: the whole, or the part a piece comes from. */
+  trackFill?: string;
+  /** Weight of each block's name. */
+  headerWeight?: number;
 }
 
 export type MissingStyle = {

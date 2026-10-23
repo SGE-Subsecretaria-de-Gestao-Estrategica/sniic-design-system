@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.1.0] - 2026-10-23
+
+### Added
+- **`PontosCoberturaChart`** (*Pontos de cobertura*), with `PontosCoberturaDatum` and `PONTOS_COBERTURA_STEPS`: one category per row, a dot at its value on a light track, rows in a block per `group` (rede, etapa, localização…), and an optional dashed `reference` (named by `referenceLabel`) across every block. Made for indicators near the top for everyone: the axis starts where the data does (or at `min` / `max`) and marks the cut with the torn-axis glyph; position is the only encoding. `sort` (`desc` or `none`), `formatValue`, `formatTick`, `formatDifference` (distance to the reference, in the tooltip and table). Steps: the dots, the reference, the values. Story and catalog card under *Comparar categorias*.
+- **`BarraParticaoChart`** (*Barra de partição*), with `BarraParticaoLinha`, `BarraParticaoParte` and `BARRA_PARTICAO_STEPS`: the parts of a whole as ranking bars from the same zero, each on a light track worth the whole (100%); a part with `parts` is followed by thinner rows, one per piece, on a track as long as the part and still on the whole's scale — for "of those that have it, how many…". Values in a column past the 100% end, a piece's share being of its part (`pieceSuffix`, "da parte" by default); several rows (`label`) become named blocks. Steps: the parts, then the pieces. Story and catalog card.
+- **`coverageDotsLayout`** + **`<CoverageDots>`** (`COVERAGE_DOTS_DEFAULTS`, `CoverageDot`, `CoverageBlock`, `CoverageAxis`, `CoverageReference`, …): rows by `getCategory` / `getValue`, blocks by `getGroup` (`groupOrder`), `sort` and `categoryOrder` within a block, `valueDomain` to pin either end, `reference`; the layout returns `truncated` when the axis doesn't reach zero, and each row's `delta` to the reference.
+- **`partitionBarsLayout`** + **`<PartitionBars>`** (`PARTITION_BARS_DEFAULTS`, `PartitionRow`, `PartitionBlock`, …): parts by `getPart`, pieces by `getSubpart` (a piece empty or named like its part is the part itself), wholes by `getCategory`; each row carries its `share` (of its track) and `shareOfTotal`. Bars take the `capsule` role.
+- **Theme**: `coverageDots` (`CoverageDotsStyle`: track, marker, reference line, block names) and `partition` (`PartitionStyle`: track, block names) roles.
+- **Builder**: *Pontos de cobertura* (channels Categoria, Valor, Recorte; reference line and its name, axis start and end, row height, gap, dot radius, right inset) and *Barra de partição* (channels Parte, Valor, Pedaço da parte, Todo; bar thicknesses, gap, value space, text after a piece's share), both under Categorias.
+
 ## [4.0.0] - 2026-10-22
 
 ### Added
