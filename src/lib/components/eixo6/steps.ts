@@ -132,6 +132,25 @@ export const MAPA_HEXAGONAL_STEPS: ChartStep[] = [
 ];
 
 /**
+ * `BarraParticaoChart`. Without a part that has pieces, the second stage
+ * changes nothing on screen.
+ */
+export const BARRA_PARTICAO_STEPS: ChartStep[] = [
+	{ id: 'partes', label: 'Como o todo se divide' },
+	{ id: 'pedacos', label: 'Como uma parte se divide, dentro dela' }
+];
+
+/**
+ * `PontosCoberturaChart`. Without a `reference`, the second stage changes
+ * nothing on screen.
+ */
+export const PONTOS_COBERTURA_STEPS: ChartStep[] = [
+	{ id: 'pontos', label: 'Onde cada categoria está, recorte a recorte' },
+	{ id: 'referencia', label: 'A referência que todas cruzam' },
+	{ id: 'valores', label: 'O valor de cada categoria' }
+];
+
+/**
  * `TabelaBarrasChart`. One stage per column, in order — each brings its
  * measure in and steps the ones already read back — then the whole table,
  * with the total when there is one. The stages follow the table's columns,

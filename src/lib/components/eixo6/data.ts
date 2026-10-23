@@ -206,3 +206,34 @@ export type TabelaBarrasLinha = {
 	/** `null` is a value that was not reported — written, never drawn as zero. */
 	values: (number | null)[];
 };
+
+/**
+ * A row of `PontosCoberturaChart`: one category's value, inside the block of
+ * the cut it belongs to (rede, etapa, localização…).
+ */
+export type PontosCoberturaDatum = {
+	/** Category name, written left of the axis. */
+	label: string;
+	value: number;
+	/** Name of the block; rows without one share a single unnamed block. */
+	group?: string;
+};
+
+/**
+ * A part of a `BarraParticaoChart` row. With `parts`, it is broken down under
+ * the bar, and its value is the sum of its pieces.
+ */
+export type BarraParticaoParte = {
+	label: string;
+	/** Ignored when `parts` is given. Never negative. */
+	value?: number;
+	/** The pieces of this part — the first part of a row that has them is broken down. */
+	parts?: { label: string; value: number }[];
+};
+
+/** One row of `BarraParticaoChart`: a whole, split into its parts. */
+export type BarraParticaoLinha = {
+	/** Row name, written left of the bar; omit for a single unnamed row. */
+	label?: string;
+	parts: BarraParticaoParte[];
+};

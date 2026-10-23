@@ -8,6 +8,8 @@ import { lineBubbleRowChart } from "./lineBubbleRow";
 import { lineDifferenceChart } from "./lineDifference";
 import { lineSeriesChart } from "./lineSeries";
 import { rangeRowsChart } from "./rangeRows";
+import { coverageDotsChart } from "./coverageDots";
+import { partitionBarsChart } from "./partitionBars";
 import { rankedRibbonsChart } from "./rankedRibbons";
 
 /** Every chart the builder offers. `ChartLayouts` is derived from this list. */
@@ -18,6 +20,8 @@ export const CHARTS = [
   lineDifferenceChart,
   rankedRibbonsChart,
   rangeRowsChart,
+  coverageDotsChart,
+  partitionBarsChart,
   bubbleColumnsChart,
   heatmapChart,
   hexChoroplethChart,

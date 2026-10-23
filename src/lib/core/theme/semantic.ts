@@ -151,6 +151,21 @@ export function getPillarTheme(pillarId: number) {
       size: Tokens.spacing.sm,
       label: "QUEBRA",
     },
+    coverageDots: {
+      trackStroke: palette.base[200],
+      trackWidth: 10,
+      markerFill: pillarPalette.primaryVariant,
+      markerStroke: palette.base[100],
+      markerStrokeWidth: Tokens.strokeWidth.md,
+      referenceStroke: palette.neutral[100],
+      referenceWidth: Tokens.strokeWidth.sm,
+      referenceDasharray: "4,5",
+      headerWeight: Tokens.fontWeight.semibold,
+    },
+    partition: {
+      trackFill: palette.base[200],
+      headerWeight: Tokens.fontWeight.semibold,
+    },
     missing: {
       fill: palette.base[300],
       opacity: 1,

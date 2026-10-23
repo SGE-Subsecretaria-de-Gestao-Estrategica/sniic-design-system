@@ -54,6 +54,8 @@ export { default as HexCategorical } from './components/hexMap/HexCategorical.sv
 
 // Range rows (dumbbell)
 export { default as RangeRows } from './components/rangeRows/RangeRows.svelte';
+export { default as CoverageDots } from './components/coverageDots/CoverageDots.svelte';
+export { default as PartitionBars } from './components/partitionBars/PartitionBars.svelte';
 
 // Gradients
 export { default as LinearGradient } from './components/gradient/LinearGradient.svelte';
@@ -239,6 +241,29 @@ export type {
   RangeRow,
   RangeRowsLayout,
 } from './layouts/rangeRows/types.js';
+
+export { coverageDotsLayout, COVERAGE_DOTS_DEFAULTS } from './layouts/coverageDots/index.js';
+export type {
+  CoverageDotsSpacing,
+  CoverageDotsLayoutConfig,
+  CoverageDotsEntry,
+  CoverageDot,
+  CoverageBlock,
+  CoverageTick,
+  CoverageReference,
+  CoverageAxis,
+  CoverageDotsLayout,
+} from './layouts/coverageDots/types.js';
+
+export { partitionBarsLayout, PARTITION_BARS_DEFAULTS } from './layouts/partitionBars/index.js';
+export type {
+  PartitionBarsSpacing,
+  PartitionBarsLayoutConfig,
+  PartitionEntry,
+  PartitionRow,
+  PartitionBlock,
+  PartitionBarsLayout,
+} from './layouts/partitionBars/types.js';
 
 export {
   choroplethLayout,

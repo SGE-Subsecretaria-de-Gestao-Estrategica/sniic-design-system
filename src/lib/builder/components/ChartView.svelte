@@ -8,6 +8,8 @@
   import { createFormatter } from "../spec/format";
   import type { StyleSpec } from "../spec/types";
   import BubbleColumnsView from "./views/BubbleColumnsView.svelte";
+  import CoverageDotsView from "./views/CoverageDotsView.svelte";
+  import PartitionBarsView from "./views/PartitionBarsView.svelte";
   import HeatmapView from "./views/HeatmapView.svelte";
   import HexCategoricalView from "./views/HexCategoricalView.svelte";
   import HexChoroplethView from "./views/HexChoroplethView.svelte";
@@ -36,6 +38,7 @@
     theme,
     margin: chart.margin,
     formatValue: createFormatter(style.format),
+    format: style.format,
     formats: Object.fromEntries(
       (chart.definition.formats ?? []).map((def) => [
         def.id,
@@ -72,6 +75,10 @@
         <RankedRibbonsView layout={view.layout} {...shared} />
       {:else if view.chart === "rangeRows"}
         <RangeRowsView layout={view.layout} {...shared} />
+      {:else if view.chart === "coverageDots"}
+        <CoverageDotsView layout={view.layout} {...shared} />
+      {:else if view.chart === "partitionBars"}
+        <PartitionBarsView layout={view.layout} {...shared} />
       {:else if view.chart === "bubbleColumns"}
         <BubbleColumnsView layout={view.layout} {...shared} />
       {:else if view.chart === "heatmap"}
