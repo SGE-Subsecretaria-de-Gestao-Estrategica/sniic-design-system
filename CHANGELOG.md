@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.2.0] - 2026-10-27
+
+### Added
+- **Theme**: palettes for Eixos 2, 3, 4, 5, 7 and 8 (`eixo2Palette`, `eixo3Palette`, `eixo4Palette`, `eixo5Palette`, `eixo7Palette`, `eixo8Palette`), each with `primary`, `primaryVariant`, `secondary`, `secondaryVariant` and `accent`. All eight eixos are in `eixoPalettes` and `pillarPalettes`, so `getPillarTheme(n)` and the builder's pillar picker take any of them.
+
 ## [4.1.0] - 2026-10-23
 
 ### Added
