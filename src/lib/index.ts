@@ -49,6 +49,8 @@ export {
 	eixo7Palette,
 	eixo8Palette,
 	eixoPalettes,
+	lpgCapituloEixo,
+	lpgPalettes,
 	defaultEixo,
 	getChartTheme,
 	setChartTheme,

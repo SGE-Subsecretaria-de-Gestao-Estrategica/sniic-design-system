@@ -118,6 +118,25 @@ export const eixoPalettes = {
   8: eixo8Palette,
 } as const
 
+/**
+ * Boletins da LPG — cada um dos quatro capítulos veste a paleta de um eixo do
+ * Cultura em Números.
+ */
+export const lpgCapituloEixo = {
+  1: 2,
+  2: 3,
+  3: 5,
+  4: 6,
+} as const
+
+/** Paletas dos capítulos da LPG, indexadas pelo número do capítulo. */
+export const lpgPalettes = {
+  1: eixo2Palette,
+  2: eixo3Palette,
+  3: eixo5Palette,
+  4: eixo6Palette,
+} as const
+
 /** O eixo cujo tema é o padrão quando nenhum é pedido. */
 export const defaultEixo = 6
 
