@@ -50,6 +50,38 @@ export const eixo1Palette = {
   accent: '#31C6D3',
 } as const
 
+export const eixo2Palette = {
+  primary: '#317857',
+  primaryVariant: '#38A879',
+  secondary: '#E5582D',
+  secondaryVariant: '#E69F49',
+  accent: '#2747E5',
+} as const
+
+export const eixo3Palette = {
+  primary: '#9D3877',
+  primaryVariant: '#AE66CC',
+  secondary: '#94BC3E',
+  secondaryVariant: '#539A24',
+  accent: '#E83407',
+} as const
+
+export const eixo4Palette = {
+  primary: '#2062C2',
+  primaryVariant: '#2C0BA2',
+  secondary: '#2EAC69',
+  secondaryVariant: '#61D04E',
+  accent: '#FA6B05',
+} as const
+
+export const eixo5Palette = {
+  primary: '#F07A25',
+  primaryVariant: '#CF4E4E',
+  secondary: '#4888C2',
+  secondaryVariant: '#36539D',
+  accent: '#AA33E6',
+} as const
+
 export const eixo6Palette = {
   primary: '#F6B60E',
   primaryVariant: '#F68E0E',
@@ -58,10 +90,51 @@ export const eixo6Palette = {
   accent: '#D74D2A',
 } as const
 
+export const eixo7Palette = {
+  primary: '#81A72E',
+  primaryVariant: '#0A8140',
+  secondary: '#E75C52',
+  secondaryVariant: '#FB7B9D',
+  accent: '#2470DA',
+} as const
+
+export const eixo8Palette = {
+  primary: '#592F83',
+  primaryVariant: '#CC39DF',
+  secondary: '#2B6DCD',
+  secondaryVariant: '#44ADEE',
+  accent: '#57C712',
+} as const
+
 /** Paletas por eixo, indexadas pelo número do eixo. */
 export const eixoPalettes = {
   1: eixo1Palette,
+  2: eixo2Palette,
+  3: eixo3Palette,
+  4: eixo4Palette,
+  5: eixo5Palette,
   6: eixo6Palette,
+  7: eixo7Palette,
+  8: eixo8Palette,
+} as const
+
+/**
+ * Boletins da LPG — cada um dos quatro capítulos veste a paleta de um eixo do
+ * Cultura em Números.
+ */
+export const lpgCapituloEixo = {
+  1: 2,
+  2: 3,
+  3: 5,
+  4: 6,
+} as const
+
+/** Paletas dos capítulos da LPG, indexadas pelo número do capítulo. */
+export const lpgPalettes = {
+  1: eixo2Palette,
+  2: eixo3Palette,
+  3: eixo5Palette,
+  4: eixo6Palette,
 } as const
 
 /** O eixo cujo tema é o padrão quando nenhum é pedido. */
@@ -69,7 +142,13 @@ export const defaultEixo = 6
 
 export const pillarPalettes = [
   { id: 1, name: "Eixo 1", ...eixo1Palette },
+  { id: 2, name: "Eixo 2", ...eixo2Palette },
+  { id: 3, name: "Eixo 3", ...eixo3Palette },
+  { id: 4, name: "Eixo 4", ...eixo4Palette },
+  { id: 5, name: "Eixo 5", ...eixo5Palette },
   { id: 6, name: "Eixo 6", ...eixo6Palette },
+  { id: 7, name: "Eixo 7", ...eixo7Palette },
+  { id: 8, name: "Eixo 8", ...eixo8Palette },
   // PNAB: extraído de public/logos/pnab-logo.svg (azul dominante, verde e amarelo
   // nos blocos principais da marca). Confirme com o guia de marca oficial do PNAB
   // se houver um, antes de considerar definitivo.
